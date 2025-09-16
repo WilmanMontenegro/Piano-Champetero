@@ -17,9 +17,23 @@ export const tomSamplersDefaults = {
 };
 
 export const samplerList = [
-  'D (2).wav','F4.wav','Golpe SK5.wav','Lazer.wav','Leon.wav','PON1.wav',
-  'Pitico.wav','SK1.WAV','SK2.WAV','SKTAC.WAV','SKTUN.WAV','Smar 1.wav',
-  'WARA2.wav','Y.wav','perro bajo.WAV','pitico medio.wav'
+  '00COMO DD14.wav', '00DEEJAY.mp3', '00EFECTO SANTOYA-TRA.wav', '00EXELENT.wma', '00FOUR-1.wma',
+  '00PERRO-1.wav', '00Yeut01 Sk.wav', '00ctm6.wav', '00estrellitt.wav', '00piii Samples.wav',
+  '00uio el original.wav', '11-BALETA (1).wav', '142.wma', '159.wma', '16.wav', '17.wav', '18.wav',
+  '20.wav', '20_2.wav', '217.wma', '555.wav', '63_SNARE.wav', 'BAJO CHAMPETA.wav', 'Bateria 1.wav',
+  'Bateria 4.wav', 'Bateria 8.wav', 'CAS.wav', 'CCC.wav', 'CM perreo 4x4 (11).wav',
+  'CM perreo 4x4 (12).wav', 'C_Kick.wav', 'D (2).wav', 'DD50 SANRE.wav', 'DD50 SNARE5.wav', 'EEEE.wav',
+  'Effect 16.wav', 'Effect 2.wav', 'Effect 9.wav', 'F4.wav', 'GAVIOTA dd14.wma', 'Golpe SK5.wav',
+  'HEY VACANO.wav', 'Lazer.wav', 'Leon.wav', 'OU3.wav', 'PITICO CARNAVAL.wav', 'PITICO CARNAVAL2.wav',
+  'PITICO CARNAVAL3.wav', 'PITO3-D.wav', 'PITO4-.wav', 'PON1.wav', 'PS 555 ORIGINAL.wav',
+  'Palmas Criollas.wav', 'Pitico.wav', 'Platillo.wav', 'Ponte Ready.wav', 'Rudeboy_AyAy.wav',
+  'SK1.WAV', 'SK2.WAV', 'SKTAC.WAV', 'SKTUN.WAV', 'SN DD14.wav', 'SNARE 7.wav', 'SNARE8.wav',
+  'Sampler Yeah.mp3', 'Smar 1.wav', 'T10  Samples.wav', 'T9  Samples.wav', 'TAMOS fUECTE COMO RAMBO .wav',
+  'TE LO REPITO.mp3', 'TIMBAL 2 (ELIEL).wav', 'TUS.wav', 'Todo el mundo espelucao.wma', 'Treyban1.wav',
+  'VACILE RAPIDO (3).wma', 'VIIP.wav', 'Vesatile_Sound_Phrase_PL.wav', 'WARA2.wav', 'Y.wav',
+  'canario.wav', 'hipo.wav', 'laser profeta 1.wav', 'laser profeta 2.wav', 'mono-1.wav', 'mono-3.wav',
+  'perro bajo.WAV', 'pimpollo  CENCERRO.wma', 'pitico medio.wav', 'sk5 -dog 1.wav', 'sk5 -dog 17.wav',
+  'sk5 -lazer.wav', 'sk5 -llion.wav', 'snare (100).wav', '{Wuaaa}.wma'
 ];
 
 // Estado
