@@ -298,10 +298,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (modoEdicionSamplers) {
         tomSamplerEditando = boton;
         if (!modalSampler) return;
-        // cargar lista de samplers disponibles a partir de tomAudioMap
+        // cargar lista de samplers disponibles a partir de samplerList (todos los archivos)
         listaSamplers && (listaSamplers.innerHTML = '');
-        const posibles = Array.from(new Set(Object.values(tomAudioMap).map(v => v && v.split('/').pop()).filter(Boolean)));
-        posibles.forEach(nombreArchivo => {
+        samplerList.forEach(nombreArchivo => {
           const li = document.createElement('li');
           li.textContent = nombreArchivo;
           li.className = 'sampler-item';
