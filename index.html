@@ -185,15 +185,36 @@
     </section>
     
   </main>
+  
+  <!-- Modal de nuevos samplers -->
+  <div id="modal-nuevos-samplers" class="modal-overlay">
+    <div class="modal-content">
+      <button class="modal-close" id="close-modal" aria-label="Cerrar">×</button>
+      <h3>🎵 ¡Nuevos Samplers Disponibles!</h3>
+      <p>Hemos añadido muchos nuevos sonidos de champeta para que explores y crees ritmos únicos.</p>
+      <p><strong>💡 Instrucciones:</strong></p>
+      <ul class="modal-instructions">
+        <li>🎯 <strong>Edita samplers:</strong> Haz clic en "Editar" en cualquier tom para cambiar su sonido</li>
+        <li>🎧 <strong>Escucha y elige:</strong> En la lista podrás escuchar cada sampler y asignar el que más te guste</li>
+        <li>🥁 <strong>Personaliza:</strong> Crea tu batería única con los sonidos que prefieras</li>
+      </ul>
+      <div class="modal-buttons">
+        <button id="probar-bateria" class="btn-probar">🥁 Probar Batería</button>
+      </div>
+    </div>
+  </div>
+  
   <footer>
     
     <p id="footer-year">© Batería Champetera Virtual <span id="year-footer"></span>. Todos los derechos reservados. v.2.0</p>
   </footer>
   <script type="module">
     import { loadHeader, setYearFooter } from './js/common.js';
+    import { initModalNuevosSamplers } from './js/modal-samplers.js';
     document.addEventListener('DOMContentLoaded', async () => {
       await loadHeader();
       setYearFooter();
+      initModalNuevosSamplers();
     });
   </script>
 </body>
