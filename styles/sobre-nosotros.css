@@ -1,5 +1,5 @@
 /* Estilos específicos de sobre-nosotros.html */
 
-.about-us { text-align: center; color: #8B4513; }
+.about-us { text-align: center; color: var(--color-marron); }
 .about-us h2 { font-family: 'Seaweed Script', cursive; font-size: 2.7em; color: var(--color-principal); margin-bottom: 0.5em; margin-top: 0; letter-spacing: 1px; }
-.about-us p { font-size: 1.25em; line-height: 1.7; margin: 0; color: #8B4513; font-weight: 400; }
+.about-us p { font-size: 1.25em; line-height: 1.7; margin: 0; color: var(--color-marron); font-weight: 400; }

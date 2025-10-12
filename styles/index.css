@@ -25,7 +25,7 @@ section h2 {
 }
 
 section p {
-  color: #333;
+  color: var(--color-gris-oscuro);
   line-height: 1.6;
   margin-bottom: 1em;
   font-size: 1.1em;
@@ -44,13 +44,13 @@ section li {
   border-radius: 8px;
   border-left: 4px solid var(--color-principal);
   font-size: 1em;
-  color: #333;
+  color: var(--color-gris-oscuro);
 }
 
 .cta-button {
   display: inline-block;
   background: var(--color-principal);
-  color: #fff;
+  color: var(--color-blanco);
   padding: 0.8em 2em;
   border-radius: 8px;
   text-decoration: none;
@@ -89,7 +89,7 @@ section li {
 
 .faq-item p {
   margin: 0;
-  color: #555;
+  color: var(--color-gris-oscuro);
 }
 
 /* ===================== RESPONSIVE ===================== */

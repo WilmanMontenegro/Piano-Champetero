@@ -1,7 +1,7 @@
 /* Estilos para politicas-privacidad.html utilizando el mismo patrón visual que otras páginas */
 
 .policy-container {
-  color: #8B4513;
+  color: var(--color-marron);
   text-align: left;
   /* Anular el align-items:center definido en el selector global `main` */
   align-items: stretch;
@@ -29,7 +29,7 @@
 .policy-container li {
   font-size: 1.05em;
   line-height: 1.7;
-  color: #5a3f2a;
+  color: var(--color-marron);
   text-align: left;
 }
 

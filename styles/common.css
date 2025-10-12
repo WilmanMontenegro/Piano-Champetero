@@ -1,16 +1,35 @@
 /* Estilos comunes (usar junto con reset.css) */
 @import url('https://fonts.googleapis.com/css?family=Roboto:400,700&display=swap');
 
-/* ===================== VARIABLES ===================== */
+/* ===================== VARIABLES - PALETA DE COLORES ===================== */
 :root {
-  --color-principal: #FF9A56;
-  --color-secundario: #FF6B6B;
-  --color-amarillo: #FFE066;
-  --color-marron: #8B4513;
-  --color-footer: #FFF5E6;
+  /* Colores principales */
+  --color-principal: #FF9A56;      /* Naranja champeta */
+  --color-secundario: #FF6B6B;     /* Rojo coral */
+  --color-amarillo: #FFE066;       /* Amarillo cálido */
+  --color-marron: #8B4513;         /* Marrón tierra */
+
+  /* Colores de fondo */
+  --color-footer: #FFF5E6;         /* Crema claro */
+  --color-rosa-claro: #FFB7C5;     /* Rosa suave (usado en gradiente) */
+
+  /* Colores neutros */
+  --color-blanco: #ffffff;
+  --color-gris-claro: #f8f9fa;
+  --color-gris-medio: #e0e0e0;
+  --color-gris-oscuro: #555555;
+  --color-negro: #000000;
+
+  /* Colores de estado */
+  --color-exito: #4CAF50;          /* Verde para mensajes de éxito */
+  --color-error: #FF6B6B;          /* Rojo para errores (usa secundario) */
+
+  /* Espaciado y efectos */
   --borde-radius: 8px;
+  --borde-radius-grande: 16px;
   --sombra-btn: 0 2px 8px rgba(0,0,0,0.10);
   --sombra-btn-hover: 0 4px 16px rgba(0,0,0,0.14);
+  --sombra-card: 0 4px 24px rgba(0,0,0,0.10);
 }
 
 /* ===================== BASE ===================== */
@@ -20,7 +39,7 @@ body {
   background:
     radial-gradient(circle at 30% 20%, rgba(255, 224, 102, 0.3) 0%, transparent 50%),
     radial-gradient(circle at 70% 80%, rgba(255, 107, 107, 0.2) 0%, transparent 50%),
-    linear-gradient(135deg, var(--color-amarillo) 0%, var(--color-principal) 25%, var(--color-secundario) 50%, #FFB7C5 75%, var(--color-footer) 100%);
+    linear-gradient(135deg, var(--color-amarillo) 0%, var(--color-principal) 25%, var(--color-secundario) 50%, var(--color-rosa-claro) 75%, var(--color-footer) 100%);
   background-attachment: fixed;
   background-size: 400% 400%;
   animation: gradientShift 20s ease infinite;
@@ -57,7 +76,7 @@ header {
   display: flex; flex-direction: column; align-items: center; text-align: center;
   background-image: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.2)), url('../images/bateria-champetera-atardecer.jpeg');
   background-size: cover; background-position: center 65%; background-repeat: no-repeat;
-  position: relative; color: #fff; text-shadow: 3px 3px 12px rgba(0, 0, 0, 0.8);
+  position: relative; color: var(--color-blanco); text-shadow: 3px 3px 12px rgba(0, 0, 0, 0.8);
   padding: 2rem 0 0 0; border-bottom: 3px solid rgba(255, 224, 102, 0.6); flex-shrink: 0;
 }
 .title { font-family: 'Seaweed Script', cursive; font-size: 7em; font-weight: normal; margin: 0.5rem 0; }
@@ -67,7 +86,7 @@ header {
 .main-nav { display: flex; justify-content: center; }
 .main-nav ul { display: flex; gap: 2.5em; list-style: none; padding: 0; margin: 0; }
 .main-nav a {
-  color: #fff; font-size: 1.3em; font-family: inherit; font-weight: 700; text-decoration: none;
+  color: var(--color-blanco); font-size: 1.3em; font-family: inherit; font-weight: 700; text-decoration: none;
   letter-spacing: 1px; padding: 0.2em 0.5em; border-radius: 4px; transition: color 0.2s, background 0.2s;
   background: none; box-shadow: none;
 }
@@ -77,14 +96,14 @@ header {
 /* ===================== BOTONES GENERALES ===================== */
 .btn-danger, .btn-reset, .btn-cancel {
   background: var(--color-secundario) !important;
-  color: #fff !important;
+  color: var(--color-blanco) !important;
   border: none;
   border-radius: var(--borde-radius);
   font-weight: bold;
   box-shadow: var(--sombra-btn);
   transition: background 0.2s, box-shadow 0.2s, color 0.2s;
 }
-.btn-danger:hover, .btn-reset:hover, .btn-cancel:hover { background: var(--color-principal) !important; color: #fff !important; box-shadow: var(--sombra-btn-hover); }
+.btn-danger:hover, .btn-reset:hover, .btn-cancel:hover { background: var(--color-principal) !important; color: var(--color-blanco) !important; box-shadow: var(--sombra-btn-hover); }
 
 /* ===================== FOOTER ===================== */
 footer {

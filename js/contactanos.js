@@ -14,11 +14,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     const confirmationMessage = document.getElementById('confirmation-message');
     const contactForm = document.getElementById('contact-form');
     if (confirmationMessage && contactForm) {
-      confirmationMessage.style.display = 'block';
+      confirmationMessage.classList.add('show');
       contactForm.style.display = 'none';
       setTimeout(() => {
         window.history.replaceState({}, document.title, window.location.pathname);
-        confirmationMessage.style.display = 'none';
+        confirmationMessage.classList.remove('show');
         contactForm.style.display = 'block';
       }, 5000);
     }
@@ -36,7 +36,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       const response = await fetch('https://formspree.io/f/xqalyldq', { method: 'POST', body: formData, headers: { 'Accept': 'application/json' }});
       if (response.ok) {
         const confirmationMessage = document.getElementById('confirmation-message');
-        if (confirmationMessage) { confirmationMessage.style.display = 'block'; contactForm.style.display = 'none'; contactForm.reset(); }
+        if (confirmationMessage) { confirmationMessage.classList.add('show'); contactForm.style.display = 'none'; contactForm.reset(); }
       } else {
         alert('Hubo un error al enviar el mensaje. Intenta nuevamente.');
       }
@@ -51,6 +51,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (backToFormBtn) backToFormBtn.addEventListener('click', function() {
     const confirmationMessage = document.getElementById('confirmation-message');
     const contactForm = document.getElementById('contact-form');
-    if (confirmationMessage && contactForm) { confirmationMessage.style.display = 'none'; contactForm.style.display = 'block'; }
+    if (confirmationMessage && contactForm) { confirmationMessage.classList.remove('show'); contactForm.style.display = 'block'; }
   });
 });

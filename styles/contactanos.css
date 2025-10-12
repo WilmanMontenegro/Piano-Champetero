@@ -2,16 +2,16 @@
 
 .contact-container { backdrop-filter: blur(10px); }
 .contact-container h2 { font-family: 'Seaweed Script', cursive; font-size: 3em; color: var(--color-principal); text-align: center; margin-bottom: 0.8em; text-shadow: 2px 2px 4px rgba(0,0,0,0.1); }
-.contact-intro { font-size: 1.2em; color: #555; text-align: center; margin-bottom: 3em; line-height: 1.8; margin-left: auto; margin-right: auto; }
+.contact-intro { font-size: 1.2em; color: var(--color-gris-oscuro); text-align: center; margin-bottom: 3em; line-height: 1.8; margin-left: auto; margin-right: auto; }
 
 .contact-options { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5em; margin: 2em 0; }
 .contact-option { background: rgba(255,255,255,0.8); border-radius: 12px; padding: 1.5em 1em; text-align: center; box-shadow: 0 2px 12px rgba(0,0,0,0.08); transition: transform 0.2s, box-shadow 0.2s; }
 .contact-option:hover { transform: translateY(-3px); box-shadow: 0 4px 20px rgba(0,0,0,0.12); }
 .contact-icon { font-size: 2.5em; color: var(--color-principal); margin-bottom: 0.8em; }
 .contact-option h3 { font-size: 1.3em; color: var(--color-marron); margin: 0.5em 0; }
-.contact-option p { font-size: 0.95em; color: #666; margin-bottom: 1.2em; line-height: 1.4; }
+.contact-option p { font-size: 0.95em; color: var(--color-gris-oscuro); margin-bottom: 1.2em; line-height: 1.4; }
 
-.contact-button { display: inline-flex; align-items: center; gap: 0.5em; background: var(--color-principal); color: #fff; text-decoration: none; padding: 0.6em 1.2em; border-radius: var(--borde-radius); font-weight: bold; transition: background 0.2s, box-shadow 0.2s; box-shadow: var(--sombra-btn); }
+.contact-button { display: inline-flex; align-items: center; gap: 0.5em; background: var(--color-principal); color: var(--color-blanco); text-decoration: none; padding: 0.6em 1.2em; border-radius: var(--borde-radius); font-weight: bold; transition: background 0.2s, box-shadow 0.2s; box-shadow: var(--sombra-btn); }
 .contact-button:hover { background: var(--color-secundario); box-shadow: var(--sombra-btn-hover); }
 
 /* Formulario de contacto */
@@ -22,34 +22,51 @@
 .form-group { margin-bottom: 2em; position: relative; }
 .form-group label { display: flex; margin-bottom: 0.8em; font-weight: bold; color: var(--color-marron); font-size: 1.1em; align-items: center; gap: 0.1em; }
 .form-group label::after { content: "*"; color: var(--color-secundario); font-weight: bold; }
-.form-group input, .form-group select, .form-group textarea { width: 100%; padding: 1em 1.2em; border: 2px solid #e0e0e0; border-radius: 12px; font-family: inherit; font-size: 1.1em; transition: all 0.3s ease; box-sizing: border-box; background: rgba(255,255,255,0.9); box-shadow: inset 0 2px 4px rgba(0,0,0,0.05); }
-.form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: var(--color-principal); background: #fff; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(255, 154, 86, 0.2), inset 0 2px 4px rgba(0,0,0,0.05); }
-.form-group input:hover, .form-group select:hover, .form-group textarea:hover { border-color: #ccc; background: #fff; }
+.form-group input, .form-group select, .form-group textarea { width: 100%; padding: 1em 1.2em; border: 2px solid var(--color-gris-medio); border-radius: 12px; font-family: inherit; font-size: 1.1em; transition: all 0.3s ease; box-sizing: border-box; background: rgba(255,255,255,0.9); box-shadow: inset 0 2px 4px rgba(0,0,0,0.05); }
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: var(--color-principal); background: var(--color-blanco); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(255, 154, 86, 0.2), inset 0 2px 4px rgba(0,0,0,0.05); }
+.form-group input:hover, .form-group select:hover, .form-group textarea:hover { border-color: var(--color-gris-medio); background: var(--color-blanco); }
 .form-group textarea { resize: vertical; min-height: 140px; line-height: 1.6; }
 
 /* Layout: fila de tres columnas para los primeros inputs */
 .form-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.2rem; }
 .form-group--full { grid-column: 1 / -1; }
 
-.send-button { display: flex; align-items: center; justify-content: center; gap: 0.8em; background: linear-gradient(135deg, var(--color-principal), var(--color-secundario)); color: #fff; border: none; border-radius: 12px; font-family: inherit; font-weight: bold; font-size: 1.1em; cursor: pointer; padding: 1em 2em; margin: 2em auto 0 auto; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(255, 154, 86, 0.3); position: relative; overflow: hidden; }
+.send-button { display: inline-flex; align-items: center; justify-content: center; gap: 0.8em; background: linear-gradient(135deg, var(--color-principal), var(--color-secundario)); color: var(--color-blanco); border: none; border-radius: 12px; font-family: inherit; font-weight: bold; font-size: 1.1em; cursor: pointer; padding: 1em 2em; margin: 2em 0 0 0; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(255, 154, 86, 0.3); position: relative; overflow: hidden; }
+.contact-form { text-align: center; }
 .send-button::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent); transition: left 0.5s; }
 .send-button:hover::before { left: 100%; }
 .send-button:hover { background: linear-gradient(135deg, var(--color-secundario), var(--color-principal)); box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4); transform: translateY(-2px); }
 .send-button:active { transform: translateY(0); box-shadow: 0 3px 10px rgba(255, 154, 86, 0.3); }
 .send-button i { font-size: 1em; vertical-align: middle; line-height: 1; }
 
-#back-to-form { margin-top: 15px; }
+.confirmation-content #back-to-form {
+  margin: 1em 0 0 0;
+  padding: 0.65em 1.2em;
+  font-size: 0.95em;
+}
 
-.confirmation-message { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
-.confirmation-content { background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%); padding: 3em 2.5em; border-radius: 20px; text-align: center; max-width: 500px; margin: 1em; box-shadow: 0 15px 50px rgba(0, 0, 0, 0.3); border: 2px solid rgba(255, 154, 86, 0.2); animation: slideInUp 0.4s ease-out; }
+.confirmation-content #back-to-form::before {
+  display: none;
+}
+
+.confirmation-content #back-to-form i {
+  margin-bottom: 0;
+  vertical-align: middle;
+  color: var(--color-blanco);
+  opacity: 1;
+}
+
+.confirmation-message { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); z-index: 1000; backdrop-filter: blur(5px); }
+.confirmation-message.show { display: flex; align-items: center; justify-content: center; }
+.confirmation-content { background: linear-gradient(135deg, var(--color-blanco) 0%, var(--color-gris-claro) 100%); padding: 3em 2.5em; border-radius: 20px; text-align: center; max-width: 500px; margin: 1em; box-shadow: 0 15px 50px rgba(0, 0, 0, 0.3); border: 2px solid rgba(255, 154, 86, 0.2); animation: slideInUp 0.4s ease-out; display: flex; flex-direction: column; align-items: center; }
 @keyframes slideInUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-.confirmation-content i { font-size: 4em; color: var(--color-principal); margin-bottom: 0.8em; animation: bounceIn 0.6s ease-out 0.2s both; }
+.confirmation-content i { font-size: 3em; color: var(--color-exito); margin-bottom: 0.6em; animation: bounceIn 0.6s ease-out 0.2s both; }
 @keyframes bounceIn { 0% { transform: scale(0); } 50% { transform: scale(1.2); } 100% { transform: scale(1); } }
 .confirmation-content h4 { color: var(--color-marron); margin: 0.8em 0; font-size: 1.8em; font-weight: bold; }
-.confirmation-content p { color: #666; margin-bottom: 2em; font-size: 1.1em; line-height: 1.6; }
+.confirmation-content p { color: var(--color-gris-oscuro); margin-bottom: 2em; font-size: 1.1em; line-height: 1.6; }
 
 /* Mensaje simple verde, si se usa */
-.mensaje-confirmacion { background: rgba(76, 175, 80, 0.1); border: 2px solid #4CAF50; border-radius: var(--borde-radius); padding: 2em; text-align: center; margin-top: 1em; }
+.mensaje-confirmacion { background: rgba(76, 175, 80, 0.1); border: 2px solid var(--color-exito); border-radius: var(--borde-radius); padding: 2em; text-align: center; margin-top: 1em; }
 
 /* Eliminados estilos de Información adicional (no usados) */
 .additional-info,
