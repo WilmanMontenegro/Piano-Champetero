@@ -1,26 +1,12 @@
-/* Estilos para politicas-privacidad.html utilizando el mismo patrón visual que otras páginas */
+/* Estilos específicos de politicas-privacidad.html */
 
 .policy-container {
   color: var(--color-marron);
   text-align: left;
-  /* Anular el align-items:center definido en el selector global `main` */
-  align-items: stretch;
-}
-
-.policy-container .page-title {
-  font-family: 'Seaweed Script', cursive;
-  font-size: 2.7em;
-  color: var(--color-principal);
-  margin-bottom: 0.5em;
-  margin-top: 0;
-  letter-spacing: 1px;
-  text-align: center;
 }
 
 .policy-container h2 {
-  font-family: 'Seaweed Script', cursive;
   font-size: 1.6em;
-  color: var(--color-marron);
   margin-top: 1rem;
   text-align: left;
 }
@@ -29,7 +15,6 @@
 .policy-container li {
   font-size: 1.05em;
   line-height: 1.7;
-  color: var(--color-marron);
   text-align: left;
 }
 
@@ -40,7 +25,6 @@
 .policy-container ul {
   margin: 0 0 1rem 0;
   padding-left: 1.25rem;
-  /* espacio para viñetas */
   list-style-type: disc;
   list-style-position: outside;
 }
@@ -50,22 +34,7 @@
   text-decoration: underline;
 }
 
-/* Mobile tweaks */
 @media (max-width: 640px) {
-  .title {
-    font-size: 3.2rem;
-  }
-
-  .policy-container {
-    margin: 1rem;
-    padding: 1.2rem;
-    border-radius: 12px;
-  }
-
-  .policy-container .page-title {
-    font-size: 2.2rem;
-  }
-
   .policy-container h2 {
     font-size: 1.2rem;
   }
