@@ -274,6 +274,11 @@ footer p { margin: 0; letter-spacing: 0.5px; }
 
 /* ===================== RESPONSIVE COMÚN ===================== */
 @media (max-width: 768px) {
+  /* Header y Nav */
+  .title { font-size: 4em; }
+  .main-nav ul { gap: 1.5em; }
+  .main-nav a { font-size: 1.1em; }
+
   .content-card, section {
     padding: 1.5em 1em;
     margin: 1rem;
@@ -309,7 +314,18 @@ footer p { margin: 0; letter-spacing: 0.5px; }
 }
 
 @media (max-width: 480px) {
+  /* Header y Nav móvil */
+  .title { font-size: 2.8em; margin: 0.3rem 0; }
+  header { padding: 1rem 0 0 0; }
+  .main-nav ul { gap: 0.8em; flex-wrap: wrap; justify-content: center; padding: 0 0.5rem; }
+  .main-nav a { font-size: 0.95em; padding: 0.3em 0.4em; }
+
   .modal-content {
     width: 95%;
   }
+}
+
+@media (max-width: 360px) {
+  .title { font-size: 2.2em; }
+  .main-nav a { font-size: 0.85em; }
 }

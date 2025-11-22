@@ -50,4 +50,71 @@
 .edit-keys-btn:hover, .edit-samplers-btn:hover, .edit-keys-btn.edit-mode-active, .edit-samplers-btn.edit-mode-active, .modal-actions button:hover { background: var(--color-secundario); color: var(--color-blanco); box-shadow: var(--sombra-btn-hover); }
 .modal-actions { display: flex; gap: 1em; justify-content: center; }
 .modal-actions button { padding: 0.5em 1.2em; margin-bottom: 0; font-size: var(--font-size-sm); }
-.edit-buttons-container { display: flex; gap: 12px; justify-content: center; }
+.edit-buttons-container { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; padding: 0 1rem; }
+
+/* ===================== RESPONSIVE VIRTUAL ===================== */
+
+/* Tablet */
+@media (max-width: 768px) {
+  .battery-tom--small { width: 70px; height: 70px; }
+  .battery-tom--medium { width: 100px; height: 100px; }
+  .battery-tom-key { font-size: 1.4em; }
+
+  .edit-icon { font-size: 1em; top: 10%; right: 15%; }
+
+  .battery-volume { width: 150px; }
+
+  .edit-buttons-container { gap: 8px; }
+  .edit-keys-btn, .edit-samplers-btn { font-size: var(--font-size-xs); padding: 0.4em 0.8em; }
+}
+
+/* Móvil */
+@media (max-width: 480px) {
+  .battery {
+    transform: scale(0.85);
+    transform-origin: center center;
+  }
+
+  .battery-tom--small { width: 55px; height: 55px; }
+  .battery-tom--medium { width: 80px; height: 80px; }
+  .battery-tom-key { font-size: 1.1em; }
+  .battery-tom { border-width: 2px; }
+
+  .edit-icon { font-size: 0.85em; top: 8%; right: 12%; }
+
+  .battery-volume-container { margin-top: 1em; }
+  .battery-volume { width: 120px; }
+  #volume-percent { font-size: var(--font-size-sm); }
+
+  .edit-buttons-container {
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+  .edit-keys-btn, .edit-samplers-btn {
+    width: 100%;
+    max-width: 200px;
+    font-size: var(--font-size-xs);
+  }
+
+  .modal-edit-sampler .modal-content,
+  .modal-edit-key .modal-content {
+    padding: 1.5em 1em 1em;
+    min-width: 240px;
+  }
+  .modal-edit-sampler h3, .modal-edit-key h3 { font-size: 1.5em; }
+  .modal-edit-sampler ul.sampler-list { max-height: 180px; }
+}
+
+/* Móvil pequeño */
+@media (max-width: 360px) {
+  .battery {
+    transform: scale(0.7);
+  }
+
+  .battery-tom--small { width: 50px; height: 50px; }
+  .battery-tom--medium { width: 70px; height: 70px; }
+  .battery-tom-key { font-size: 1em; }
+
+  .battery-volume { width: 100px; }
+}
