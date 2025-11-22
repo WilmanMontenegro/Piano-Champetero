@@ -11,7 +11,7 @@
 .battery-volume-container { display: flex; flex-direction: column; align-items: center; margin-top: 1.5em; }
 .battery-volume { width: 180px; accent-color: var(--color-principal); }
 .battery-volume-label { margin-top: 0.5em; width: 100%; display: flex; justify-content: center; }
-#volume-percent { font-size: 1.2em; color: var(--color-marron); font-weight: bold; letter-spacing: 1px; }
+#volume-percent { font-size: var(--font-size-lg); color: var(--color-marron); font-weight: bold; letter-spacing: 1px; }
 
 /* ===================== BATERÍA ===================== */
 .battery { display: grid; grid-template-columns: repeat(5, 1fr); grid-template-rows: repeat(3, auto); gap: 0; justify-items: center; align-items: center; box-sizing: border-box; padding: 0; }
@@ -38,16 +38,16 @@
 
 /* ===================== MODALES VIRTUAL ===================== */
 .modal-edit-sampler, .modal-edit-key { position: fixed; top: 0; left: 0; right: 0; bottom: 0; display: none; justify-content: center; align-items: center; background: rgba(0,0,0,0.35); z-index: 1000; }
-.modal-edit-sampler .modal-content, .modal-edit-key .modal-content { background: var(--color-blanco); border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.18); padding: 2em 1.5em 1em 1.5em; min-width: 260px; max-width: 90vw; text-align: center; }
-.modal-edit-sampler h3, .modal-edit-key h3 { margin-top: 0; font-size: 1.2em; color: var(--color-marron); }
+.modal-edit-sampler .modal-content, .modal-edit-key .modal-content { background: var(--color-blanco); border-radius: var(--borde-radius-grande); box-shadow: var(--sombra-card); padding: 2em 1.5em 1em 1.5em; min-width: 260px; width: auto; max-width: 90vw; text-align: center; }
+.modal-edit-sampler h3, .modal-edit-key h3 { margin-top: 0; font-size: 1.8em; font-family: 'Seaweed Script', cursive; color: var(--color-marron); }
 .modal-edit-sampler ul.sampler-list { list-style: none; padding: 0; margin: 1em 0 1.5em 0; max-height: 220px; overflow-y: auto; text-align: left; }
-.modal-edit-sampler .sampler-item { padding: 0.5em 1em; border-radius: 6px; cursor: pointer; transition: background 0.15s, color 0.15s; font-size: 1.1em; color: var(--color-marron); }
+.modal-edit-sampler .sampler-item { padding: 0.5em 1em; border-radius: var(--borde-radius); cursor: pointer; transition: background 0.15s, color 0.15s; font-size: var(--font-size-md); color: var(--color-marron); }
 .modal-edit-sampler .sampler-item.selected, .modal-edit-sampler .sampler-item:hover { background: var(--color-principal); color: var(--color-blanco); }
-.modal-edit-key input { font-size: 1.3em; padding: 0.4em 0.7em; margin: 1em 0; border-radius: 6px; border: 1px solid var(--color-gris-medio); outline: none; text-align: center; }
+.modal-edit-key input { font-size: var(--font-size-lg); padding: 0.4em 0.7em; margin: 1em 0; border-radius: var(--borde-radius); border: 1px solid var(--color-gris-medio); outline: none; text-align: center; }
 
 /* ===================== BOTONES VIRTUAL ===================== */
-.edit-keys-btn, .edit-samplers-btn, .modal-actions button { background: var(--color-principal); color: var(--color-blanco); border: none; border-radius: var(--borde-radius); font-family: inherit; font-weight: bold; cursor: pointer; transition: background 0.2s, box-shadow 0.2s, color 0.2s; box-shadow: var(--sombra-btn); font-size: 1rem; padding: 0.45em 1em; }
+.edit-keys-btn, .edit-samplers-btn, .modal-actions button { background: var(--color-principal); color: var(--color-blanco); border: none; border-radius: var(--borde-radius); font-family: inherit; font-weight: bold; cursor: pointer; transition: background 0.2s, box-shadow 0.2s, color 0.2s; box-shadow: var(--sombra-btn); font-size: var(--font-size-sm); padding: 0.45em 1em; }
 .edit-keys-btn:hover, .edit-samplers-btn:hover, .edit-keys-btn.edit-mode-active, .edit-samplers-btn.edit-mode-active, .modal-actions button:hover { background: var(--color-secundario); color: var(--color-blanco); box-shadow: var(--sombra-btn-hover); }
 .modal-actions { display: flex; gap: 1em; justify-content: center; }
-.modal-actions button { padding: 0.5em 1.2em; margin-bottom: 0; font-size: 1rem; }
+.modal-actions button { padding: 0.5em 1.2em; margin-bottom: 0; font-size: var(--font-size-sm); }
 .edit-buttons-container { display: flex; gap: 12px; justify-content: center; }

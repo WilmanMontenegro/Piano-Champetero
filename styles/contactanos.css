@@ -14,11 +14,11 @@
 }
 
 .contact-intro {
-  font-size: clamp(1em, 2.5vw, 1.2em);
+  font-size: var(--font-size-md);
   color: var(--color-gris-oscuro);
   text-align: center;
   margin-bottom: 2em;
-  line-height: 1.8;
+  line-height: var(--line-height-relaxed);
 }
 
 .contact-options {
@@ -30,16 +30,16 @@
 
 .contact-option {
   background: rgba(255, 255, 255, 0.8);
-  border-radius: 12px;
+  border-radius: var(--borde-radius-grande);
   padding: 1.5em 1em;
   text-align: center;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--sombra-btn);
   transition: transform 0.2s, box-shadow 0.2s;
 }
 
 .contact-option:hover {
   transform: translateY(-3px);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+  box-shadow: var(--sombra-btn-hover);
 }
 
 .contact-icon {
@@ -49,16 +49,16 @@
 }
 
 .contact-option h3 {
-  font-size: 1.3em;
+  font-size: var(--font-size-lg);
   color: var(--color-marron);
   margin: 0.5em 0;
 }
 
 .contact-option p {
-  font-size: 0.95em;
+  font-size: var(--font-size-sm);
   color: var(--color-gris-oscuro);
   margin-bottom: 1.2em;
-  line-height: 1.4;
+  line-height: var(--line-height-tight);
 }
 
 .contact-button {
@@ -83,10 +83,10 @@
 /* Formulario de contacto */
 .contact-form-section {
   background: rgba(255, 255, 255, 0.8);
-  border-radius: 16px;
+  border-radius: var(--borde-radius-grande);
   padding: clamp(1.5em, 4vw, 2.5em);
   margin: 2em 0;
-  box-shadow: 0 6px 25px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--sombra-card);
   border: 1px solid rgba(255, 255, 255, 0.6);
 }
 
@@ -114,7 +114,7 @@
   margin-bottom: 0.6em;
   font-weight: bold;
   color: var(--color-marron);
-  font-size: clamp(1em, 2vw, 1.1em);
+  font-size: var(--font-size-md);
   align-items: center;
 }
 
@@ -130,9 +130,9 @@
   width: 100%;
   padding: 0.8em 1em;
   border: 2px solid var(--color-gris-medio);
-  border-radius: 12px;
+  border-radius: var(--borde-radius-grande);
   font-family: inherit;
-  font-size: 1em;
+  font-size: var(--font-size-sm);
   transition: all 0.3s;
   box-sizing: border-box;
   background: rgba(255, 255, 255, 0.9);
@@ -157,7 +157,7 @@
 .form-group textarea {
   resize: vertical;
   min-height: 120px;
-  line-height: 1.6;
+  line-height: var(--line-height-normal);
 }
 
 .form-row {
@@ -177,15 +177,15 @@
   background: linear-gradient(135deg, var(--color-principal), var(--color-secundario));
   color: var(--color-blanco);
   border: none;
-  border-radius: 12px;
+  border-radius: var(--borde-radius-grande);
   font-family: inherit;
   font-weight: bold;
-  font-size: clamp(1em, 2vw, 1.1em);
+  font-size: var(--font-size-md);
   cursor: pointer;
   padding: 0.9em 1.8em;
   margin-top: 1.5em;
   transition: all 0.3s;
-  box-shadow: 0 4px 15px rgba(255, 154, 86, 0.3);
+  box-shadow: var(--sombra-btn-hover);
 }
 
 .send-button:hover {
@@ -222,11 +222,11 @@
 .confirmation-content {
   background: linear-gradient(135deg, var(--color-blanco), var(--color-gris-claro));
   padding: clamp(2em, 5vw, 3em);
-  border-radius: 20px;
+  border-radius: var(--borde-radius-grande);
   text-align: center;
   max-width: 500px;
   margin: 1em;
-  box-shadow: 0 15px 50px rgba(0, 0, 0, 0.3);
+  box-shadow: var(--sombra-card);
   border: 2px solid rgba(255, 154, 86, 0.2);
   animation: slideIn 0.4s ease-out;
 }
@@ -254,8 +254,8 @@
 .confirmation-content p {
   color: var(--color-gris-oscuro);
   margin-bottom: 2em;
-  font-size: 1.1em;
-  line-height: 1.6;
+  font-size: var(--font-size-md);
+  line-height: var(--line-height-normal);
 }
 
 /* Responsive */

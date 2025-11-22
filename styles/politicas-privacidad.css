@@ -5,16 +5,23 @@
   text-align: left;
 }
 
-.policy-container h2 {
-  font-size: 1.6em;
+/* Título principal - hereda estilos de common.css (.page-title) */
+/* Solo sobreescribimos lo necesario para evitar conflictos con .policy-container */
+.policy-container > .page-title {
+  text-align: center;
+}
+
+/* Subtítulos de secciones */
+.policy-container section h2 {
+  font-size: var(--font-size-xl);
   margin-top: 1rem;
   text-align: left;
 }
 
 .policy-container p,
 .policy-container li {
-  font-size: 1.05em;
-  line-height: 1.7;
+  font-size: var(--font-size-md);
+  line-height: var(--line-height-normal);
   text-align: left;
 }
 
@@ -35,7 +42,12 @@
 }
 
 @media (max-width: 640px) {
-  .policy-container h2 {
-    font-size: 1.2rem;
+  .policy-container section h2 {
+    font-size: var(--font-size-lg);
+  }
+
+  .policy-container p,
+  .policy-container li {
+    font-size: var(--font-size-sm);
   }
 }

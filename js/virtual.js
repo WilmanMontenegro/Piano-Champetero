@@ -332,6 +332,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           listaSamplers && listaSamplers.appendChild(li);
         });
         modalSampler.style.display = 'flex';
+        modalSampler.focus();
         return;
       }
       // si no está en modo edición, no hacer nada
@@ -357,7 +358,26 @@ document.addEventListener('DOMContentLoaded', async () => {
     modalSampler && (modalSampler.style.display = 'none');
     tomSamplerEditando = null; samplerSeleccionado = null;
   });
-  if (modalSampler) modalSampler.addEventListener('keydown', e => { if (e.key === 'Escape' && cancelarSamplerBtn) cancelarSamplerBtn.click(); });
+  if (modalSampler) modalSampler.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && cancelarSamplerBtn) { cancelarSamplerBtn.click(); return; }
+    // Navegación con flechas en la lista de samplers
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      const items = listaSamplers ? Array.from(listaSamplers.querySelectorAll('.sampler-item')) : [];
+      if (items.length === 0) return;
+      const currentIndex = items.findIndex(item => item.classList.contains('selected'));
+      let newIndex;
+      if (e.key === 'ArrowDown') {
+        newIndex = currentIndex < items.length - 1 ? currentIndex + 1 : 0;
+      } else {
+        newIndex = currentIndex > 0 ? currentIndex - 1 : items.length - 1;
+      }
+      items[newIndex].click();
+      items[newIndex].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    }
+    // Enter para guardar
+    if (e.key === 'Enter' && guardarSamplerBtn) { guardarSamplerBtn.click(); }
+  });
 
   // Guardar nueva letra
   // El modal ahora también captura la tecla física cuando se presiona

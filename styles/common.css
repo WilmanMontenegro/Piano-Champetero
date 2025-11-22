@@ -30,6 +30,20 @@
   --sombra-btn: 0 2px 8px rgba(0,0,0,0.10);
   --sombra-btn-hover: 0 4px 16px rgba(0,0,0,0.14);
   --sombra-card: 0 4px 24px rgba(0,0,0,0.10);
+
+  /* Tipografía - Tamaños base */
+  --font-size-xs: 0.875rem;      /* 14px - textos pequeños */
+  --font-size-sm: 1rem;          /* 16px - texto base */
+  --font-size-md: 1.125rem;      /* 18px - párrafos destacados */
+  --font-size-lg: 1.25rem;       /* 20px - subtítulos */
+  --font-size-xl: 1.5rem;        /* 24px - títulos h3 */
+  --font-size-2xl: 1.875rem;     /* 30px - títulos h2 */
+  --font-size-3xl: 2.25rem;      /* 36px - títulos principales */
+
+  /* Tipografía - Line heights */
+  --line-height-tight: 1.4;
+  --line-height-normal: 1.6;
+  --line-height-relaxed: 1.8;
 }
 
 /* ===================== BASE ===================== */
@@ -88,9 +102,9 @@ section h3 {
 /* Contenido de texto común */
 section p, .content-card p {
   color: var(--color-gris-oscuro);
-  line-height: 1.6;
+  line-height: var(--line-height-normal);
   margin-bottom: 1em;
-  font-size: 1.1em;
+  font-size: var(--font-size-md);
 }
 
 section ul {
@@ -105,7 +119,7 @@ section li {
   margin-bottom: 0.5em;
   border-radius: 8px;
   border-left: 4px solid var(--color-principal);
-  font-size: 1em;
+  font-size: var(--font-size-sm);
   color: var(--color-gris-oscuro);
 }
 
@@ -152,10 +166,10 @@ header {
   background: var(--color-principal);
   color: var(--color-blanco);
   padding: 0.8em 2em;
-  border-radius: 8px;
+  border-radius: var(--borde-radius);
   text-decoration: none;
   font-weight: bold;
-  font-size: 1.1em;
+  font-size: var(--font-size-md);
   transition: all 0.3s;
   box-shadow: var(--sombra-btn);
   margin-top: 1em;
@@ -215,9 +229,9 @@ header {
   right: 16px;
   background: none;
   border: none;
-  font-size: 24px;
+  font-size: var(--font-size-xl);
   cursor: pointer;
-  color: #999;
+  color: var(--color-gris-medio);
   transition: color 0.2s;
   width: 32px;
   height: 32px;
@@ -227,7 +241,7 @@ header {
 }
 
 .modal-close:hover {
-  color: #666;
+  color: var(--color-gris-oscuro);
 }
 
 .modal-content h3 {
@@ -239,10 +253,10 @@ header {
 }
 
 .modal-content p {
-  color: #555;
-  line-height: 1.6;
+  color: var(--color-gris-oscuro);
+  line-height: var(--line-height-normal);
   margin-bottom: 1rem;
-  font-size: 1.1em;
+  font-size: var(--font-size-md);
 }
 
 /* ===================== FOOTER ===================== */
@@ -272,12 +286,12 @@ footer p { margin: 0; letter-spacing: 0.5px; }
   }
 
   section p, .content-card p {
-    font-size: 1em;
+    font-size: var(--font-size-sm);
   }
 
   .cta-button {
     padding: 0.7em 1.5em;
-    font-size: 1em;
+    font-size: var(--font-size-sm);
   }
 
   .modal-content {
@@ -286,11 +300,11 @@ footer p { margin: 0; letter-spacing: 0.5px; }
   }
 
   .modal-content h3 {
-    font-size: 1.8em;
+    font-size: var(--font-size-2xl);
   }
 
   .modal-content p {
-    font-size: 1rem;
+    font-size: var(--font-size-sm);
   }
 }
 
