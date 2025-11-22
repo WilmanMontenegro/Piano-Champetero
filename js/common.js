@@ -10,9 +10,44 @@ export function initNav() {
         navContainer.querySelectorAll('a[href]').forEach(link => {
           if (link.getAttribute('href') === path) link.classList.add('active');
         });
+        // Inicializar hamburger menu
+        initHamburgerMenu();
       }
     })
   .catch((error) => { console.error('Error loading nav:', error); });
+}
+
+// Toggle menú hamburguesa
+function initHamburgerMenu() {
+  const hamburger = document.getElementById('nav-hamburger');
+  const navMenu = document.getElementById('nav-menu');
+
+  if (hamburger && navMenu) {
+    // Toggle al hacer clic en hamburger
+    hamburger.addEventListener('click', (e) => {
+      e.stopPropagation();
+      hamburger.classList.toggle('active');
+      navMenu.classList.toggle('active');
+    });
+
+    // Cerrar menú al hacer clic en un enlace
+    navMenu.querySelectorAll('a').forEach(link => {
+      link.addEventListener('click', () => {
+        hamburger.classList.remove('active');
+        navMenu.classList.remove('active');
+      });
+    });
+
+    // Cerrar menú al hacer clic fuera
+    document.addEventListener('click', (e) => {
+      if (navMenu.classList.contains('active') &&
+          !navMenu.contains(e.target) &&
+          !hamburger.contains(e.target)) {
+        hamburger.classList.remove('active');
+        navMenu.classList.remove('active');
+      }
+    });
+  }
 }
 
 export function setYearFooter() {
@@ -64,7 +99,12 @@ export async function loadHeader() {
     const fallback = `
       <h1 class="title">Batería Champetera Virtual</h1>
       <nav class="main-nav">
-        <ul>
+        <button class="nav-hamburger" id="nav-hamburger" aria-label="Abrir menú">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+        <ul class="nav-menu" id="nav-menu">
           <li><a href="index.html" id="nav-home">Inicio</a></li>
           <li><a href="virtual.html" id="nav-virtual">Batería Champetera</a></li>
           <li><a href="sobre-nosotros.html" id="nav-about">Sobre nosotros</a></li>
@@ -78,5 +118,7 @@ export async function loadHeader() {
     const path = window.location.pathname.split('/').pop() || 'index.html';
     const link = headerContainer.querySelector(`a[href="${path}"]`);
     if (link) link.classList.add('active');
+    // init hamburger
+    initHamburgerMenu();
   }
 }
