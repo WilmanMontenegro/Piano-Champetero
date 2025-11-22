@@ -4,12 +4,12 @@ export function initModalNuevosSamplers() {
   const closeBtn = document.getElementById('close-modal');
   const probarBtn = document.getElementById('probar-bateria');
   
-  // Mostrar modal siempre
-  if (modal) {
-    setTimeout(() => {
-      modal.classList.add('show');
-    },500); // Mostrar después de 1.5 segundos
-  }
+  // Modal desactivado - ya no se muestra automáticamente
+  // if (modal) {
+  //   setTimeout(() => {
+  //     modal.classList.add('show');
+  //   },500);
+  // }
   
   // Función para cerrar modal
   function closeModal() {
