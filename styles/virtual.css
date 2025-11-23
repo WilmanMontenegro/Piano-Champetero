@@ -20,7 +20,6 @@
 .edit-icon i {
   color: var(--color-blanco);
   text-shadow: 0 2px 6px rgba(0,0,0,0.45);
-  border-radius: 50%;
 }
 
 /* ===================== VOLUMEN ===================== */
@@ -99,7 +98,7 @@
   transition: none !important;
 }
 
-/* Tamaños fluidos con clamp() */
+/* Tamaños de toms */
 .battery-tom--small  { width: clamp(50px, 12vw, 100px); height: clamp(50px, 12vw, 100px); }
 .battery-tom--medium { width: clamp(70px, 18vw, 150px); height: clamp(70px, 18vw, 150px); }
 
@@ -128,7 +127,7 @@
   z-index: 2;
 }
 
-/* ===================== MODALES VIRTUAL ===================== */
+/* ===================== MODALES ===================== */
 .modal-edit-sampler,
 .modal-edit-key {
   position: fixed;
@@ -194,9 +193,16 @@
   text-align: center;
 }
 
-/* ===================== BOTONES VIRTUAL ===================== */
+/* ===================== BOTONES ===================== */
+.edit-buttons-container {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+  padding: 0 1rem;
+}
+
 .edit-keys-btn,
-.edit-samplers-btn,
 .modal-actions button {
   background: var(--color-principal);
   color: var(--color-blanco);
@@ -212,9 +218,7 @@
 }
 
 .edit-keys-btn:hover,
-.edit-samplers-btn:hover,
 .edit-keys-btn.edit-mode-active,
-.edit-samplers-btn.edit-mode-active,
 .modal-actions button:hover {
   background: var(--color-secundario);
   box-shadow: var(--sombra-btn-hover);
@@ -228,65 +232,35 @@
 
 .modal-actions button {
   padding: 0.5em 1.2em;
-  margin-bottom: 0;
-}
-
-.edit-buttons-container {
-  display: flex;
-  gap: 12px;
-  justify-content: center;
-  flex-wrap: wrap;
-  padding: 0 1rem;
 }
 
 /* ===================== RESPONSIVE ===================== */
 
-/* Tablet (768px) */
-@media (max-width: 768px) {
-  .edit-icon { font-size: 1em; }
-  .battery-volume { width: 150px; }
-  .edit-buttons-container { gap: 8px; }
-  .edit-keys-btn,
-  .edit-samplers-btn { font-size: var(--font-size-xs); padding: 0.4em 0.8em; }
-}
-
-/* Móvil portrait - batería rotada 90° */
-@media (max-width: 480px) and (orientation: portrait) {
+/* Móvil (480px y menos) */
+@media (max-width: 480px) {
   .battery {
-    transform: rotate(90deg);
-    transform-origin: center;
-    margin: 10rem auto 8rem;
-    max-width: 90vh;
+    width: 100%;
+    max-width: none;
+    margin: 1rem auto;
   }
 
   .battery-tom { border-width: 2px; }
+  .battery-tom--small  { width: 16vw; height: 16vw; }
+  .battery-tom--medium { width: 22vw; height: 22vw; }
+  .battery-tom-key { font-size: clamp(0.8rem, 3vw, 1.1rem); }
 
-  .edit-icon {
-    font-size: 0.85em;
-    transform: translate(20%, 20%) rotate(-90deg);
-  }
+  .edit-icon { font-size: 0.7em; }
 
-  .battery-volume-container { margin-top: 3em; }
-  .battery-volume { width: clamp(100px, 40vw, 150px); }
+  .battery-volume-container { margin-top: 1.5em; }
+  .battery-volume { width: 140px; }
   #volume-percent { font-size: var(--font-size-sm); }
 
-  .edit-buttons-container { gap: 8px; }
-  .edit-keys-btn,
-  .edit-samplers-btn { font-size: 0.9rem; padding: 0.5em 0.9em; }
+  .edit-buttons-container { gap: 6px; }
+  .edit-keys-btn { font-size: 0.8rem; padding: 0.4em 0.8em; }
 
   .modal-edit-sampler .modal-content,
   .modal-edit-key .modal-content { padding: 1.5em 1em 1em; min-width: 240px; }
   .modal-edit-sampler h3,
   .modal-edit-key h3 { font-size: 1.5em; }
   .modal-edit-sampler ul.sampler-list { max-height: 180px; }
-}
-
-/* Móvil landscape - sin rotación */
-@media (max-width: 480px) and (orientation: landscape) {
-  .battery-tom { border-width: 2px; }
-  .edit-icon { font-size: 0.85em; }
-  .battery-volume { width: clamp(100px, 30vw, 150px); }
-  .edit-buttons-container { gap: 6px; }
-  .edit-keys-btn,
-  .edit-samplers-btn { font-size: var(--font-size-xs); }
 }
