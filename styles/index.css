@@ -4,7 +4,7 @@
 
 /* Sobrescribe padding de main para landing page */
 .index-page main {
-  padding: 2rem 1rem;
+  padding: 2rem 0;
 }
 
 section h2 {

@@ -8,8 +8,7 @@
   text-align: left;
 }
 
-/* Título principal - hereda estilos de common.css (.page-title) */
-/* Solo sobreescribimos lo necesario para evitar conflictos */
+/* Título principal centrado */
 .policy-container > .page-title {
   text-align: center;
 }
