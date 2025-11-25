@@ -244,7 +244,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   const guardarSamplerBtn = document.getElementById('save-sampler-btn');
   const cancelarSamplerBtn = document.getElementById('cancel-sampler-btn');
 
-  const actualizarVisibilidadIconosEdicion = () => editIcons.forEach(icon => icon.style.display = (modoEdicionActivo || modoEdicionSamplers) ? 'inline-block' : 'none');
   const actualizarTextoBotonEdicion = () => {
     if (!editarBtn) return;
     editarBtn.textContent = modoEdicionActivo ? 'Desactivar edición de teclas' : 'Editar teclas';
@@ -258,13 +257,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   actualizarTextoBotonEdicion();
   actualizarTextoBotonEdicionSamplers();
-  editIcons.forEach(icon => icon.style.display = 'none');
 
   if (editarBtn) editarBtn.addEventListener('click', () => {
     modoEdicionActivo = !modoEdicionActivo;
     if (modoEdicionActivo) { modoEdicionSamplers = false; editarSamplersBtn && editarSamplersBtn.classList.remove('edit-mode-active'); }
     document.body.classList.toggle('edit-mode', modoEdicionActivo);
-    actualizarVisibilidadIconosEdicion();
     actualizarTextoBotonEdicion();
     actualizarTextoBotonEdicionSamplers();
     if (!modoEdicionActivo && modal && modal.style.display === 'flex') { modal.style.display = 'none'; tomEditando = null; }
@@ -275,7 +272,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     modoEdicionSamplers = !modoEdicionSamplers;
     if (modoEdicionSamplers) { modoEdicionActivo = false; editarBtn && editarBtn.classList.remove('edit-mode-active'); }
     document.body.classList.toggle('edit-mode', modoEdicionSamplers);
-    actualizarVisibilidadIconosEdicion();
     actualizarTextoBotonEdicionSamplers();
     actualizarTextoBotonEdicion();
     if (!modoEdicionSamplers && modalSampler && modalSampler.style.display === 'flex') { modalSampler.style.display = 'none'; tomSamplerEditando = null; }

@@ -5,6 +5,7 @@
 
 /* ===================== ICONO EDITAR ===================== */
 .edit-icon {
+  display: none; /* Oculto por defecto */
   position: absolute;
   top: 13%;
   right: 17%;
@@ -16,6 +17,11 @@
   cursor: pointer;
   z-index: 3;
   box-shadow: none;
+}
+
+/* Mostrar iconos solo en modo edición */
+.edit-mode .edit-icon {
+  display: inline-block;
 }
 
 .edit-icon i {
@@ -68,7 +74,8 @@
 
 /* ===================== TOMS ===================== */
 .battery-tom {
-  background-image: url('../images/tombos-bg.jpeg');
+  /* WebP optimizado con fallback */
+  background-image: url('../images/tombos-bg.webp');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -82,6 +89,13 @@
   padding: 0;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3), 0 0 20px rgba(255, 224, 102, 0.4);
   transition: all 0.2s ease;
+  /* Optimización: imagen cargada como background, considerar lazy */
+  will-change: transform;
+}
+
+/* Fallback para navegadores sin soporte WebP */
+.no-webp .battery-tom {
+  background-image: url('../images/tombos-bg.jpeg');
 }
 
 .battery-tom.active {
@@ -250,7 +264,14 @@
     margin: 1rem auto;
   }
 
-  .battery-tom { border-width: 2px; }
+  .battery-tom {
+    border-width: 2px;
+    /* Imagen optimizada para móvil */
+    background-image: url('../images/tombos-bg-mobile.webp');
+  }
+  .no-webp .battery-tom {
+    background-image: url('../images/tombos-bg.jpeg');
+  }
   .battery-tom--small  { width: 16vw; height: 16vw; }
   .battery-tom--medium { width: 22vw; height: 22vw; }
   .battery-tom-key { font-size: clamp(0.8rem, 3vw, 1.1rem); }
