@@ -74,7 +74,6 @@
 
 /* ===================== TOMS ===================== */
 .battery-tom {
-  /* WebP optimizado con fallback */
   background-image: url('../images/tombos-bg.webp');
   background-size: cover;
   background-position: center;
@@ -89,13 +88,7 @@
   padding: 0;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3), 0 0 20px rgba(255, 224, 102, 0.4);
   transition: all 0.2s ease;
-  /* Optimización: imagen cargada como background, considerar lazy */
   will-change: transform;
-}
-
-/* Fallback para navegadores sin soporte WebP */
-.no-webp .battery-tom {
-  background-image: url('../images/tombos-bg.jpeg');
 }
 
 .battery-tom.active {
@@ -266,11 +259,7 @@
 
   .battery-tom {
     border-width: 2px;
-    /* Imagen optimizada para móvil */
     background-image: url('../images/tombos-bg-mobile.webp');
-  }
-  .no-webp .battery-tom {
-    background-image: url('../images/tombos-bg.jpeg');
   }
   .battery-tom--small  { width: 16vw; height: 16vw; }
   .battery-tom--medium { width: 22vw; height: 22vw; }

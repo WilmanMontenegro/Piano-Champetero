@@ -175,7 +175,6 @@ header {
   flex-direction: column;
   align-items: center;
   text-align: center;
-  /* WebP con fallback a JPEG */
   background-image: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.2)), url('../images/bateria-champetera-atardecer.webp');
   background-size: cover;
   background-position: center 65%;
@@ -184,13 +183,7 @@ header {
   padding: 2rem 0 0;
   border-bottom: 3px solid rgba(255, 224, 102, 0.6);
   flex-shrink: 0;
-  /* Hint al navegador para cargar imagen crítica */
   content-visibility: auto;
-}
-
-/* Fallback para navegadores sin soporte WebP */
-.no-webp header {
-  background-image: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.2)), url('../images/bateria-champetera-atardecer.jpeg');
 }
 
 .title {
@@ -459,11 +452,7 @@ footer p { margin: 0; letter-spacing: 0.5px; }
 @media (max-width: 480px) {
   header {
     padding: 1rem 0;
-    /* Imagen optimizada para móvil */
     background-image: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.2)), url('../images/bateria-champetera-atardecer-mobile.webp');
-  }
-  .no-webp header {
-    background-image: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.2)), url('../images/bateria-champetera-atardecer.jpeg');
   }
   main { justify-content: flex-start; padding: 1rem 0; }
 
