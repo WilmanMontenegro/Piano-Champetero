@@ -1,4 +1,7 @@
-/* Estilos específicos de politicas-privacidad.html */
+/* =====================================================
+   ESTILOS ESPECÍFICOS - politicas-privacidad.html
+   Depende de: reset.css, common.css
+   ===================================================== */
 
 .policy-container {
   color: var(--color-marron);
@@ -6,7 +9,7 @@
 }
 
 /* Título principal - hereda estilos de common.css (.page-title) */
-/* Solo sobreescribimos lo necesario para evitar conflictos con .policy-container */
+/* Solo sobreescribimos lo necesario para evitar conflictos */
 .policy-container > .page-title {
   text-align: center;
 }
@@ -29,6 +32,7 @@
   width: 100%;
 }
 
+/* Listas con bullets (sobrescribe el estilo sin bullets de common.css) */
 .policy-container ul {
   margin: 0 0 1rem 0;
   padding-left: 1.25rem;
@@ -41,6 +45,9 @@
   text-decoration: underline;
 }
 
+/* ===================== RESPONSIVE ===================== */
+
+/* Tablet pequeño - 640px */
 @media (max-width: 640px) {
   .policy-container section h2 {
     font-size: var(--font-size-lg);

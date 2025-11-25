@@ -1,4 +1,7 @@
-/* Estilos específicos de sobre-nosotros.html */
+/* =====================================================
+   ESTILOS ESPECÍFICOS - sobre-nosotros.html
+   Depende de: reset.css, common.css
+   ===================================================== */
 
 .about-us {
   text-align: center;
@@ -12,6 +15,9 @@
   font-weight: 400;
 }
 
+/* ===================== RESPONSIVE ===================== */
+
+/* Tablet pequeño - 640px */
 @media (max-width: 640px) {
   .about-us p {
     font-size: var(--font-size-sm);

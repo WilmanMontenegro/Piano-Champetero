@@ -1,6 +1,9 @@
-/* Estilos específicos de index.html */
+/* =====================================================
+   ESTILOS ESPECÍFICOS - index.html
+   ===================================================== */
 
-main {
+/* Sobrescribe padding de main para landing page */
+.index-page main {
   padding: 2rem 1rem;
 }
 

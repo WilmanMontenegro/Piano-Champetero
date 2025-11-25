@@ -3,7 +3,7 @@
    (usar junto con reset.css)
    ===================================================== */
 
-@import url('https://fonts.googleapis.com/css?family=Roboto:400,700&display=swap');
+/* NOTA: Google Fonts debe cargarse en el HTML para mejor performance */
 
 /* ===================== VARIABLES ===================== */
 :root {
@@ -46,6 +46,18 @@
   --line-height-tight: 1.4;
   --line-height-normal: 1.6;
   --line-height-relaxed: 1.8;
+
+  /* Z-index layers */
+  --z-nav: 100;
+  --z-nav-hamburger: 101;
+  --z-modal: 1000;
+  --z-modal-overlay: 9999;
+
+  /* Breakpoints (para referencia en media queries) */
+  --breakpoint-mobile-sm: 360px;
+  --breakpoint-mobile: 480px;
+  --breakpoint-tablet-sm: 640px;
+  --breakpoint-tablet: 768px;
 }
 
 /* ===================== BASE ===================== */
@@ -53,19 +65,12 @@
   box-sizing: border-box;
 }
 
-html, body {
-  height: 100%;
-  margin: 0;
-  padding: 0;
-  overflow-x: hidden;
-  width: 100%;
-}
-
 body {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  max-width: 100vw;
+  overflow-x: hidden;
+  font-family: 'Roboto', Arial, sans-serif;
   background:
     radial-gradient(circle at 30% 20%, rgba(255, 224, 102, 0.3) 0%, transparent 50%),
     radial-gradient(circle at 70% 80%, rgba(255, 107, 107, 0.2) 0%, transparent 50%),
@@ -87,7 +92,6 @@ main {
   justify-content: flex-start;
   align-items: center;
   width: 100%;
-  max-width: 100%;
   padding: 1rem 0;
   overflow-x: hidden;
 }
@@ -95,15 +99,13 @@ main {
 /* ===================== CONTENEDOR DE CONTENIDO ===================== */
 .content-card,
 section {
-  background: rgba(255,255,255,0.95);
+  background: rgba(255, 255, 255, 0.95);
   border-radius: 18px;
   box-shadow: var(--sombra-card);
-  font-family: 'Roboto', Arial, sans-serif;
   padding: 2.2em 2em 1.5em;
   max-width: min(900px, calc(100% - 2rem));
   width: 100%;
   margin: 2rem auto;
-  box-sizing: border-box;
   overflow-wrap: break-word;
 }
 
@@ -150,13 +152,14 @@ section p,
   font-size: var(--font-size-md);
 }
 
-section ul {
+/* Listas estilizadas (no aplica a .policy-container que usa bullets normales) */
+section ul:not(.policy-container ul, .modal-instructions) {
   list-style: none;
   padding: 0;
   margin: 1em 0;
 }
 
-section li {
+section li:not(.policy-container li, .modal-instructions li) {
   background: rgba(255, 154, 86, 0.1);
   padding: 0.8em 1em;
   margin-bottom: 0.5em;
@@ -245,7 +248,7 @@ header {
   border: none;
   cursor: pointer;
   padding: 10px;
-  z-index: 1001;
+  z-index: var(--z-nav-hamburger);
 }
 
 .nav-hamburger span {
@@ -316,7 +319,7 @@ header {
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 9999;
+  z-index: var(--z-modal-overlay);
   opacity: 0;
   visibility: hidden;
   transition: opacity 0.3s, visibility 0.3s;
@@ -388,7 +391,7 @@ footer {
   border-top: 3px solid rgba(255, 224, 102, 0.7);
   box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.3), inset 0 2px 10px rgba(255, 224, 102, 0.2);
   color: var(--color-footer);
-  font-size: 0.8em;
+  font-size: var(--font-size-xs);
   text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
   flex-shrink: 0;
   margin-top: auto;
@@ -412,7 +415,7 @@ footer p { margin: 0; letter-spacing: 0.5px; }
 
 /* ===================== RESPONSIVE ===================== */
 
-/* Tablet (768px) */
+/* Tablet - 768px */
 @media (max-width: 768px) {
   .main-nav ul { gap: 1.5em; }
   .main-nav a { font-size: 1.1em; }
@@ -444,7 +447,7 @@ footer p { margin: 0; letter-spacing: 0.5px; }
   .modal-content p { font-size: var(--font-size-sm); }
 }
 
-/* Móvil (480px) */
+/* Móvil - 480px */
 @media (max-width: 480px) {
   header { padding: 1rem 0; }
   main { justify-content: flex-start; padding: 1rem 0; }
@@ -463,15 +466,20 @@ footer p { margin: 0; letter-spacing: 0.5px; }
   /* Menú oculto por defecto */
   .nav-menu {
     display: none;
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
     width: 90%;
     max-width: 300px;
-    margin: 0 auto;
+    margin-top: 0.5rem;
     background: linear-gradient(135deg, var(--color-marron) 0%, #A0522D 50%, #CD853F 100%);
     flex-direction: column;
     gap: 0;
     padding: 0.8rem;
     border-radius: 12px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    z-index: var(--z-nav);
   }
 
   /* Menú visible cuando está activo */
@@ -502,7 +510,7 @@ footer p { margin: 0; letter-spacing: 0.5px; }
   .modal-content { width: 95%; }
 }
 
-/* Móvil pequeño (360px) */
+/* Móvil pequeño - 360px */
 @media (max-width: 360px) {
   .title { font-size: 2em; }
 

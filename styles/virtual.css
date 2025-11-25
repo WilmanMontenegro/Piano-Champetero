@@ -1,5 +1,6 @@
 /* =====================================================
    ESTILOS ESPECÍFICOS - BATERÍA VIRTUAL (virtual.html)
+   Depende de: reset.css, common.css
    ===================================================== */
 
 /* ===================== ICONO EDITAR ===================== */
@@ -94,7 +95,7 @@
 .edit-mode .battery-tom:active {
   box-shadow: none !important;
   transform: none !important;
-  border-color: rgba(255,255,255,0.8) !important;
+  border-color: rgba(255, 255, 255, 0.8) !important;
   transition: none !important;
 }
 
@@ -135,8 +136,8 @@
   display: none;
   justify-content: center;
   align-items: center;
-  background: rgba(0,0,0,0.35);
-  z-index: 1000;
+  background: rgba(0, 0, 0, 0.35);
+  z-index: var(--z-modal);
 }
 
 .modal-edit-sampler .modal-content,
@@ -236,7 +237,7 @@
 
 /* ===================== RESPONSIVE ===================== */
 
-/* Móvil (480px y menos) */
+/* Móvil - 480px */
 @media (max-width: 480px) {
   .battery {
     width: 100%;
