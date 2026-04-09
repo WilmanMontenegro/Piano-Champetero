@@ -251,7 +251,7 @@ ul.sampler-list {
 }
 
 .edit-keys-btn,
-.modal-actions button {
+.modal-actions button:not(.btn-danger):not(.btn-cancel) {
   background: var(--color-principal);
   color: var(--color-blanco);
   border: none;
@@ -267,7 +267,7 @@ ul.sampler-list {
 
 .edit-keys-btn:hover,
 .edit-keys-btn.edit-mode-active,
-.modal-actions button:hover {
+.modal-actions button:not(.btn-danger):not(.btn-cancel):hover {
   background: var(--color-secundario);
   box-shadow: var(--sombra-btn-hover);
 }
