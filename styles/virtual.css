@@ -3,59 +3,6 @@
    Depende de: reset.css, common.css
    ===================================================== */
 
-/* ===================== CINTA DE AGRADECIMIENTO ===================== */
-.contributor-ticker {
-  background: linear-gradient(90deg, var(--color-principal), var(--color-secundario));
-  color: var(--color-blanco);
-  padding: 0.6em 0;
-  overflow: hidden;
-  white-space: nowrap;
-  position: relative;
-}
-
-.ticker-content {
-  display: inline-block;
-  animation: ticker-scroll 25s linear infinite;
-}
-
-.ticker-item {
-  display: inline-block;
-  padding: 0 1em;
-  font-size: 0.95em;
-  font-weight: 500;
-}
-
-.ticker-item strong {
-  font-weight: 700;
-  text-decoration: underline;
-}
-
-.ticker-item a {
-  color: var(--color-amarillo);
-  text-decoration: underline;
-  font-weight: 600;
-}
-
-.ticker-item a:hover {
-  color: var(--color-blanco);
-}
-
-.ticker-separator {
-  display: inline-block;
-  padding: 0 0.5em;
-  opacity: 0.7;
-}
-
-@keyframes ticker-scroll {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
-}
-
-/* Pausar al pasar el mouse */
-.contributor-ticker:hover .ticker-content {
-  animation-play-state: paused;
-}
-
 /* ===================== CONTENEDOR PRINCIPAL ===================== */
 main {
   justify-content: center;
