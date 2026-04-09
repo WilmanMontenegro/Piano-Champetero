@@ -54,7 +54,7 @@
   padding: 0;
   width: 100%;
   max-width: 800px;
-  margin: 0 auto;
+  margin: 2.5em auto 0;
   overflow: visible;
 }
 
@@ -141,10 +141,10 @@
   line-height: 1.4;
 }
 .battery-tom-info span { display: block; }
-.battery-tom-info-label { font-size: 0.9em; font-weight: 800; text-shadow: 1px 1px 4px var(--color-negro); margin-top: 0.1em; }
-.battery-tom-info-value { font-size: 1.1em; font-weight: 400; text-shadow: 1px 1px 4px var(--color-negro); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
-.battery-tom--small .battery-tom-info-value { font-size: 0.9em; }
-.battery-tom--small .battery-tom-info-label { font-size: 0.75em; }
+.battery-tom-info-label { font-size: 1.1em; font-weight: 800; text-shadow: 1px 1px 4px var(--color-negro); margin-top: 0.1em; }
+.battery-tom-info-value { font-size: 1.4em; font-weight: 400; text-shadow: 1px 1px 4px var(--color-negro); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.battery-tom--small .battery-tom-info-value { font-size: 1.1em; }
+.battery-tom--small .battery-tom-info-label { font-size: 0.9em; }
 
 /* ===================== MODALES ===================== */
 .modal-edit {
@@ -197,6 +197,7 @@ ul.sampler-list {
   margin: 0 0 1em 0;
   max-height: 220px;
   overflow-y: auto;
+  overflow-x: hidden;
   text-align: left;
 }
 .sampler-item {
@@ -206,6 +207,9 @@ ul.sampler-list {
   font-size: var(--font-size-md);
   color: var(--color-marron);
   transition: background 0.15s, color 0.15s;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .sampler-item.selected,
 .sampler-item:hover {

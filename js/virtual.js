@@ -349,7 +349,26 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   if (cancelBtn) cancelBtn.addEventListener('click', cerrarModal);
-  if (modal) modal.addEventListener('keydown', e => { if (e.key === 'Escape') cerrarModal(); });
+  if (modal) modal.addEventListener('keydown', e => {
+    if (e.key === 'Escape') { cerrarModal(); return; }
+    // Navegación con flechas en la lista de samplers
+    if (activeTab === 'sampler' && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
+      e.preventDefault();
+      const items = listaSamplers ? Array.from(listaSamplers.querySelectorAll('.sampler-item')) : [];
+      if (items.length === 0) return;
+      const currentIndex = items.findIndex(item => item.classList.contains('selected'));
+      let newIndex;
+      if (e.key === 'ArrowDown') {
+        newIndex = currentIndex < items.length - 1 ? currentIndex + 1 : 0;
+      } else {
+        newIndex = currentIndex > 0 ? currentIndex - 1 : items.length - 1;
+      }
+      items[newIndex].click();
+      items[newIndex].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    }
+    // Enter para guardar
+    if (e.key === 'Enter' && saveBtn) { saveBtn.click(); }
+  });
 
   if (keyInput) keyInput.addEventListener('keydown', ev => {
     ev.stopPropagation();
