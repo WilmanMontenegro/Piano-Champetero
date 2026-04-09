@@ -1,7 +1,6 @@
 // js/virtual.js — lógica de la batería para virtual.html
 import { loadHeader, setYearFooter, resumeOnUserGesture } from './common.js';
 
-// Audio + samplers (migrado desde main.js)
 export const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
 export const tomSamplersDefaults = {
@@ -36,7 +35,6 @@ export const samplerList = [
   'sk5 -lazer.wav', 'sk5 -llion.wav', 'snare (100).wav'
 ];
 
-// Estado
 export const tomAudioMap = (function init() {
   const map = { ...tomSamplersDefaults };
   const dataSamplers = localStorage.getItem('pianoChampeteroSamplers');
@@ -55,13 +53,9 @@ export const tomSamplerBuffers = {};
 export let currentVolume = 0.5;
 export let samplersDisponibles = [];
 
-// Estado de mapeo de teclas usado por la UI
 let keyToTomId = {};
-// volumen interno usado en algunas previsualizaciones
 let _currentVolume = currentVolume;
 
-// Persistence helpers (migradas desde main.js)
-// Guarda el mapa de teclas en localStorage en formato normalizado ('k:char' o 'c:Code')
 export function saveKeyMapping(map) { try { const normalized = normalizeKeyMap(map); localStorage.setItem('pianoChampeteroKeyMap', JSON.stringify(normalized)); } catch (e) {} }
 export function loadKeyMapping() {
   const data = localStorage.getItem('pianoChampeteroKeyMap');
@@ -69,7 +63,6 @@ export function loadKeyMapping() {
   try {
     const parsed = JSON.parse(data);
     const normalized = normalizeKeyMap(parsed);
-    // si el formato fue migrado (diferente del original), reescribimos para usuarios existentes
     try {
       const origStr = JSON.stringify(parsed);
       const normStr = JSON.stringify(normalized);
@@ -81,25 +74,20 @@ export function loadKeyMapping() {
   } catch { return null; }
 }
 
-// Normaliza mapas cargados o por defecto a identificadores internos:
-// - teclas simples (letra/dígito) -> 'k:char'
-// - códigos físicos -> 'c:Code'
 function normalizeKeyMap(rawMap) {
-  // Convierte distintas representaciones a códigos estándar (KeyX, DigitN, NumpadN)
   const out = {};
   Object.entries(rawMap || {}).forEach(([k, v]) => {
     if (!k) return;
     let code = null;
-    // ya es un code típico
     if (/^(Key|Digit|Numpad)[A-Za-z0-9]+$/.test(k)) code = k;
-    else if (k.startsWith('c:')) code = k.slice(2); // c:Digit1 etc
+    else if (k.startsWith('c:')) code = k.slice(2);
     else if (k.startsWith('k:')) {
       const ch = k.slice(2);
       if (/^[A-Za-z]$/.test(ch)) code = 'Key' + ch.toUpperCase();
       else if (/^[0-9]$/.test(ch)) code = 'Digit' + ch;
     } else if (/^[A-Za-z]$/.test(k)) code = 'Key' + k.toUpperCase();
     else if (/^[0-9]$/.test(k)) code = 'Digit' + k;
-    else code = k; // unknown, keep
+    else code = k;
     if (code) out[code] = v;
   });
   return out;
@@ -107,12 +95,17 @@ function normalizeKeyMap(rawMap) {
 
 function prettyLabelFromId(id) {
   if (!id) return '';
-  // esperamos ahora códigos: KeyX / DigitN / NumpadN
   if (id.startsWith('Key')) return id.slice(3).toUpperCase();
   if (id.startsWith('Digit')) return id.slice(5);
   if (id.startsWith('Numpad')) return id.slice(6);
   return id.toUpperCase();
 }
+
+function prettyName(fileName) {
+  if (!fileName) return '';
+  return fileName.replace(/\.[^.]+$/, '').replace(/[-_]/g, ' ');
+}
+
 export function saveSamplers() {
   const onlyName = {};
   Object.keys(tomAudioMap).forEach(k => {
@@ -121,6 +114,7 @@ export function saveSamplers() {
   });
   try { localStorage.setItem('pianoChampeteroSamplers', JSON.stringify(onlyName)); } catch {}
 }
+
 export function resetSettings() {
   localStorage.removeItem('pianoChampeteroSamplers');
   localStorage.removeItem('pianoChampeteroKeyMap');
@@ -180,9 +174,40 @@ export async function activateTomSampler(tomId) {
   setTimeout(() => button.classList.remove('active'), 60);
 }
 
+function actualizarNombresPads() {
+  const tomToKeys = {};
+  Object.entries(keyToTomId).forEach(([key, tomId]) => { tomToKeys[tomId] = tomToKeys[tomId] || []; tomToKeys[tomId].push(key); });
+  Object.keys(tomAudioMap).forEach(tomId => {
+    const boton = document.getElementById(tomId);
+    if (!boton) return;
+    const keySpan = boton.querySelector('.battery-tom-info-key');
+    const soundSpan = boton.querySelector('.battery-tom-info-sound');
+    if (keySpan) {
+      const keys = (tomToKeys[tomId] || []).map(k => prettyLabelFromId(k)).join(' / ');
+      keySpan.textContent = keys || '—';
+    }
+    if (soundSpan) {
+      const fullName = prettyName(tomAudioMap[tomId]);
+      soundSpan.textContent = fullName;
+      soundSpan.title = fullName;
+    }
+  });
+}
+
+function actualizarEtiquetasTeclas(keyMap) {
+  const tomToKeys = {};
+  Object.entries(keyMap).forEach(([key, tomId]) => { tomToKeys[tomId] = tomToKeys[tomId] || []; tomToKeys[tomId].push(key); });
+  Object.keys(tomAudioMap).forEach(tomId => {
+    const boton = document.getElementById(tomId);
+    if (!boton) return;
+    const span = boton.querySelector('.battery-tom-key');
+    const keys = tomToKeys[tomId] || [];
+    if (span) span.textContent = keys.map(k => prettyLabelFromId(k)).join(' / ');
+  });
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
   const isMainPage = document.getElementById('tom-1') !== null;
-  // Load shared header (with fallback) and mark active nav link
   await loadHeader();
   const navVirtual = document.getElementById('nav-virtual');
   if (navVirtual) navVirtual.classList.add('active');
@@ -196,21 +221,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   else keyToTomId = normalizeKeyMap(keyToTomIdDefaults);
 
   await preloadAllSamplers();
-
-  // pequeña función reutilizable para actualizar etiquetas de teclas por tom
-  const actualizarEtiquetasTeclas = () => {
-    const tomToKeys = {};
-    Object.entries(keyToTomId).forEach(([key, tomId]) => { tomToKeys[tomId] = tomToKeys[tomId] || []; tomToKeys[tomId].push(key); });
-    Object.keys(tomAudioMap).forEach(tomId => {
-      const boton = document.getElementById(tomId);
-      if (!boton) return;
-      const span = boton.querySelector('.battery-tom-key');
-      const keys = tomToKeys[tomId] || [];
-      if (span) span.textContent = keys.map(k => prettyLabelFromId(k)).join(' / ');
-    });
-  };
-
-  actualizarEtiquetasTeclas();
+  actualizarEtiquetasTeclas(keyToTomId);
+  actualizarNombresPads();
 
   const sliderVolumen = document.getElementById('volume-slider');
   const labelPorcentaje = document.getElementById('volume-percent');
@@ -228,232 +240,154 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
-  // Variables de edición locales
-  let tomEditando = null, tomSamplerEditando = null, samplerSeleccionado = null;
-  let modoEdicionActivo = false, modoEdicionSamplers = false;
-
-  const editarBtn = document.getElementById('edit-keys-btn');
-  const editarSamplersBtn = document.getElementById('edit-samplers-btn');
-  const editIcons = document.querySelectorAll('.edit-icon');
-  const modal = document.getElementById('modal-edit-key');
-  const input = document.getElementById('new-key-input');
-  const guardarBtn = document.getElementById('save-key-btn');
-  const cancelarBtn = document.getElementById('cancel-key-btn');
-  const modalSampler = document.getElementById('modal-edit-sampler');
-  const listaSamplers = document.getElementById('sampler-list');
-  const guardarSamplerBtn = document.getElementById('save-sampler-btn');
-  const cancelarSamplerBtn = document.getElementById('cancel-sampler-btn');
-
-  const actualizarTextoBotonEdicion = () => {
-    if (!editarBtn) return;
-    editarBtn.textContent = modoEdicionActivo ? 'Desactivar edición de teclas' : 'Editar teclas';
-    editarBtn.classList.toggle('edit-mode-active', modoEdicionActivo);
-  };
-  const actualizarTextoBotonEdicionSamplers = () => {
-    if (!editarSamplersBtn) return;
-    editarSamplersBtn.textContent = modoEdicionSamplers ? 'Desactivar edición de samplers' : 'Editar samplers';
-    editarSamplersBtn.classList.toggle('edit-mode-active', modoEdicionSamplers);
-  };
-
-  actualizarTextoBotonEdicion();
-  actualizarTextoBotonEdicionSamplers();
-
-  if (editarBtn) editarBtn.addEventListener('click', () => {
-    modoEdicionActivo = !modoEdicionActivo;
-    if (modoEdicionActivo) { modoEdicionSamplers = false; editarSamplersBtn && editarSamplersBtn.classList.remove('edit-mode-active'); }
-    document.body.classList.toggle('edit-mode', modoEdicionActivo);
-    actualizarTextoBotonEdicion();
-    actualizarTextoBotonEdicionSamplers();
-    if (!modoEdicionActivo && modal && modal.style.display === 'flex') { modal.style.display = 'none'; tomEditando = null; }
-    if (modoEdicionActivo && modalSampler && modalSampler.style.display === 'flex') { modalSampler.style.display = 'none'; tomSamplerEditando = null; }
-  });
-
-  if (editarSamplersBtn) editarSamplersBtn.addEventListener('click', () => {
-    modoEdicionSamplers = !modoEdicionSamplers;
-    if (modoEdicionSamplers) { modoEdicionActivo = false; editarBtn && editarBtn.classList.remove('edit-mode-active'); }
-    document.body.classList.toggle('edit-mode', modoEdicionSamplers);
-    actualizarTextoBotonEdicionSamplers();
-    actualizarTextoBotonEdicion();
-    if (!modoEdicionSamplers && modalSampler && modalSampler.style.display === 'flex') { modalSampler.style.display = 'none'; tomSamplerEditando = null; }
-    if (modoEdicionSamplers && modal && modal.style.display === 'flex') { modal.style.display = 'none'; tomEditando = null; }
-  });
-
-  // Consolidated edit-icon handler: maneja edición de teclas y edición de samplers
-  document.querySelectorAll('.edit-icon').forEach(icon => {
-    icon.addEventListener('click', async e => {
-      e.stopPropagation();
-      const boton = icon.closest('.battery-tom');
-      if (!boton) return;
-      // modo edición de teclas
-      if (modoEdicionActivo) {
-        tomEditando = boton;
-        if (modal) { modal.style.display = 'flex'; input.value = ''; input.focus(); }
-        return;
-      }
-      // modo edición de samplers
-      if (modoEdicionSamplers) {
-        tomSamplerEditando = boton;
-        if (!modalSampler) return;
-        // cargar lista de samplers disponibles a partir de samplerList (todos los archivos)
-        listaSamplers && (listaSamplers.innerHTML = '');
-        samplerList.forEach(nombreArchivo => {
-          const li = document.createElement('li');
-          li.textContent = nombreArchivo;
-          li.className = 'sampler-item';
-          li.tabIndex = 0;
-          li.addEventListener('click', async () => {
-            document.querySelectorAll('.sampler-item').forEach(el => el.classList.remove('selected'));
-            li.classList.add('selected');
-            samplerSeleccionado = nombreArchivo;
-            if (window._previewSource && typeof window._previewSource.stop === 'function') {
-              try { window._previewSource.stop(); } catch {}
-            }
-            try {
-              const path = 'samplers/' + nombreArchivo;
-              if (audioCtx.state !== 'running') await audioCtx.resume();
-              const buffer = await loadSamplerBuffer(path);
-              const source = audioCtx.createBufferSource();
-              const gainNode = audioCtx.createGain();
-              gainNode.gain.value = _currentVolume;
-              source.buffer = buffer;
-              source.connect(gainNode).connect(audioCtx.destination);
-              source.start();
-              window._previewSource = source;
-            } catch (e) { /* ignore preview errors */ }
-          });
-          li.addEventListener('keydown', ev => { if (ev.key === 'Enter' || ev.key === ' ') li.click(); });
-          if (tomAudioMap[boton.id] && tomAudioMap[boton.id].toLowerCase().includes(nombreArchivo.toLowerCase())) {
-            li.classList.add('selected'); samplerSeleccionado = nombreArchivo;
-          }
-          listaSamplers && listaSamplers.appendChild(li);
-        });
-        modalSampler.style.display = 'flex';
-        modalSampler.focus();
-        return;
-      }
-      // si no está en modo edición, no hacer nada
-    });
-  });
-
-  // Guardar sampler seleccionado
-  if (guardarSamplerBtn) {
-    guardarSamplerBtn.addEventListener('click', async () => {
-      if (!samplerSeleccionado || !tomSamplerEditando) return;
-      const tomId = tomSamplerEditando.id;
-      const nombre = samplerSeleccionado;
-      // actualizar mapa y buffer
-      tomAudioMap[tomId] = nombre;
-      try { tomSamplerBuffers[tomId] = await loadSamplerBuffer('samplers/' + nombre); } catch { tomSamplerBuffers[tomId] = null; }
-      saveSamplers();
-      modalSampler.style.display = 'none';
-      tomSamplerEditando = null; samplerSeleccionado = null;
-    });
-  }
-
-  if (cancelarSamplerBtn) cancelarSamplerBtn.addEventListener('click', () => {
-    modalSampler && (modalSampler.style.display = 'none');
-    tomSamplerEditando = null; samplerSeleccionado = null;
-  });
-  if (modalSampler) modalSampler.addEventListener('keydown', e => {
-    if (e.key === 'Escape' && cancelarSamplerBtn) { cancelarSamplerBtn.click(); return; }
-    // Navegación con flechas en la lista de samplers
-    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
-      e.preventDefault();
-      const items = listaSamplers ? Array.from(listaSamplers.querySelectorAll('.sampler-item')) : [];
-      if (items.length === 0) return;
-      const currentIndex = items.findIndex(item => item.classList.contains('selected'));
-      let newIndex;
-      if (e.key === 'ArrowDown') {
-        newIndex = currentIndex < items.length - 1 ? currentIndex + 1 : 0;
-      } else {
-        newIndex = currentIndex > 0 ? currentIndex - 1 : items.length - 1;
-      }
-      items[newIndex].click();
-      items[newIndex].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-    }
-    // Enter para guardar
-    if (e.key === 'Enter' && guardarSamplerBtn) { guardarSamplerBtn.click(); }
-  });
-
-  // Guardar nueva letra
-  // El modal ahora también captura la tecla física cuando se presiona
+  // Edit state
+  let modoEdicion = false;
+  let tomSeleccionado = null;
+  let samplerSeleccionado = null;
+  let activeTab = 'sampler';
   let lastCapturedCode = null;
-  if (modal && input) {
-    input.addEventListener('keydown', ev => {
-      ev.stopPropagation();
-      // capturamos el code (ej. KeyQ, Digit1, Numpad1)
-      lastCapturedCode = ev.code || null;
-      if (ev.key === 'Enter') { if (guardarBtn) guardarBtn.click(); }
-      if (ev.key === 'Escape') { if (cancelarBtn) cancelarBtn.click(); }
-    });
+
+  const editBtn = document.getElementById('edit-btn');
+  const modal = document.getElementById('modal-edit');
+  const listaSamplers = document.getElementById('sampler-list');
+  const tabSampler = document.getElementById('tab-sampler');
+  const tabKey = document.getElementById('tab-key');
+  const keyInput = document.getElementById('new-key-input');
+  const saveBtn = document.getElementById('save-edit-btn');
+  const cancelBtn = document.getElementById('cancel-edit-btn');
+  const tabs = modal ? modal.querySelectorAll('.modal-tab') : [];
+
+  function switchTab(tab) {
+    activeTab = tab;
+    tabs.forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+    if (tabSampler) tabSampler.style.display = tab === 'sampler' ? '' : 'none';
+    if (tabKey) tabKey.style.display = tab === 'key' ? '' : 'none';
+    if (tab === 'key' && keyInput) { keyInput.value = ''; keyInput.focus(); }
   }
 
-  if (guardarBtn) guardarBtn.addEventListener('click', () => {
-    if (!input || !tomEditando) return;
-    const raw = input.value.trim();
-    const keyChar = raw.length === 1 ? raw : '';
-    // guardamos directamente el code si existe, sino inferimos Digit/Key
-    let mapKey = null;
-    if (lastCapturedCode) mapKey = lastCapturedCode;
-    else if (keyChar && /^[A-Za-z]$/.test(keyChar)) mapKey = 'Key' + keyChar.toUpperCase();
-    else if (keyChar && /^[0-9]$/.test(keyChar)) mapKey = 'Digit' + keyChar;
-    if (!mapKey) return input.focus();
-    const spanKey = tomEditando.querySelector('.battery-tom-key');
-    if (spanKey) spanKey.textContent = prettyLabelFromId(mapKey);
-    const tomId = tomEditando.id;
-    // eliminar todas las teclas que apuntaban a este tom
-    Object.keys(keyToTomId).forEach(k => { if (keyToTomId[k] === tomId) delete keyToTomId[k]; });
-    // si la nueva tecla estaba asignada a otro tom, eliminar esa asignación
-    if (keyToTomId[mapKey]) delete keyToTomId[mapKey];
-    // asignar
-    keyToTomId[mapKey] = tomId;
-    // limpiar captura
+  tabs.forEach(t => t.addEventListener('click', () => switchTab(t.dataset.tab)));
+
+  function abrirModal(boton) {
+    tomSeleccionado = boton;
     lastCapturedCode = null;
-    saveKeyMapping(keyToTomId);
-    modal && (modal.style.display = 'none');
-    tomEditando = null;
-    document.body.classList.toggle('edit-mode', modoEdicionActivo);
-    editIcons.forEach(icon => icon.style.display = modoEdicionActivo ? 'inline-block' : 'none');
+    switchTab('sampler');
+    if (!modal || !listaSamplers) return;
+    samplerSeleccionado = null;
+    listaSamplers.innerHTML = '';
+    const currentFile = tomAudioMap[boton.id] || '';
+    samplerList.forEach(nombreArchivo => {
+      const li = document.createElement('li');
+      li.textContent = nombreArchivo.replace(/\.[^.]+$/, '');
+      li.title = nombreArchivo;
+      li.className = 'sampler-item';
+      li.tabIndex = 0;
+      li.addEventListener('click', async () => {
+        document.querySelectorAll('.sampler-item').forEach(el => el.classList.remove('selected'));
+        li.classList.add('selected');
+        samplerSeleccionado = nombreArchivo;
+        if (window._previewSource && typeof window._previewSource.stop === 'function') {
+          try { window._previewSource.stop(); } catch {}
+        }
+        try {
+          const path = 'samplers/' + nombreArchivo;
+          if (audioCtx.state !== 'running') await audioCtx.resume();
+          const buffer = await loadSamplerBuffer(path);
+          const source = audioCtx.createBufferSource();
+          const gainNode = audioCtx.createGain();
+          gainNode.gain.value = _currentVolume;
+          source.buffer = buffer;
+          source.connect(gainNode).connect(audioCtx.destination);
+          source.start();
+          window._previewSource = source;
+        } catch (e) { /* ignore preview errors */ }
+      });
+      li.addEventListener('keydown', ev => { if (ev.key === 'Enter' || ev.key === ' ') li.click(); });
+      if (currentFile.toLowerCase() === nombreArchivo.toLowerCase()) {
+        li.classList.add('selected'); samplerSeleccionado = nombreArchivo;
+      }
+      listaSamplers.appendChild(li);
+    });
+    if (keyInput) keyInput.value = '';
+    modal.style.display = 'flex';
+  }
+
+  function cerrarModal() {
+    if (modal) modal.style.display = 'none';
+    if (window._previewSource && typeof window._previewSource.stop === 'function') {
+      try { window._previewSource.stop(); } catch {}
+    }
+    tomSeleccionado = null;
+    samplerSeleccionado = null;
+  }
+
+  if (editBtn) editBtn.addEventListener('click', () => {
+    modoEdicion = !modoEdicion;
+    editBtn.innerHTML = modoEdicion ? '<i class="fa-solid fa-check"></i> Listo' : '<i class="fa-solid fa-pencil"></i> Editar';
+    editBtn.classList.toggle('edit-mode-active', modoEdicion);
+    document.body.classList.toggle('edit-mode', modoEdicion);
+    if (!modoEdicion) cerrarModal();
   });
 
-  if (cancelarBtn) cancelarBtn.addEventListener('click', () => {
-    modal && (modal.style.display = 'none');
-    tomEditando = null;
-    document.body.classList.toggle('edit-mode', modoEdicionActivo);
-    editIcons.forEach(icon => icon.style.display = modoEdicionActivo ? 'inline-block' : 'none');
+  if (saveBtn) saveBtn.addEventListener('click', () => {
+    if (!tomSeleccionado) return;
+    if (activeTab === 'sampler' && samplerSeleccionado) {
+      tomAudioMap[tomSeleccionado.id] = samplerSeleccionado;
+      try { tomSamplerBuffers[tomSeleccionado.id] = null; loadSamplerBuffer('samplers/' + samplerSeleccionado).then(b => { tomSamplerBuffers[tomSeleccionado.id] = b; }); } catch {}
+      saveSamplers();
+      actualizarNombresPads();
+    }
+    if (activeTab === 'key' && lastCapturedCode) {
+      const tomId = tomSeleccionado.id;
+      Object.keys(keyToTomId).forEach(k => { if (keyToTomId[k] === tomId) delete keyToTomId[k]; });
+      if (keyToTomId[lastCapturedCode]) delete keyToTomId[lastCapturedCode];
+      keyToTomId[lastCapturedCode] = tomId;
+      saveKeyMapping(keyToTomId);
+      actualizarEtiquetasTeclas(keyToTomId);
+      actualizarNombresPads();
+    }
+    cerrarModal();
   });
 
-  if (input) input.addEventListener('keydown', e => { if (e.key === 'Escape' && cancelarBtn) cancelarBtn.click(); if (e.key === 'Enter' && guardarBtn) guardarBtn.click(); });
+  if (cancelBtn) cancelBtn.addEventListener('click', cerrarModal);
+  if (modal) modal.addEventListener('keydown', e => { if (e.key === 'Escape') cerrarModal(); });
 
-  // Keydown to play
-  document.addEventListener('keydown', async e => {
-    const modalOpen = document.getElementById('modal-edit-key') && document.getElementById('modal-edit-key').style.display === 'flex';
-    if (modalOpen || modoEdicionActivo || modoEdicionSamplers) return;
-    if (!e.key) return;
-  // Buscar por código físico (ej. KeyQ, Digit1, Numpad1) directamente
-  const code = e.code || '';
-  // fallback: si no existe el code, intentar Key/Digit inferidos
-  const inferredKey = (/^[0-9]$/.test(e.key)) ? ('Digit' + e.key) : ('Key' + (e.key || '').toUpperCase());
-  const tomId = keyToTomId[code] || keyToTomId[inferredKey] || keyToTomId[e.key.toLowerCase()];
-  if (tomId) { e.preventDefault(); await activateTomSampler(tomId); }
+  if (keyInput) keyInput.addEventListener('keydown', ev => {
+    ev.stopPropagation();
+    lastCapturedCode = ev.code || null;
+    if (ev.key === 'Escape') { cerrarModal(); return; }
+    if (ev.key === 'Enter') { if (saveBtn) saveBtn.click(); return; }
+    ev.preventDefault();
+    const label = prettyLabelFromId(ev.code);
+    keyInput.value = label;
   });
 
-  // Click on toms
   Object.keys(tomAudioMap).forEach(tomId => {
     const boton = document.getElementById(tomId);
     if (boton) boton.addEventListener('click', async e => {
-      if (modoEdicionActivo || modoEdicionSamplers) { e.stopPropagation(); e.preventDefault(); return; }
+      if (modoEdicion) {
+        e.stopPropagation(); e.preventDefault();
+        abrirModal(boton);
+        return;
+      }
       await activateTomSampler(tomId);
     });
   });
 
-  // Focus event: resume and reload buffers
+  document.addEventListener('keydown', async e => {
+    if (modal && modal.style.display === 'flex') return;
+    if (modoEdicion) return;
+    if (!e.key) return;
+    const code = e.code || '';
+    const inferredKey = (/^[0-9]$/.test(e.key)) ? ('Digit' + e.key) : ('Key' + (e.key || '').toUpperCase());
+    const tomId = keyToTomId[code] || keyToTomId[inferredKey] || keyToTomId[e.key.toLowerCase()];
+    if (tomId) { e.preventDefault(); await activateTomSampler(tomId); }
+  });
+
   window.addEventListener('focus', async () => {
     if (audioCtx.state === 'suspended') await audioCtx.resume();
     await preloadAllSamplers();
   });
 
-  // Reset settings modal buttons
   const btnReset = document.getElementById('reset-settings-btn');
   const modalReset = document.getElementById('modal-confirm-reset');
   const confirmarResetBtn = document.getElementById('confirm-reset-btn');
@@ -461,18 +395,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (btnReset && modalReset && confirmarResetBtn && cancelarResetBtn) {
     btnReset.addEventListener('click', () => { modalReset.style.display = 'flex'; confirmarResetBtn.focus(); });
     confirmarResetBtn.addEventListener('click', async () => {
-  resetSettings();
-  // recargar samplers y UI
-  await preloadAllSamplers();
-  keyToTomId = normalizeKeyMap(keyToTomIdDefaults);
-  actualizarEtiquetasTeclas();
-  modalReset.style.display = 'none';
+      resetSettings();
+      await preloadAllSamplers();
+      keyToTomId = normalizeKeyMap(keyToTomIdDefaults);
+      actualizarEtiquetasTeclas(keyToTomId);
+      actualizarNombresPads();
+      modalReset.style.display = 'none';
     });
     cancelarResetBtn.addEventListener('click', () => { modalReset.style.display = 'none'; });
     modalReset.addEventListener('keydown', e => { if (e.key === 'Escape') modalReset.style.display = 'none'; });
   }
-
-  // Save samplers button (if present)
-  const saveSamplersBtn = document.getElementById('save-sampler-btn');
-  if (saveSamplersBtn) saveSamplersBtn.addEventListener('click', () => saveSamplers());
 });

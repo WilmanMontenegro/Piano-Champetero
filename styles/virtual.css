@@ -3,30 +3,16 @@
    Depende de: reset.css, common.css
    ===================================================== */
 
-/* ===================== ICONO EDITAR ===================== */
-.edit-icon {
-  display: none; /* Oculto por defecto */
-  position: absolute;
-  top: 13%;
-  right: 17%;
-  transform: translate(20%, 20%);
-  font-size: 1.15em;
-  background: none;
-  border-radius: 0;
-  padding: 0;
+/* ===================== MODO EDICIÓN ===================== */
+.edit-mode .battery-tom {
+  animation: pulse-edit 1.5s ease-in-out infinite;
   cursor: pointer;
-  z-index: 3;
-  box-shadow: none;
 }
-
-/* Mostrar iconos solo en modo edición */
-.edit-mode .edit-icon {
-  display: inline-block;
-}
-
-.edit-icon i {
-  color: var(--color-blanco);
-  text-shadow: 0 2px 6px rgba(0,0,0,0.45);
+.edit-mode .battery-tom-key { display: none; }
+.edit-mode .battery-tom-info { display: flex; flex-direction: column; align-items: center; justify-content: center; }
+@keyframes pulse-edit {
+  0%, 100% { border-color: rgba(255, 224, 102, 0.8); }
+  50% { border-color: rgba(255, 107, 107, 0.9); }
 }
 
 /* ===================== VOLUMEN ===================== */
@@ -140,9 +126,28 @@
   z-index: 2;
 }
 
+/* Info del sampler en modo edición */
+.battery-tom-info {
+  display: none;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: var(--color-blanco);
+  pointer-events: none;
+  z-index: 2;
+  width: 88%;
+  text-align: center;
+  line-height: 1.4;
+}
+.battery-tom-info span { display: block; }
+.battery-tom-info-label { font-size: 0.9em; font-weight: 800; text-shadow: 1px 1px 4px var(--color-negro); margin-top: 0.1em; }
+.battery-tom-info-value { font-size: 1.1em; font-weight: 400; text-shadow: 1px 1px 4px var(--color-negro); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.battery-tom--small .battery-tom-info-value { font-size: 0.9em; }
+.battery-tom--small .battery-tom-info-label { font-size: 0.75em; }
+
 /* ===================== MODALES ===================== */
-.modal-edit-sampler,
-.modal-edit-key {
+.modal-edit {
   position: fixed;
   inset: 0;
   display: none;
@@ -152,36 +157,49 @@
   z-index: var(--z-modal);
 }
 
-.modal-edit-sampler .modal-content,
-.modal-edit-key .modal-content {
+.modal-edit .modal-content {
   background: var(--color-blanco);
   border-radius: var(--borde-radius-grande);
   box-shadow: var(--sombra-card);
-  padding: 2em 1.5em 1em;
-  min-width: 260px;
-  width: auto;
-  max-width: 90vw;
+  padding: 1.5em 1.5em 1em;
+  width: 280px;
+  max-width: 85vw;
   text-align: center;
 }
 
-.modal-edit-sampler h3,
-.modal-edit-key h3 {
-  margin-top: 0;
-  font-size: 1.8em;
-  font-family: 'Seaweed Script', cursive;
-  color: var(--color-marron);
+/* Tabs */
+.modal-tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 2px solid var(--color-gris-medio);
+  margin-bottom: 1em;
 }
+.modal-tab {
+  flex: 1;
+  padding: 0.5em 0;
+  background: none;
+  border: none;
+  font-family: inherit;
+  font-size: 1em;
+  font-weight: bold;
+  color: var(--color-gris-medio);
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  transition: color 0.2s, border-color 0.2s;
+}
+.modal-tab.active { color: var(--color-principal); border-bottom-color: var(--color-principal); }
+.modal-tab:hover { color: var(--color-secundario); }
+.tab-hint { font-size: 0.9em; color: var(--color-gris-oscuro); margin: 0.5em 0 0; }
 
-.modal-edit-sampler ul.sampler-list {
+ul.sampler-list {
   list-style: none;
   padding: 0;
-  margin: 1em 0 1.5em;
+  margin: 0 0 1em 0;
   max-height: 220px;
   overflow-y: auto;
   text-align: left;
 }
-
-.modal-edit-sampler .sampler-item {
+.sampler-item {
   padding: 0.5em 1em;
   border-radius: var(--borde-radius);
   cursor: pointer;
@@ -189,22 +207,23 @@
   color: var(--color-marron);
   transition: background 0.15s, color 0.15s;
 }
-
-.modal-edit-sampler .sampler-item.selected,
-.modal-edit-sampler .sampler-item:hover {
+.sampler-item.selected,
+.sampler-item:hover {
   background: var(--color-principal);
   color: var(--color-blanco);
 }
-
-.modal-edit-key input {
+#new-key-input {
   font-size: var(--font-size-lg);
   padding: 0.4em 0.7em;
-  margin: 1em 0;
+  margin: 0.5em 0;
   border-radius: var(--borde-radius);
-  border: 1px solid var(--color-gris-medio);
+  border: 2px solid var(--color-gris-medio);
   outline: none;
   text-align: center;
+  width: 100%;
+  box-sizing: border-box;
 }
+#new-key-input:focus { border-color: var(--color-principal); }
 
 /* ===================== BOTONES ===================== */
 .edit-buttons-container {
@@ -265,8 +284,6 @@
   .battery-tom--medium { width: 22vw; height: 22vw; }
   .battery-tom-key { font-size: clamp(0.8rem, 3vw, 1.1rem); }
 
-  .edit-icon { font-size: 0.7em; }
-
   .battery-volume-container { margin-top: 1.5em; }
   .battery-volume { width: 140px; }
   #volume-percent { font-size: var(--font-size-sm); }
@@ -274,9 +291,6 @@
   .edit-buttons-container { gap: 6px; }
   .edit-keys-btn { font-size: 0.8rem; padding: 0.4em 0.8em; }
 
-  .modal-edit-sampler .modal-content,
-  .modal-edit-key .modal-content { padding: 1.5em 1em 1em; min-width: 240px; }
-  .modal-edit-sampler h3,
-  .modal-edit-key h3 { font-size: 1.5em; }
-  .modal-edit-sampler ul.sampler-list { max-height: 180px; }
+  .modal-edit .modal-content { padding: 1.2em 1em 1em; width: 260px; }
+  ul.sampler-list { max-height: 180px; }
 }

@@ -123,16 +123,35 @@
   </header>
   <main>
     <div class="edit-buttons-container">
-      <button id="edit-keys-btn" class="edit-keys-btn">Editar teclas</button>
-      <button id="edit-samplers-btn" class="edit-keys-btn">Editar samplers</button>
-      <button id="reset-settings-btn" class="edit-keys-btn btn-danger btn-reset" title="Restablecer sonidos y teclas por defecto">Restablecer</button>
+      <button id="edit-btn" class="edit-keys-btn"><i class="fa-solid fa-pencil"></i> Editar</button>
+      <button id="reset-settings-btn" class="edit-keys-btn btn-danger btn-reset" title="Restablecer sonidos y teclas por defecto"><i class="fa-solid fa-rotate-left"></i> Restablecer</button>
+    </div>
+    <!-- Modal unificado de edición -->
+    <div id="modal-edit" class="modal-edit" style="display:none;">
+      <div class="modal-content">
+        <div class="modal-tabs">
+          <button class="modal-tab active" data-tab="sampler">🎵 Sonido</button>
+          <button class="modal-tab" data-tab="key">⌨️ Tecla</button>
+        </div>
+        <div id="tab-sampler" class="tab-panel">
+          <ul id="sampler-list" class="sampler-list"></ul>
+        </div>
+        <div id="tab-key" class="tab-panel" style="display:none;">
+          <p class="tab-hint">Presiona una tecla para asignarla a este pad</p>
+          <input type="text" id="new-key-input" maxlength="1" placeholder="Toca una tecla..." readonly>
+        </div>
+        <div class="modal-actions">
+          <button id="save-edit-btn">Guardar</button>
+          <button id="cancel-edit-btn" class="btn-cancel">Cancelar</button>
+        </div>
+      </div>
     </div>
     <!-- Modal de confirmación para restablecer ajustes -->
-    <div id="modal-confirm-reset" class="modal-edit-key" style="display:none;">
+    <div id="modal-confirm-reset" class="modal-edit" style="display:none;">
       <div class="modal-content">
         <p style="margin-bottom:1em;">¿Estás seguro que quieres restablecer los ajustes por defecto?</p>
         <div class="modal-actions">
-          <button id="confirm-reset-btn">Sí</button>
+          <button id="confirm-reset-btn" class="btn-danger btn-reset">Sí</button>
           <button id="cancel-reset-btn" class="btn-cancel">No</button>
         </div>
       </div>
@@ -140,60 +159,85 @@
     <div class="battery">
       <button class="battery-tom battery-tom--small" id="tom-1">
         <span class="battery-tom-key"></span>
-        <span class="edit-icon" title="Editar"><i class="fa-regular fa-pen-to-square"></i></span>
+        <span class="battery-tom-info">
+          <span class="battery-tom-info-label">Tecla:</span>
+          <span class="battery-tom-info-value battery-tom-info-key"></span>
+          <span class="battery-tom-info-label">Sonido:</span>
+          <span class="battery-tom-info-value battery-tom-info-sound"></span>
+        </span>
       </button>
       <button class="battery-tom battery-tom--small" id="tom-2">
         <span class="battery-tom-key"></span>
-        <span class="edit-icon" title="Editar"><i class="fa-regular fa-pen-to-square"></i></span>
+        <span class="battery-tom-info">
+          <span class="battery-tom-info-label">Tecla:</span>
+          <span class="battery-tom-info-value battery-tom-info-key"></span>
+          <span class="battery-tom-info-label">Sonido:</span>
+          <span class="battery-tom-info-value battery-tom-info-sound"></span>
+        </span>
       </button>
       <button class="battery-tom battery-tom--small" id="tom-3">
         <span class="battery-tom-key"></span>
-        <span class="edit-icon" title="Editar"><i class="fa-regular fa-pen-to-square"></i></span>
+        <span class="battery-tom-info">
+          <span class="battery-tom-info-label">Tecla:</span>
+          <span class="battery-tom-info-value battery-tom-info-key"></span>
+          <span class="battery-tom-info-label">Sonido:</span>
+          <span class="battery-tom-info-value battery-tom-info-sound"></span>
+        </span>
       </button>
       <button class="battery-tom battery-tom--medium" id="tom-4">
         <span class="battery-tom-key"></span>
-        <span class="edit-icon" title="Editar"><i class="fa-regular fa-pen-to-square"></i></span>
+        <span class="battery-tom-info">
+          <span class="battery-tom-info-label">Tecla:</span>
+          <span class="battery-tom-info-value battery-tom-info-key"></span>
+          <span class="battery-tom-info-label">Sonido:</span>
+          <span class="battery-tom-info-value battery-tom-info-sound"></span>
+        </span>
       </button>
       <button class="battery-tom battery-tom--medium" id="tom-5">
         <span class="battery-tom-key"></span>
-        <span class="edit-icon" title="Editar"><i class="fa-regular fa-pen-to-square"></i></span>
+        <span class="battery-tom-info">
+          <span class="battery-tom-info-label">Tecla:</span>
+          <span class="battery-tom-info-value battery-tom-info-key"></span>
+          <span class="battery-tom-info-label">Sonido:</span>
+          <span class="battery-tom-info-value battery-tom-info-sound"></span>
+        </span>
       </button>
       <button class="battery-tom battery-tom--small" id="tom-6">
         <span class="battery-tom-key"></span>
-        <span class="edit-icon" title="Editar"><i class="fa-regular fa-pen-to-square"></i></span>
+        <span class="battery-tom-info">
+          <span class="battery-tom-info-label">Tecla:</span>
+          <span class="battery-tom-info-value battery-tom-info-key"></span>
+          <span class="battery-tom-info-label">Sonido:</span>
+          <span class="battery-tom-info-value battery-tom-info-sound"></span>
+        </span>
       </button>
       <button class="battery-tom battery-tom--medium" id="tom-7">
         <span class="battery-tom-key"></span>
-        <span class="edit-icon" title="Editar"><i class="fa-regular fa-pen-to-square"></i></span>
+        <span class="battery-tom-info">
+          <span class="battery-tom-info-label">Tecla:</span>
+          <span class="battery-tom-info-value battery-tom-info-key"></span>
+          <span class="battery-tom-info-label">Sonido:</span>
+          <span class="battery-tom-info-value battery-tom-info-sound"></span>
+        </span>
       </button>
       <button class="battery-tom battery-tom--small" id="tom-8">
         <span class="battery-tom-key"></span>
-        <span class="edit-icon" title="Editar"><i class="fa-regular fa-pen-to-square"></i></span>
+        <span class="battery-tom-info">
+          <span class="battery-tom-info-label">Tecla:</span>
+          <span class="battery-tom-info-value battery-tom-info-key"></span>
+          <span class="battery-tom-info-label">Sonido:</span>
+          <span class="battery-tom-info-value battery-tom-info-sound"></span>
+        </span>
       </button>
       <button class="battery-tom battery-tom--medium" id="tom-9">
         <span class="battery-tom-key"></span>
-        <span class="edit-icon" title="Editar"><i class="fa-regular fa-pen-to-square"></i></span>
+        <span class="battery-tom-info">
+          <span class="battery-tom-info-label">Tecla:</span>
+          <span class="battery-tom-info-value battery-tom-info-key"></span>
+          <span class="battery-tom-info-label">Sonido:</span>
+          <span class="battery-tom-info-value battery-tom-info-sound"></span>
+        </span>
       </button>
-    </div>
-    <div id="modal-edit-key" class="modal-edit-key" style="display:none;">
-      <div class="modal-content">
-        <h3>Cambiar tecla</h3>
-        <input type="text" id="new-key-input" maxlength="1" placeholder="Nueva tecla (letra o número)..." autofocus>
-        <div class="modal-actions">
-          <button id="save-key-btn">Guardar</button>
-          <button id="cancel-key-btn" class="btn-cancel">Cancelar</button>
-        </div>
-      </div>
-    </div>
-    <div id="modal-edit-sampler" class="modal-edit-sampler" style="display:none;" tabindex="-1">
-      <div class="modal-content">
-        <h3>Selecciona un sampler</h3>
-        <ul id="sampler-list" class="sampler-list"></ul>
-        <div class="modal-actions">
-          <button id="save-sampler-btn">Guardar</button>
-          <button id="cancel-sampler-btn" class="btn-cancel">Cancelar</button>
-        </div>
-      </div>
     </div>
     <div class="battery-volume-container">
       <input class="battery-volume" type="range" id="volume-slider" min="0" max="1" step="0.01" value="0.5">

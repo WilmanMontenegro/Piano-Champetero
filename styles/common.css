@@ -268,10 +268,9 @@ header {
 
 /* ===================== BOTONES ===================== */
 .btn-danger,
-.btn-reset,
-.btn-cancel {
-  background: var(--color-secundario) !important;
-  color: var(--color-blanco) !important;
+.btn-reset {
+  background: var(--color-secundario);
+  color: var(--color-blanco);
   border: none;
   border-radius: var(--borde-radius);
   font-weight: bold;
@@ -280,9 +279,25 @@ header {
 }
 
 .btn-danger:hover,
-.btn-reset:hover,
+.btn-reset:hover {
+  background: var(--color-marron);
+  color: var(--color-blanco);
+  box-shadow: var(--sombra-btn-hover);
+}
+
+.btn-cancel {
+  background: var(--color-gris-medio);
+  color: var(--color-gris-oscuro);
+  border: none;
+  border-radius: var(--borde-radius);
+  font-weight: bold;
+  box-shadow: var(--sombra-btn);
+  transition: all 0.2s;
+}
+
 .btn-cancel:hover {
-  background: var(--color-principal) !important;
+  background: var(--color-gris-oscuro);
+  color: var(--color-blanco);
   box-shadow: var(--sombra-btn-hover);
 }
 
