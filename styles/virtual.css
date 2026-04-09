@@ -270,6 +270,26 @@ ul.sampler-list {
   box-shadow: var(--sombra-btn-hover);
 }
 
+/* Botón Restablecer - acción destructiva */
+.btn-reset-settings {
+  background: var(--color-secundario);
+  color: var(--color-blanco);
+  border: none;
+  border-radius: var(--borde-radius);
+  font-family: inherit;
+  font-weight: bold;
+  font-size: var(--font-size-sm);
+  padding: 0.45em 1em;
+  cursor: pointer;
+  box-shadow: var(--sombra-btn);
+  transition: background 0.2s, box-shadow 0.2s;
+}
+
+.btn-reset-settings:hover {
+  background: var(--color-marron);
+  box-shadow: var(--sombra-btn-hover);
+}
+
 /* Botones del modal de edición - estilo base */
 .modal-actions .btn-primary {
   background: var(--color-principal);
