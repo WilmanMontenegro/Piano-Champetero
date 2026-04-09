@@ -547,7 +547,13 @@ footer p { margin: 0; letter-spacing: 0.5px; }
   padding: 0.6em 0;
   overflow: hidden;
   white-space: nowrap;
-  position: relative;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 9999;
+  margin: 0;
+  width: 100%;
 }
 
 .ticker-content {
