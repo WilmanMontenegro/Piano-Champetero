@@ -122,10 +122,11 @@
     <div id="header-container"></div>
   </header>
   <main>
-    <div class="edit-buttons-container">
-      <button id="edit-btn" class="edit-keys-btn"><i class="fa-solid fa-pencil"></i> Editar</button>
-      <button id="reset-settings-btn" class="edit-keys-btn btn-danger btn-reset" title="Restablecer sonidos y teclas por defecto"><i class="fa-solid fa-rotate-left"></i> Restablecer</button>
-    </div>
+    <div class="drum-kit-container">
+      <div class="edit-buttons-container">
+        <button id="edit-btn" class="edit-keys-btn"><i class="fa-solid fa-pencil"></i> Editar</button>
+        <button id="reset-settings-btn" class="edit-keys-btn btn-danger btn-reset" title="Restablecer sonidos y teclas por defecto"><i class="fa-solid fa-rotate-left"></i> Restablecer</button>
+      </div>
     <!-- Modal unificado de edición -->
     <div id="modal-edit" class="modal-edit" style="display:none;">
       <div class="modal-content">
@@ -239,10 +240,11 @@
         </span>
       </button>
     </div>
-    <div class="battery-volume-container">
-      <input class="battery-volume" type="range" id="volume-slider" min="0" max="1" step="0.01" value="0.5">
-      <div class="battery-volume-label">
-        <span id="volume-percent">50%</span>
+      <div class="battery-volume-container">
+        <input class="battery-volume" type="range" id="volume-slider" min="0" max="1" step="0.01" value="0.5">
+        <div class="battery-volume-label">
+          <span id="volume-percent">50%</span>
+        </div>
       </div>
     </div>
   </main>
