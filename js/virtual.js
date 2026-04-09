@@ -328,11 +328,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!modoEdicion) cerrarModal();
   });
 
-  if (saveBtn) saveBtn.addEventListener('click', () => {
+  if (saveBtn) saveBtn.addEventListener('click', async () => {
     if (!tomSeleccionado) return;
+    const tomId = tomSeleccionado.id;
     if (activeTab === 'sampler' && samplerSeleccionado) {
-      tomAudioMap[tomSeleccionado.id] = samplerSeleccionado;
-      try { tomSamplerBuffers[tomSeleccionado.id] = null; loadSamplerBuffer('samplers/' + samplerSeleccionado).then(b => { tomSamplerBuffers[tomSeleccionado.id] = b; }); } catch {}
+      tomAudioMap[tomId] = samplerSeleccionado;
+      try { 
+        tomSamplerBuffers[tomId] = await loadSamplerBuffer('samplers/' + samplerSeleccionado);
+      } catch { 
+        tomSamplerBuffers[tomId] = null; 
+      }
       saveSamplers();
       actualizarNombresPads();
     }
