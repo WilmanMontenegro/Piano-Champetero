@@ -1,5 +1,6 @@
 // js/virtual.js — lógica de la batería para virtual.html
 import { loadHeader, setYearFooter, resumeOnUserGesture } from './common.js';
+import { initModal } from './modal-utils.js';
 
 export const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
@@ -328,52 +329,26 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!modoEdicion) cerrarModal();
   });
 
-  if (saveBtn) saveBtn.addEventListener('click', async () => {
-    if (!tomSeleccionado) return;
-    const tomId = tomSeleccionado.id;
-    if (activeTab === 'sampler' && samplerSeleccionado) {
-      tomAudioMap[tomId] = samplerSeleccionado;
-      try { 
-        tomSamplerBuffers[tomId] = await loadSamplerBuffer('samplers/' + samplerSeleccionado);
-      } catch { 
-        tomSamplerBuffers[tomId] = null; 
+  // Navegación con flechas en la lista de samplers (keydown solo para este modal)
+  if (modal) {
+    modal.addEventListener('keydown', e => {
+      // Navegación con flechas en la lista de samplers
+      if (activeTab === 'sampler' && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
+        e.preventDefault();
+        const items = listaSamplers ? Array.from(listaSamplers.querySelectorAll('.sampler-item')) : [];
+        if (items.length === 0) return;
+        const currentIndex = items.findIndex(item => item.classList.contains('selected'));
+        let newIndex;
+        if (e.key === 'ArrowDown') {
+          newIndex = currentIndex < items.length - 1 ? currentIndex + 1 : 0;
+        } else {
+          newIndex = currentIndex > 0 ? currentIndex - 1 : items.length - 1;
+        }
+        items[newIndex].click();
+        items[newIndex].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
       }
-      saveSamplers();
-      actualizarNombresPads();
-    }
-    if (activeTab === 'key' && lastCapturedCode) {
-      const tomId = tomSeleccionado.id;
-      Object.keys(keyToTomId).forEach(k => { if (keyToTomId[k] === tomId) delete keyToTomId[k]; });
-      if (keyToTomId[lastCapturedCode]) delete keyToTomId[lastCapturedCode];
-      keyToTomId[lastCapturedCode] = tomId;
-      saveKeyMapping(keyToTomId);
-      actualizarEtiquetasTeclas(keyToTomId);
-      actualizarNombresPads();
-    }
-    cerrarModal();
-  });
-
-  if (cancelBtn) cancelBtn.addEventListener('click', cerrarModal);
-  if (modal) modal.addEventListener('keydown', e => {
-    if (e.key === 'Escape') { cerrarModal(); return; }
-    // Navegación con flechas en la lista de samplers
-    if (activeTab === 'sampler' && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
-      e.preventDefault();
-      const items = listaSamplers ? Array.from(listaSamplers.querySelectorAll('.sampler-item')) : [];
-      if (items.length === 0) return;
-      const currentIndex = items.findIndex(item => item.classList.contains('selected'));
-      let newIndex;
-      if (e.key === 'ArrowDown') {
-        newIndex = currentIndex < items.length - 1 ? currentIndex + 1 : 0;
-      } else {
-        newIndex = currentIndex > 0 ? currentIndex - 1 : items.length - 1;
-      }
-      items[newIndex].click();
-      items[newIndex].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-    }
-    // Enter para guardar
-    if (e.key === 'Enter' && saveBtn) { saveBtn.click(); }
-  });
+    });
+  }
 
   if (keyInput) keyInput.addEventListener('keydown', ev => {
     ev.stopPropagation();
@@ -412,21 +387,112 @@ document.addEventListener('DOMContentLoaded', async () => {
     await preloadAllSamplers();
   });
 
-  const btnReset = document.getElementById('reset-settings-btn');
-  const modalReset = document.getElementById('modal-confirm-reset');
-  const confirmarResetBtn = document.getElementById('confirm-reset-btn');
-  const cancelarResetBtn = document.getElementById('cancel-reset-btn');
-  if (btnReset && modalReset && confirmarResetBtn && cancelarResetBtn) {
-    btnReset.addEventListener('click', () => { modalReset.style.display = 'flex'; confirmarResetBtn.focus(); });
-    confirmarResetBtn.addEventListener('click', async () => {
+  // ===== INICIALIZAR MODALES =====
+
+  // Modal de edición de sampler con initModal reutilizable
+  const editModal = initModal('modal-edit', {
+    closeBtnId: 'cancel-edit-btn',
+    confirmBtnId: 'save-edit-btn',
+    focusOnOpen: false, // El modal de edición maneja su propio focus
+    onConfirm: async () => {
+      if (!tomSeleccionado) return;
+      const tomId = tomSeleccionado.id;
+      if (activeTab === 'sampler' && samplerSeleccionado) {
+        tomAudioMap[tomId] = samplerSeleccionado;
+        try {
+          tomSamplerBuffers[tomId] = await loadSamplerBuffer('samplers/' + samplerSeleccionado);
+        } catch {
+          tomSamplerBuffers[tomId] = null;
+        }
+        saveSamplers();
+        actualizarNombresPads();
+      }
+      if (activeTab === 'key' && lastCapturedCode) {
+        Object.keys(keyToTomId).forEach(k => { if (keyToTomId[k] === tomId) delete keyToTomId[k]; });
+        if (keyToTomId[lastCapturedCode]) delete keyToTomId[lastCapturedCode];
+        keyToTomId[lastCapturedCode] = tomId;
+        saveKeyMapping(keyToTomId);
+        actualizarEtiquetasTeclas(keyToTomId);
+        actualizarNombresPads();
+      }
+    },
+    onClose: () => {
+      if (window._previewSource && typeof window._previewSource.stop === 'function') {
+        try { window._previewSource.stop(); } catch {}
+      }
+      tomSeleccionado = null;
+      samplerSeleccionado = null;
+    }
+  });
+
+  // Sobreescribir abrirModal para usar el del initModal
+  const originalAbrirModal = abrirModal;
+  abrirModal = function(boton) {
+    tomSeleccionado = boton;
+    lastCapturedCode = null;
+    switchTab('sampler');
+    if (!modal || !listaSamplers) return;
+    samplerSeleccionado = null;
+    listaSamplers.innerHTML = '';
+    const currentFile = tomAudioMap[boton.id] || '';
+    samplerList.forEach(nombreArchivo => {
+      const li = document.createElement('li');
+      li.textContent = nombreArchivo.replace(/\.[^.]+$/, '');
+      li.title = nombreArchivo;
+      li.className = 'sampler-item';
+      li.tabIndex = 0;
+      li.addEventListener('click', async () => {
+        document.querySelectorAll('.sampler-item').forEach(el => el.classList.remove('selected'));
+        li.classList.add('selected');
+        samplerSeleccionado = nombreArchivo;
+        if (window._previewSource && typeof window._previewSource.stop === 'function') {
+          try { window._previewSource.stop(); } catch {}
+        }
+        try {
+          const path = 'samplers/' + nombreArchivo;
+          if (audioCtx.state !== 'running') await audioCtx.resume();
+          const buffer = await loadSamplerBuffer(path);
+          const source = audioCtx.createBufferSource();
+          const gainNode = audioCtx.createGain();
+          gainNode.gain.value = _currentVolume;
+          source.buffer = buffer;
+          source.connect(gainNode).connect(audioCtx.destination);
+          source.start();
+          window._previewSource = source;
+        } catch (e) { /* ignore preview errors */ }
+      });
+      li.addEventListener('keydown', ev => { if (ev.key === 'Enter' || ev.key === ' ') li.click(); });
+      if (currentFile.toLowerCase() === nombreArchivo.toLowerCase()) {
+        li.classList.add('selected'); samplerSeleccionado = nombreArchivo;
+      }
+      listaSamplers.appendChild(li);
+    });
+    if (keyInput) keyInput.value = '';
+    if (editModal) editModal.open();
+  };
+
+  // Actualizar cerrarModal para usar el del initModal
+  cerrarModal = function() {
+    if (editModal) editModal.close();
+  };
+
+  // Modal de confirmación reset
+  initModal('modal-confirm-reset', {
+    openBtnId: 'reset-settings-btn',
+    closeBtnId: 'cancel-reset-btn',
+    confirmBtnId: 'confirm-reset-btn',
+    onConfirm: async () => {
       resetSettings();
       await preloadAllSamplers();
       keyToTomId = normalizeKeyMap(keyToTomIdDefaults);
       actualizarEtiquetasTeclas(keyToTomId);
       actualizarNombresPads();
-      modalReset.style.display = 'none';
-    });
-    cancelarResetBtn.addEventListener('click', () => { modalReset.style.display = 'none'; });
-    modalReset.addEventListener('keydown', e => { if (e.key === 'Escape') modalReset.style.display = 'none'; });
-  }
+    }
+  });
+
+  // Modal de ayuda
+  initModal('modal-help', {
+    openBtnId: 'help-btn',
+    closeBtnId: 'close-help-btn'
+  });
 });

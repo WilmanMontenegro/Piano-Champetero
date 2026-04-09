@@ -203,6 +203,7 @@
       <div class="edit-buttons-container">
         <button id="edit-btn" class="edit-keys-btn"><i class="fa-solid fa-pencil"></i> Editar</button>
         <button id="reset-settings-btn" class="btn-reset-settings" title="Restablecer sonidos y teclas por defecto"><i class="fa-solid fa-rotate-left"></i> Restablecer</button>
+        <button id="help-btn" class="btn-help" title="¿Cómo editar samplers?"><i class="fa-solid fa-question"></i> Ayuda</button>
       </div>
     <!-- Modal unificado de edición -->
     <div id="modal-edit" class="modal-edit" style="display:none;">
@@ -231,6 +232,53 @@
         <div class="modal-actions">
           <button id="confirm-reset-btn" class="btn-danger btn-reset">Sí</button>
           <button id="cancel-reset-btn" class="btn-cancel">No</button>
+        </div>
+      </div>
+    </div>
+    <!-- Modal de ayuda - Cómo editar samplers -->
+    <div id="modal-help" class="modal-edit" style="display:none;">
+      <div class="modal-content help-content">
+        <h3>🎓 ¿Cómo editar los samplers?</h3>
+        <div class="help-steps">
+          <div class="help-step">
+            <div class="help-step-icon"><i class="fa-solid fa-pencil"></i></div>
+            <div class="help-step-text">
+              <strong>Paso 1: Activa el modo edición</strong>
+              <p>Haz clic en el botón <span class="btn-example"><i class="fa-solid fa-pencil"></i> Editar</span>. Los pads empezarán a parpadear.</p>
+            </div>
+          </div>
+          <div class="help-step">
+            <div class="help-step-icon"><i class="fa-solid fa-hand-pointer"></i></div>
+            <div class="help-step-text">
+              <strong>Paso 2: Selecciona un pad</strong>
+              <p>Haz clic en cualquier pad de la batería que quieras cambiar.</p>
+            </div>
+          </div>
+          <div class="help-step">
+            <div class="help-step-icon"><i class="fa-solid fa-music"></i></div>
+            <div class="help-step-text">
+              <strong>Paso 3: Cambia el sonido</strong>
+              <p>En la pestaña <b>🎵 Sonido</b>, elige de la lista. Haz clic para escuchar. Usa las flechas ↑↓ para navegar.</p>
+            </div>
+          </div>
+          <div class="help-step">
+            <div class="help-step-icon"><i class="fa-solid fa-keyboard"></i></div>
+            <div class="help-step-text">
+              <strong>Paso 4: Cambia la tecla (opcional)</strong>
+              <p>Cambia a la pestaña <b>⌨️ Tecla</b> y presiona la tecla del teclado que quieras usar.</p>
+            </div>
+          </div>
+          <div class="help-step">
+            <div class="help-step-icon"><i class="fa-solid fa-check"></i></div>
+            <div class="help-step-text">
+              <strong>Paso 5: Guarda los cambios</strong>
+              <p>Haz clic en <span class="btn-example btn-example-primary">Guardar</span>. ¡Listo! Tu pad ahora tiene el nuevo sonido.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button id="close-help-btn" class="btn-primary">¡Entendido!</button>
         </div>
       </div>
     </div>
