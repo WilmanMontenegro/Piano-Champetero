@@ -250,8 +250,7 @@ ul.sampler-list {
   padding: 0 1rem;
 }
 
-.edit-keys-btn,
-.modal-actions button:not(.btn-danger):not(.btn-cancel) {
+.edit-keys-btn {
   background: var(--color-principal);
   color: var(--color-blanco);
   border: none;
@@ -266,8 +265,27 @@ ul.sampler-list {
 }
 
 .edit-keys-btn:hover,
-.edit-keys-btn.edit-mode-active,
-.modal-actions button:not(.btn-danger):not(.btn-cancel):hover {
+.edit-keys-btn.edit-mode-active {
+  background: var(--color-secundario);
+  box-shadow: var(--sombra-btn-hover);
+}
+
+/* Botones del modal de edición - estilo base */
+.modal-actions .btn-primary {
+  background: var(--color-principal);
+  color: var(--color-blanco);
+  border: none;
+  border-radius: var(--borde-radius);
+  font-family: inherit;
+  font-weight: bold;
+  font-size: var(--font-size-sm);
+  padding: 0.5em 1.2em;
+  cursor: pointer;
+  box-shadow: var(--sombra-btn);
+  transition: background 0.2s, box-shadow 0.2s;
+}
+
+.modal-actions .btn-primary:hover {
   background: var(--color-secundario);
   box-shadow: var(--sombra-btn-hover);
 }
