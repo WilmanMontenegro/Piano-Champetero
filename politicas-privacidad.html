@@ -28,6 +28,10 @@
   <link rel="icon" href="/favicon.ico" type="image/x-icon">
   <link rel="icon" type="image/png" href="/favicon.png" sizes="500x500">
 
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#FF9A56">
+
   <meta name="description"
     content="Políticas de privacidad de Batería Virtual Champetera. Información sobre datos recopilados, uso, cookies y proveedores terceros.">
   <meta name="keywords" content="política de privacidad, privacidad, datos personales, champeta, batería virtual champetera, piano champetero virtual online">
@@ -175,6 +179,15 @@
     <p id="footer-year">© Batería Champetera Virtual <span id="year-footer"></span>. Todos los derechos reservados.</p>
   </footer>
   <script type="module" src="js/politicas-privacidad.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+          .then(reg => console.log('Service Worker registered'))
+          .catch(err => console.log('Service Worker registration failed:', err));
+      });
+    }
+  </script>
 </body>
 
 </html>

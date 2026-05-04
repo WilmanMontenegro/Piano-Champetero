@@ -1,8 +1,14 @@
 // js/virtual.js — lógica de la batería para virtual.html
+// OPTIMIZADO: Latencia mínima, preload agresivo, sin requestAnimationFrame en play
 import { loadHeader, setYearFooter, resumeOnUserGesture } from './common.js';
 import { initModal } from './modal-utils.js';
+import { PAD_KEY_LAYOUT, buildPadKeyIndexMap, resolvePadIndexFromKeyboard } from './pad-keyboard.js';
 
-export const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+// AudioContext con latencia mínima
+export const audioCtx = new (window.AudioContext || window.webkitAudioContext)({
+  latencyHint: 'interactive',
+  sampleRate: 48000
+});
 
 export const tomSamplersDefaults = {
   'tom-1': 'D (2).wav',
@@ -57,6 +63,71 @@ export let samplersDisponibles = [];
 let keyToTomId = {};
 let _currentVolume = currentVolume;
 
+// View mode and grid configuration
+export const gridConfigs = {
+  '3x3': { rows: 3, cols: 3, total: 9 },
+  '3x4': { rows: 3, cols: 4, total: 12 },
+  '4x4': { rows: 4, cols: 4, total: 16 },
+  '4x6': { rows: 4, cols: 6, total: 24 }
+};
+
+function getDefaultPadsSounds(total) {
+  // Hereda los sonidos configurados en la vista batería
+  const bateriaSounds = Object.values(tomAudioMap).filter(Boolean);
+  const sounds = [...bateriaSounds];
+  // Rellena los restantes con samplers disponibles sin repetir
+  const usedFiles = new Set(sounds.map(f => f.toLowerCase()));
+  for (let i = 0; sounds.length < total && i < samplerList.length; i++) {
+    if (!usedFiles.has(samplerList[i].toLowerCase())) {
+      sounds.push(samplerList[i]);
+      usedFiles.add(samplerList[i].toLowerCase());
+    }
+  }
+  return sounds.slice(0, total);
+}
+
+function loadPadsViewSounds(gridType) {
+  const config = gridConfigs[gridType];
+  if (!config) return getDefaultPadsSounds(gridConfigs['3x4'].total);
+  const defaults = getDefaultPadsSounds(config.total);
+  const savedKey = `pianoChampeteroPads_${gridType}`;
+  const saved = localStorage.getItem(savedKey);
+  let sounds = null;
+  if (saved) {
+    try { sounds = JSON.parse(saved); } catch (e) { /* ignore */ }
+  }
+  if (!Array.isArray(sounds)) return [...defaults];
+  sounds = sounds.slice(0, config.total);
+  for (let i = sounds.length; i < config.total; i++) sounds[i] = defaults[i];
+  return sounds;
+}
+
+function savePadsViewSounds(gridType, sounds) {
+  try { localStorage.setItem(`pianoChampeteroPads_${gridType}`, JSON.stringify(sounds)); } catch (e) {}
+}
+
+let currentViewMode = localStorage.getItem('pianoChampeteroViewMode') || 'bateria';
+let currentGridType = localStorage.getItem('pianoChampeteroGridType') || '3x4';
+
+// Validar que el grid type exista, si no usar default
+if (!gridConfigs[currentGridType]) currentGridType = '3x4';
+
+export let padsViewState = loadPadsViewSounds(currentGridType);
+export let padsViewBuffers = {};
+
+// Cache global de TODOS los samplers cargados (evita re-fetch)
+const globalSamplerCache = {};
+
+let keyToPadIndex = Object.create(null);
+
+/** Set from DOMContentLoaded: generatePadsView lives at module scope and cannot see nested functions. */
+let openPadEditModalRef = null;
+
+function rebuildPadKeyIndexMap() {
+  const config = gridConfigs[currentGridType];
+  keyToPadIndex = buildPadKeyIndexMap(config ? config.total : 0);
+}
+
 export function saveKeyMapping(map) { try { const normalized = normalizeKeyMap(map); localStorage.setItem('pianoChampeteroKeyMap', JSON.stringify(normalized)); } catch (e) {} }
 export function loadKeyMapping() {
   const data = localStorage.getItem('pianoChampeteroKeyMap');
@@ -65,10 +136,8 @@ export function loadKeyMapping() {
     const parsed = JSON.parse(data);
     const normalized = normalizeKeyMap(parsed);
     try {
-      const origStr = JSON.stringify(parsed);
-      const normStr = JSON.stringify(normalized);
-      if (origStr !== normStr) {
-        localStorage.setItem('pianoChampeteroKeyMap', normStr);
+      if (JSON.stringify(parsed) !== JSON.stringify(normalized)) {
+        localStorage.setItem('pianoChampeteroKeyMap', JSON.stringify(normalized));
       }
     } catch (e) { /* ignore write errors */ }
     return normalized;
@@ -86,7 +155,7 @@ function normalizeKeyMap(rawMap) {
       const ch = k.slice(2);
       if (/^[A-Za-z]$/.test(ch)) code = 'Key' + ch.toUpperCase();
       else if (/^[0-9]$/.test(ch)) code = 'Digit' + ch;
-    } else if (/^[A-Za-z]$/.test(k)) code = 'Key' + k.toUpperCase();
+    }     else if (/^[A-Za-z]$/.test(k)) code = 'Key' + k.toUpperCase();
     else if (/^[0-9]$/.test(k)) code = 'Digit' + k;
     else code = k;
     if (code) out[code] = v;
@@ -102,16 +171,19 @@ function prettyLabelFromId(id) {
   return id.toUpperCase();
 }
 
-function prettyName(fileName) {
+export function prettyName(fileName) {
   if (!fileName) return '';
-  return fileName.replace(/\.[^.]+$/, '').replace(/[-_]/g, ' ');
+  let name = fileName.replace(/\.[^.]+$/, '').replace(/[-_]/g, ' ');
+  // Strip leading zeros/digits only if followed by text (e.g. "00COMO DD14" -> "COMO DD14")
+  // Keep pure numbers like "142" intact
+  name = name.replace(/^[\d\s]+(?=[^\d\s])/, '');
+  return name.trim();
 }
 
 export function saveSamplers() {
   const onlyName = {};
   Object.keys(tomAudioMap).forEach(k => {
-    const name = tomAudioMap[k] ? tomAudioMap[k].split('/').pop() : '';
-    onlyName[k] = name;
+    onlyName[k] = tomAudioMap[k] ? tomAudioMap[k].split('/').pop() : '';
   });
   try { localStorage.setItem('pianoChampeteroSamplers', JSON.stringify(onlyName)); } catch {}
 }
@@ -133,47 +205,203 @@ export async function loadAvailableSamplers() {
   });
 }
 
+// Carga un sampler con cache global (evita re-fetch)
 export async function loadSamplerBuffer(url) {
+  if (globalSamplerCache[url]) return globalSamplerCache[url];
   const response = await fetch(url);
   const arrayBuffer = await response.arrayBuffer();
-  return await audioCtx.decodeAudioData(arrayBuffer);
+  const buffer = await audioCtx.decodeAudioData(arrayBuffer);
+  globalSamplerCache[url] = buffer;
+  return buffer;
 }
 
+// Preload agresivo: carga TODOS los samplers usados en paralelo
 export async function preloadAllSamplers() {
   await loadAvailableSamplers();
-  await Promise.all(Object.entries(tomAudioMap).map(async ([tomId, fileName]) => {
-    if (fileName) {
-      try { tomSamplerBuffers[tomId] = await loadSamplerBuffer('samplers/' + fileName); } catch { tomSamplerBuffers[tomId] = null; }
-    } else tomSamplerBuffers[tomId] = null;
-  }));
+  const uniqueFiles = new Set(Object.values(tomAudioMap).filter(Boolean));
+  const loadPromises = Array.from(uniqueFiles).map(async (fileName) => {
+    const url = 'samplers/' + fileName;
+    try { tomSamplerBuffers[fileName] = await loadSamplerBuffer(url); } catch { tomSamplerBuffers[fileName] = null; }
+  });
+  await Promise.all(loadPromises);
 }
 
+// Preload de samplers específicos por nombre de archivo (reutiliza cache)
+async function preloadSamplerByName(fileName) {
+  if (!fileName) return null;
+  const url = 'samplers/' + fileName;
+  try { return await loadSamplerBuffer(url); } catch { return null; }
+}
+
+// PLAY OPTIMIZADO: Sin requestAnimationFrame, start(0) directo
 export function playTomSampler(tomId) {
-  const buffer = tomSamplerBuffers[tomId];
+  const fileName = tomAudioMap[tomId];
+  if (!fileName) return;
+  const buffer = tomSamplerBuffers[fileName] || globalSamplerCache['samplers/' + fileName];
   if (!buffer) return;
   const slider = document.getElementById('volume-slider');
-  let volume = currentVolume;
-  if (slider) volume = +slider.value;
+  const volume = slider ? +slider.value : currentVolume;
   const source = audioCtx.createBufferSource();
   const gainNode = audioCtx.createGain();
   gainNode.gain.value = volume;
   source.buffer = buffer;
   source.connect(gainNode).connect(audioCtx.destination);
-  source.start();
+  source.start(0); // start(0) = inmediato, sin delay
 }
 
+// ACTIVAR TOM: Resume audio context si es necesario, luego play directo
 export async function activateTomSampler(tomId) {
   const button = document.getElementById(tomId);
   if (!button) return;
   button.classList.add('active');
+  // Resume el audio context si está suspendido, luego toca inmediatamente
   if (audioCtx.state === 'suspended') {
     await audioCtx.resume();
-    requestAnimationFrame(() => playTomSampler(tomId));
-  } else {
-    requestAnimationFrame(() => playTomSampler(tomId));
   }
+  playTomSampler(tomId);
   setTimeout(() => button.classList.remove('active'), 60);
 }
+
+// Pads view functions
+function generateGridOptions() {
+  const container = document.getElementById('grid-options');
+  if (!container) return;
+  container.innerHTML = '';
+  Object.entries(gridConfigs).forEach(([key, config]) => {
+    const btn = document.createElement('button');
+    btn.className = 'grid-opt' + (key === currentGridType ? ' active' : '');
+    btn.dataset.grid = key;
+    btn.title = config.total + ' pads';
+    btn.textContent = config.total;
+    btn.addEventListener('click', () => changeGrid(key));
+    container.appendChild(btn);
+  });
+}
+
+export function switchView(view) {
+  currentViewMode = view;
+  localStorage.setItem('pianoChampeteroViewMode', view);
+
+  const batteryView = document.getElementById('battery-view');
+  const padsView = document.getElementById('pads-view');
+  const gridSelector = document.getElementById('grid-selector');
+  const viewBateriaBtn = document.getElementById('view-bateria');
+  const viewPadsBtn = document.getElementById('view-pads');
+
+  if (view === 'pads') {
+    batteryView.classList.add('hidden');
+    padsView.classList.remove('hidden');
+    gridSelector.style.display = 'flex';
+    viewBateriaBtn.classList.remove('active');
+    viewPadsBtn.classList.add('active');
+    generateGridOptions();
+    generatePadsView();
+  } else {
+    batteryView.classList.remove('hidden');
+    padsView.classList.add('hidden');
+    gridSelector.style.display = 'none';
+    viewBateriaBtn.classList.add('active');
+    viewPadsBtn.classList.remove('active');
+  }
+}
+
+export function changeGrid(gridType) {
+  currentGridType = gridType;
+  localStorage.setItem('pianoChampeteroGridType', gridType);
+  padsViewState = loadPadsViewSounds(gridType);
+  generateGridOptions();
+  const padsGrid = document.getElementById('pads-grid');
+  padsGrid.className = 'pads-grid grid-' + gridType;
+  generatePadsView();
+}
+
+export async function preloadPadsViewBuffer(index) {
+  const fileName = padsViewState[index];
+  if (!fileName) return null;
+  return await preloadSamplerByName(fileName);
+}
+
+// PLAY PAD OPTIMIZADO: Sin requestAnimationFrame
+export function playPadSound(index) {
+  const buffer = padsViewBuffers[index];
+  if (!buffer) return;
+  const slider = document.getElementById('volume-slider');
+  const volume = slider ? +slider.value : currentVolume;
+  const source = audioCtx.createBufferSource();
+  const gainNode = audioCtx.createGain();
+  gainNode.gain.value = volume;
+  source.buffer = buffer;
+  source.connect(gainNode).connect(audioCtx.destination);
+  source.start(0); // inmediato
+}
+
+// ACTIVAR PAD: Resume si es necesario, luego play directo
+export async function activatePadSound(index) {
+  const padsGrid = document.getElementById('pads-grid');
+  if (!padsGrid) return;
+  const padButton = padsGrid.children[index];
+  if (!padButton) return;
+  padButton.classList.add('active');
+  if (audioCtx.state === 'suspended') {
+    await audioCtx.resume();
+  }
+  playPadSound(index);
+  setTimeout(() => padButton.classList.remove('active'), 60);
+}
+
+export function generatePadsView() {
+  const padsGrid = document.getElementById('pads-grid');
+  if (!padsGrid) return;
+
+  const config = gridConfigs[currentGridType];
+  rebuildPadKeyIndexMap();
+  padsGrid.innerHTML = '';
+  padsGrid.className = 'pads-grid grid-' + currentGridType;
+
+  const keys = PAD_KEY_LAYOUT.slice(0, config.total);
+
+  for (let i = 0; i < config.total; i++) {
+    const pad = document.createElement('button');
+    pad.className = 'pad-item';
+    pad.dataset.padIndex = i;
+
+    const keyLabel = document.createElement('span');
+    keyLabel.className = 'pad-key';
+    keyLabel.textContent = keys[i] ? keys[i].toUpperCase() : '';
+
+    const soundLabel = document.createElement('span');
+    soundLabel.className = 'pad-sound';
+    soundLabel.textContent = prettyName(padsViewState[i]) || '';
+
+    pad.appendChild(keyLabel);
+    pad.appendChild(soundLabel);
+    padsGrid.appendChild(pad);
+
+    pad.addEventListener('click', async () => {
+      if (modoEdicion) {
+        if (openPadEditModalRef) openPadEditModalRef(i);
+        return;
+      }
+      await activatePadSound(i);
+    });
+  }
+
+  // Preload buffers en paralelo para pads view
+  Object.keys(padsViewBuffers).forEach(k => delete padsViewBuffers[k]);
+  if (config.total > 0) {
+    Promise.all(Array.from({length: config.total}, (_, i) =>
+      preloadPadsViewBuffer(i).then(buf => { if (buf) padsViewBuffers[i] = buf; })
+    ));
+  }
+}
+
+let modoEdicion = false;
+let tomSeleccionado = null;
+let samplerSeleccionado = null;
+let activeTab = 'sampler';
+let lastCapturedCode = null;
+let padSeleccionado = null;
+let padSamplerSeleccionado = null;
 
 function actualizarNombresPads() {
   const tomToKeys = {};
@@ -221,6 +449,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (savedKeys) keyToTomId = normalizeKeyMap(savedKeys);
   else keyToTomId = normalizeKeyMap(keyToTomIdDefaults);
 
+  // Preload agresivo de samplers
   await preloadAllSamplers();
   actualizarEtiquetasTeclas(keyToTomId);
   actualizarNombresPads();
@@ -240,13 +469,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       sliderVolumen.dispatchEvent(new Event('input', { bubbles: true }));
     });
   }
-
-  // Edit state
-  let modoEdicion = false;
-  let tomSeleccionado = null;
-  let samplerSeleccionado = null;
-  let activeTab = 'sampler';
-  let lastCapturedCode = null;
 
   const editBtn = document.getElementById('edit-btn');
   const modal = document.getElementById('modal-edit');
@@ -298,7 +520,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           gainNode.gain.value = _currentVolume;
           source.buffer = buffer;
           source.connect(gainNode).connect(audioCtx.destination);
-          source.start();
+          source.start(0);
           window._previewSource = source;
         } catch (e) { /* ignore preview errors */ }
       });
@@ -329,10 +551,79 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!modoEdicion) cerrarModal();
   });
 
-  // Navegación con flechas en la lista de samplers (keydown solo para este modal)
+  // View toggle buttons
+  const viewBateriaBtn = document.getElementById('view-bateria');
+  const viewPadsBtn = document.getElementById('view-pads');
+  if (viewBateriaBtn) viewBateriaBtn.addEventListener('click', () => switchView('bateria'));
+  if (viewPadsBtn) viewPadsBtn.addEventListener('click', () => switchView('pads'));
+
+  const gridOptionsRoot = document.getElementById('grid-options');
+  if (gridOptionsRoot) {
+    gridOptionsRoot.addEventListener('click', e => {
+      const btn = e.target.closest('.grid-opt');
+      if (!btn || !btn.dataset.grid) return;
+      changeGrid(btn.dataset.grid);
+    });
+  }
+
+  // Pad edit modal for pads view (wired to module-level generatePadsView via openPadEditModalRef)
+  function openPadEditModal(padIndex) {
+    tomSeleccionado = null;
+    padSeleccionado = padIndex;
+    padSamplerSeleccionado = null;
+    lastCapturedCode = null;
+    switchTab('sampler');
+    if (!modal || !listaSamplers) return;
+    listaSamplers.innerHTML = '';
+    const currentFile = padsViewState[padIndex] || '';
+    samplerList.forEach(nombreArchivo => {
+      const li = document.createElement('li');
+      li.textContent = nombreArchivo.replace(/\.[^.]+$/, '');
+      li.title = nombreArchivo;
+      li.className = 'sampler-item';
+      li.tabIndex = 0;
+      li.addEventListener('click', async () => {
+        document.querySelectorAll('.sampler-item').forEach(el => el.classList.remove('selected'));
+        li.classList.add('selected');
+        padSamplerSeleccionado = nombreArchivo;
+        if (window._previewSource && typeof window._previewSource.stop === 'function') {
+          try { window._previewSource.stop(); } catch {}
+        }
+        try {
+          const path = 'samplers/' + nombreArchivo;
+          if (audioCtx.state !== 'running') await audioCtx.resume();
+          const buffer = await loadSamplerBuffer(path);
+          const source = audioCtx.createBufferSource();
+          const gainNode = audioCtx.createGain();
+          gainNode.gain.value = _currentVolume;
+          source.buffer = buffer;
+          source.connect(gainNode).connect(audioCtx.destination);
+          source.start(0);
+          window._previewSource = source;
+        } catch {}
+      });
+      li.addEventListener('keydown', ev => { if (ev.key === 'Enter' || ev.key === ' ') li.click(); });
+      if (currentFile.toLowerCase() === nombreArchivo.toLowerCase()) {
+        li.classList.add('selected');
+        padSamplerSeleccionado = nombreArchivo;
+      }
+      listaSamplers.appendChild(li);
+    });
+    if (keyInput) keyInput.value = '';
+    if (modal) modal.style.display = 'flex';
+  }
+  openPadEditModalRef = openPadEditModal;
+
+  // Initialize view after pad editor ref is ready (generatePadsView needs it for Editar + pads)
+  if (currentViewMode === 'pads') {
+    switchView('pads');
+  } else {
+    switchView('bateria');
+  }
+
+  // Navegación con flechas en la lista de samplers
   if (modal) {
     modal.addEventListener('keydown', e => {
-      // Navegación con flechas en la lista de samplers
       if (activeTab === 'sampler' && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
         e.preventDefault();
         const items = listaSamplers ? Array.from(listaSamplers.querySelectorAll('.sampler-item')) : [];
@@ -375,45 +666,66 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.addEventListener('keydown', async e => {
     if (modal && modal.style.display === 'flex') return;
     if (modoEdicion) return;
-    if (!e.key) return;
     const code = e.code || '';
+    if (!e.key && !code) return;
     const inferredKey = (/^[0-9]$/.test(e.key)) ? ('Digit' + e.key) : ('Key' + (e.key || '').toUpperCase());
-    const tomId = keyToTomId[code] || keyToTomId[inferredKey] || keyToTomId[e.key.toLowerCase()];
-    if (tomId) { e.preventDefault(); await activateTomSampler(tomId); }
-  });
+
+    if (currentViewMode === 'pads') {
+      const padIndex = resolvePadIndexFromKeyboard(e, keyToPadIndex);
+      if (padIndex !== undefined) { e.preventDefault(); await activatePadSound(padIndex); }
+    } else {
+      const tomId = keyToTomId[code] || keyToTomId[inferredKey] || keyToTomId[(e.key || '').toLowerCase()];
+      if (tomId) { e.preventDefault(); await activateTomSampler(tomId); }
+    }
+  }, true);
 
   window.addEventListener('focus', async () => {
     if (audioCtx.state === 'suspended') await audioCtx.resume();
     await preloadAllSamplers();
+    if (currentViewMode === 'pads') {
+      const config = gridConfigs[currentGridType];
+      for (let i = 0; i < config.total; i++) {
+        const buf = await preloadPadsViewBuffer(i);
+        if (buf) padsViewBuffers[i] = buf;
+      }
+    }
   });
 
   // ===== INICIALIZAR MODALES =====
 
-  // Modal de edición de sampler con initModal reutilizable
   const editModal = initModal('modal-edit', {
     closeBtnId: 'cancel-edit-btn',
     confirmBtnId: 'save-edit-btn',
-    focusOnOpen: false, // El modal de edición maneja su propio focus
+    focusOnOpen: false,
     onConfirm: async () => {
-      if (!tomSeleccionado) return;
-      const tomId = tomSeleccionado.id;
-      if (activeTab === 'sampler' && samplerSeleccionado) {
-        tomAudioMap[tomId] = samplerSeleccionado;
-        try {
-          tomSamplerBuffers[tomId] = await loadSamplerBuffer('samplers/' + samplerSeleccionado);
-        } catch {
-          tomSamplerBuffers[tomId] = null;
+      if (padSeleccionado !== null && padSeleccionado !== undefined) {
+        if (activeTab === 'sampler' && padSamplerSeleccionado) {
+          padsViewState[padSeleccionado] = padSamplerSeleccionado;
+          savePadsViewSounds(currentGridType, padsViewState);
+          const buf = await preloadPadsViewBuffer(padSeleccionado);
+          if (buf) padsViewBuffers[padSeleccionado] = buf;
+          generatePadsView();
         }
-        saveSamplers();
-        actualizarNombresPads();
-      }
-      if (activeTab === 'key' && lastCapturedCode) {
-        Object.keys(keyToTomId).forEach(k => { if (keyToTomId[k] === tomId) delete keyToTomId[k]; });
-        if (keyToTomId[lastCapturedCode]) delete keyToTomId[lastCapturedCode];
-        keyToTomId[lastCapturedCode] = tomId;
-        saveKeyMapping(keyToTomId);
-        actualizarEtiquetasTeclas(keyToTomId);
-        actualizarNombresPads();
+      } else if (tomSeleccionado) {
+        const tomId = tomSeleccionado.id;
+        if (activeTab === 'sampler' && samplerSeleccionado) {
+          tomAudioMap[tomId] = samplerSeleccionado;
+          try {
+            tomSamplerBuffers[tomId] = await loadSamplerBuffer('samplers/' + samplerSeleccionado);
+          } catch {
+            tomSamplerBuffers[tomId] = null;
+          }
+          saveSamplers();
+          actualizarNombresPads();
+        }
+        if (activeTab === 'key' && lastCapturedCode) {
+          Object.keys(keyToTomId).forEach(k => { if (keyToTomId[k] === tomId) delete keyToTomId[k]; });
+          if (keyToTomId[lastCapturedCode]) delete keyToTomId[lastCapturedCode];
+          keyToTomId[lastCapturedCode] = tomId;
+          saveKeyMapping(keyToTomId);
+          actualizarEtiquetasTeclas(keyToTomId);
+          actualizarNombresPads();
+        }
       }
     },
     onClose: () => {
@@ -422,10 +734,11 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
       tomSeleccionado = null;
       samplerSeleccionado = null;
+      padSeleccionado = null;
+      padSamplerSeleccionado = null;
     }
   });
 
-  // Sobreescribir abrirModal para usar el del initModal
   const originalAbrirModal = abrirModal;
   abrirModal = function(boton) {
     tomSeleccionado = boton;
@@ -457,7 +770,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           gainNode.gain.value = _currentVolume;
           source.buffer = buffer;
           source.connect(gainNode).connect(audioCtx.destination);
-          source.start();
+          source.start(0);
           window._previewSource = source;
         } catch (e) { /* ignore preview errors */ }
       });
@@ -471,12 +784,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (editModal) editModal.open();
   };
 
-  // Actualizar cerrarModal para usar el del initModal
   cerrarModal = function() {
     if (editModal) editModal.close();
   };
 
-  // Modal de confirmación reset
   initModal('modal-confirm-reset', {
     openBtnId: 'reset-settings-btn',
     closeBtnId: 'cancel-reset-btn',
@@ -490,7 +801,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
-  // Modal de ayuda
   initModal('modal-help', {
     openBtnId: 'help-btn',
     closeBtnId: 'close-help-btn'

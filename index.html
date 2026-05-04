@@ -53,6 +53,10 @@
   <!-- adsense -->
   <meta name="google-adsense-account" content="ca-pub-8844820211390283">
 
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#FF9A56">
+
   <!-- CSS -->
   <link rel="stylesheet" href="styles/reset.css">
   <link rel="stylesheet" href="styles/common.css">
@@ -180,15 +184,9 @@
   <!-- Cinta de agradecimiento a contribuidores -->
   <div class="contributor-ticker">
     <div class="ticker-content">
-      <span class="ticker-item">🎉 ¡Gracias <strong>Jorge Mercado</strong> por tu sugerencia sobre la edición de samplers!</span>
+      <span class="ticker-item">🎉 ¡Gracias <strong>Jhon Karo</strong> por sugerir más pads para la batería champeta! 🥁</span>
       <span class="ticker-separator">•</span>
-      <span class="ticker-item">Las mejoras ya están implementadas 🥁</span>
-      <span class="ticker-separator">•</span>
-      <span class="ticker-item">¿Tienes ideas o mejoras? <a href="contactanos.html">Repórtalas aquí</a> y te mencionaremos</span>
-      <span class="ticker-separator">•</span>
-      <span class="ticker-item">🎉 ¡Gracias <strong>Jorge Mercado</strong> por tu sugerencia sobre la edición de samplers!</span>
-      <span class="ticker-separator">•</span>
-      <span class="ticker-item">Las mejoras ya están implementadas 🥁</span>
+      <span class="ticker-item">¡Nueva vista de Pads disponible! Prueba con 9, 12, 15 o 16 pads <a href="virtual.html">aquí</a></span>
       <span class="ticker-separator">•</span>
       <span class="ticker-item">¿Tienes ideas o mejoras? <a href="contactanos.html">Repórtalas aquí</a> y te mencionaremos</span>
     </div>
@@ -263,6 +261,15 @@
       await loadHeader();
       setYearFooter();
     });
+  </script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+          .then(reg => console.log('Service Worker registered'))
+          .catch(err => console.log('Service Worker registration failed:', err));
+      });
+    }
   </script>
 </body>
 </html>

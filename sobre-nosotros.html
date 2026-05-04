@@ -35,6 +35,10 @@
   <!-- Favicon -->
   <link rel="icon" href="/favicon.ico" type="image/x-icon">
 
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#FF9A56">
+
   <!-- CSS -->
   <link rel="stylesheet" href="styles/reset.css">
   <link rel="stylesheet" href="styles/common.css">
@@ -121,6 +125,15 @@
   </footer>
 
   <script type="module" src="js/sobre-nosotros.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+          .then(reg => console.log('Service Worker registered'))
+          .catch(err => console.log('Service Worker registration failed:', err));
+      });
+    }
+  </script>
 </body>
 
 </html>

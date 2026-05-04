@@ -59,6 +59,10 @@
   <!-- adsense -->
   <meta name="google-adsense-account" content="ca-pub-8844820211390283">
 
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#FF9A56">
+
   <!-- CSS -->
   <link rel="stylesheet" href="styles/reset.css">
   <link rel="stylesheet" href="styles/common.css">
@@ -122,15 +126,9 @@
   <!-- Cinta de agradecimiento a contribuidores -->
   <div class="contributor-ticker">
     <div class="ticker-content">
-      <span class="ticker-item">🎉 ¡Gracias <strong>Jorge Mercado</strong> por tu sugerencia sobre la edición de samplers!</span>
+      <span class="ticker-item">🎉 ¡Gracias <strong>Jhon Karo</strong> por sugerir más pads para la batería champeta! 🥁</span>
       <span class="ticker-separator">•</span>
-      <span class="ticker-item">Las mejoras ya están implementadas 🥁</span>
-      <span class="ticker-separator">•</span>
-      <span class="ticker-item">¿Tienes ideas o mejoras? <a href="contactanos.html">Repórtalas aquí</a> y te mencionaremos</span>
-      <span class="ticker-separator">•</span>
-      <span class="ticker-item">🎉 ¡Gracias <strong>Jorge Mercado</strong> por tu sugerencia sobre la edición de samplers!</span>
-      <span class="ticker-separator">•</span>
-      <span class="ticker-item">Las mejoras ya están implementadas 🥁</span>
+      <span class="ticker-item">¡Nueva vista de Pads disponible! Prueba con 9, 12, 15 o 16 pads</span>
       <span class="ticker-separator">•</span>
       <span class="ticker-item">¿Tienes ideas o mejoras? <a href="contactanos.html">Repórtalas aquí</a> y te mencionaremos</span>
     </div>
@@ -200,10 +198,30 @@
   </header>
   <main>
     <div class="drum-kit-container">
-      <div class="edit-buttons-container">
-        <button id="edit-btn" class="edit-keys-btn"><i class="fa-solid fa-pencil"></i> Editar</button>
-        <button id="reset-settings-btn" class="btn-reset-settings" title="Restablecer sonidos y teclas por defecto"><i class="fa-solid fa-rotate-left"></i> Restablecer</button>
-        <button id="help-btn" class="btn-help" title="¿Cómo editar samplers?"><i class="fa-solid fa-question"></i> Ayuda</button>
+      <div class="controls-bar">
+        <div class="control-group">
+          <button id="edit-btn" class="ctrl-btn"><i class="fa-solid fa-pencil"></i> Editar</button>
+          <button id="reset-settings-btn" class="ctrl-btn reset-btn" title="⚠️ Restablecer sonidos y teclas por defecto"><i class="fa-solid fa-rotate-left"></i> Restablecer</button>
+          <button id="help-btn" class="ctrl-btn" title="¿Cómo editar samplers?"><i class="fa-solid fa-question"></i> Ayuda</button>
+        </div>
+        <div class="divider"></div>
+        <div class="control-group">
+          <span class="group-label">Vista:</span>
+          <button id="view-bateria" class="ctrl-btn view-btn active" title="Vista Batería">
+            <i class="fa-solid fa-drum"></i> Batería
+          </button>
+          <button id="view-pads" class="ctrl-btn view-btn new-feature-btn" title="Vista Pads - más sonidos disponibles">
+            <i class="fa-solid fa-th-large"></i> Pads
+            <span class="new-badge">NUEVO</span>
+          </button>
+        </div>
+        <div id="grid-selector" class="grid-selector-inline" style="display:none;">
+          <span class="group-label">Pads:</span>
+          <div id="grid-options" class="grid-options"></div>
+        </div>
+      </div>
+      <div class="pads-hint" id="pads-hint" style="display:none;">
+        <i class="fa-solid fa-keyboard"></i> Presiona una tecla o haz clic para tocar
       </div>
     <!-- Modal unificado de edición -->
     <div id="modal-edit" class="modal-edit" style="display:none;">
@@ -282,6 +300,7 @@
         </div>
       </div>
     </div>
+    <div class="battery-view" id="battery-view">
     <div class="battery">
       <button class="battery-tom battery-tom--small" id="tom-1">
         <span class="battery-tom-key"></span>
@@ -365,7 +384,15 @@
         </span>
       </button>
     </div>
+    </div>
+    <div class="pads-view hidden" id="pads-view">
+      <div class="pads-grid" id="pads-grid"></div>
+    </div>
       <div class="battery-volume-container">
+        <div class="volume-label-row">
+          <i class="fa-solid fa-volume-high volume-icon"></i>
+          <span class="volume-text">Volumen</span>
+        </div>
         <input class="battery-volume" type="range" id="volume-slider" min="0" max="1" step="0.01" value="0.5">
         <div class="battery-volume-label">
           <span id="volume-percent">50%</span>
@@ -377,5 +404,14 @@
     <p id="footer-year">© Batería Champetera Virtual <span id="year-footer"></span>. Todos los derechos reservados. v.2.0</p>
   </footer>
   <script type="module" src="js/virtual.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+          .then(reg => console.log('Service Worker registered'))
+          .catch(err => console.log('Service Worker registration failed:', err));
+      });
+    }
+  </script>
 </body>
 </html>
