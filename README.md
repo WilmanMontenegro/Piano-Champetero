@@ -8,6 +8,7 @@ Bateria/Pads virtuales de champeta (sitio estatico en GitHub Pages) con audio en
 - Pads cuadrados en vista principal (`aspect-ratio: 1 / 1`), con enfoque desktop-first.
 - Herencia en cascada de sonidos y teclas entre rejillas cuando no existe guardado por rejilla:
   - `12 <- 9`, `16 <- 12`, `24 <- 16`.
+- Teclas por defecto en Pads alineadas con la Batería (primeros 9 pads: `Q,W,E,A,S,D,Z,X,C`; el resto extiende sin reutilizar esas teclas).
 - Ticker superior continuo (loop sin corte visible) en las paginas principales.
 
 ## Desarrollo local

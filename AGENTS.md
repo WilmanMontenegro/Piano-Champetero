@@ -18,7 +18,7 @@ Context for coding agents and humans: **Batería Champetera Virtual** — static
 ├── js/
 │   ├── common.js                  # loadHeader, initNav, setYearFooter
 │   ├── virtual.js                 # Battery + pads grid, audio, edit modals, storage maps
-│   ├── pad-keyboard.js            # PAD_KEY_LAYOUT, buildPadKeyIndexMap, resolvePadIndexFromKeyboard
+│   ├── pad-keyboard.js            # Default pad keys aligned with battery, buildPadKeyIndexMap, resolvePadIndexFromKeyboard
 │   ├── modal-utils.js             # initModal
 │   └── contactanos.js
 ├── styles/reset.css, common.css, virtual.css (+ page CSS per HTML file)
@@ -67,6 +67,7 @@ Same **edit** flow everywhere: **Editar** → pick a cell → modal **Sonido** /
 
 - **Battery**: `keyToTomId`, `activateTomSampler`, 9 pads.  
 - **Pads**: `keyToPadIndex` built from `buildPadKeyIndexMap` + saved overrides; `resolvePadIndexFromKeyboard` in `pad-keyboard.js`.  
+- **Default pad keys (no saved `pianoChampeteroPadKeys_*`)**: pads `0…8` use the **same letters as the default battery** (`q,w,e,a,s,d,z,x,c` → tom-1…9). Pads `9+` extend with remaining QWERTY letters in scan order, never reusing those nine. `keyToTomIdDefaults` is derived from the same source list as the pads map so battery and pads stay consistent.  
 - **AudioContext**: resume on user gesture (browser policy).
 
 ## UI / layout notes (current)

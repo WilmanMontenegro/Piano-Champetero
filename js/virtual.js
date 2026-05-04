@@ -2,7 +2,7 @@
 // OPTIMIZADO: Latencia mínima, preload agresivo, sin requestAnimationFrame en play
 import { loadHeader, setYearFooter, resumeOnUserGesture } from './common.js';
 import { initModal } from './modal-utils.js';
-import { PAD_KEY_LAYOUT, buildPadKeyIndexMap, resolvePadIndexFromKeyboard } from './pad-keyboard.js';
+import { DEFAULT_PAD_KEY_CHAR_ORDER, BATTERY_DEFAULT_PAD_CHARS, buildPadKeyIndexMap, resolvePadIndexFromKeyboard } from './pad-keyboard.js';
 
 // AudioContext con latencia mínima
 export const audioCtx = new (window.AudioContext || window.webkitAudioContext)({
@@ -54,7 +54,9 @@ export const tomAudioMap = (function init() {
   return map;
 })();
 
-export const keyToTomIdDefaults = { q: 'tom-1', w: 'tom-2', e: 'tom-3', a: 'tom-4', s: 'tom-5', d: 'tom-6', z: 'tom-7', x: 'tom-8', c: 'tom-9' };
+export const keyToTomIdDefaults = Object.fromEntries(
+  BATTERY_DEFAULT_PAD_CHARS.map((ch, i) => [ch, `tom-${i + 1}`])
+);
 
 export const tomSamplerBuffers = {};
 export let currentVolume = 0.5;
@@ -193,16 +195,14 @@ function normalizePlayablePadKeyMap(out, total) {
   const usedKeys = new Set(Object.keys(out));
   for (let p = 0; p < total; p++) {
     if (findCanonicalCodeForPad(out, p)) continue;
-    let placed = false;
-    for (let off = 0; off < PAD_KEY_LAYOUT.length && !placed; off++) {
-      const ch = PAD_KEY_LAYOUT[(p + off) % PAD_KEY_LAYOUT.length];
+    for (const ch of DEFAULT_PAD_KEY_CHAR_ORDER) {
       const code = 'Key' + ch.toUpperCase();
       if (!usedKeys.has(code)) {
         out[code] = p;
         out[ch] = p;
         usedKeys.add(code);
         usedKeys.add(ch);
-        placed = true;
+        break;
       }
     }
   }
@@ -333,7 +333,7 @@ function padKeyDisplayLabel(padIndex, total) {
   if (padIndex < 0 || padIndex >= total) return '';
   const code = findCanonicalCodeForPad(keyToPadIndex, padIndex);
   if (code) return prettyLabelFromId(code);
-  const ch = PAD_KEY_LAYOUT[padIndex];
+  const ch = DEFAULT_PAD_KEY_CHAR_ORDER[padIndex];
   return ch ? ch.toUpperCase() : '';
 }
 

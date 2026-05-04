@@ -1,6 +1,7 @@
 /**
- * Default physical QWERTY order for pad labels and keystrokes (first N pads use first N letters).
- * Kept in one module so keyboard + UI stay in sync and easier to extend.
+ * Physical letters for pad labels and keystrokes.
+ * First 9 pads match the default battery layout (same keys as tom-1 … tom-9).
+ * Extra pads extend with remaining letters in QWERTY row order, skipping the 9 battery keys.
  */
 export const PAD_KEY_LAYOUT = [
   'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p',
@@ -8,15 +9,28 @@ export const PAD_KEY_LAYOUT = [
   'z', 'x', 'c', 'v', 'b', 'n', 'm'
 ];
 
+/** Same order as default battery: tom-1 … tom-9 */
+export const BATTERY_DEFAULT_PAD_CHARS = ['q', 'w', 'e', 'a', 's', 'd', 'z', 'x', 'c'];
+
+const BATTERY_CHAR_SET = new Set(BATTERY_DEFAULT_PAD_CHARS);
+
+/** Letters for pad index 9+ in scan order, excluding battery home keys */
+function extensionPadKeyChars() {
+  return PAD_KEY_LAYOUT.filter(ch => !BATTERY_CHAR_SET.has(ch));
+}
+
+/** Full default assignment order: pads 0–8 = battery, 9+ = extension */
+export const DEFAULT_PAD_KEY_CHAR_ORDER = [...BATTERY_DEFAULT_PAD_CHARS, ...extensionPadKeyChars()];
+
 /**
  * @param {number} totalPads
  * @returns {Record<string, number>} Maps KeyQ / q (etc.) -> pad index
  */
 export function buildPadKeyIndexMap(totalPads) {
   const map = Object.create(null);
-  const n = Math.min(Math.max(0, totalPads), PAD_KEY_LAYOUT.length);
+  const n = Math.min(Math.max(0, totalPads), DEFAULT_PAD_KEY_CHAR_ORDER.length);
   for (let i = 0; i < n; i++) {
-    const ch = PAD_KEY_LAYOUT[i];
+    const ch = DEFAULT_PAD_KEY_CHAR_ORDER[i];
     map[ch] = i;
     map['Key' + ch.toUpperCase()] = i;
   }
