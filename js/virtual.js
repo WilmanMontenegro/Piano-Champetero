@@ -71,6 +71,13 @@ export const gridConfigs = {
   '4x6': { rows: 4, cols: 6, total: 24 }
 };
 
+const PAD_GRID_SIZE_ORDER = ['3x3', '3x4', '4x4', '4x6'];
+
+function predecessorGridType(gridType) {
+  const i = PAD_GRID_SIZE_ORDER.indexOf(gridType);
+  return i > 0 ? PAD_GRID_SIZE_ORDER[i - 1] : null;
+}
+
 function getDefaultPadsSounds(total) {
   // Hereda los sonidos configurados en la vista batería
   const bateriaSounds = Object.values(tomAudioMap).filter(Boolean);
@@ -96,7 +103,17 @@ function loadPadsViewSounds(gridType) {
   if (saved) {
     try { sounds = JSON.parse(saved); } catch (e) { /* ignore */ }
   }
-  if (!Array.isArray(sounds)) return [...defaults];
+  if (!Array.isArray(sounds)) {
+    const pred = predecessorGridType(gridType);
+    if (!pred) return [...defaults];
+    const predTotal = gridConfigs[pred].total;
+    const inherited = loadPadsViewSounds(pred);
+    const out = [];
+    for (let i = 0; i < config.total; i++) {
+      out[i] = i < predTotal ? (inherited[i] || defaults[i]) : defaults[i];
+    }
+    return out;
+  }
   sounds = sounds.slice(0, config.total);
   for (let i = sounds.length; i < config.total; i++) sounds[i] = defaults[i];
   return sounds;
@@ -208,15 +225,8 @@ function persistPadKeysForCurrentGrid() {
   } catch {}
 }
 
-function rebuildPadKeyIndexMap() {
-  const config = gridConfigs[currentGridType];
-  const total = config ? config.total : 0;
+function buildPadKeyMapFromSaved(total, saved) {
   const base = buildPadKeyIndexMap(total);
-  const saved = loadPadKeysSavedObject(currentGridType);
-  if (!saved || Object.keys(saved).length === 0) {
-    keyToPadIndex = base;
-    return;
-  }
   const out = { ...base };
   const entries = Object.entries(saved).sort((a, b) => a[0].localeCompare(b[0]));
   for (const [rawKey, rawVal] of entries) {
@@ -237,7 +247,43 @@ function rebuildPadKeyIndexMap() {
     if (mk) out[mk[1].toLowerCase()] = idx;
   }
   normalizePlayablePadKeyMap(out, total);
-  keyToPadIndex = out;
+  return out;
+}
+
+function computePadKeysForGrid(gridType) {
+  const config = gridConfigs[gridType];
+  const total = config ? config.total : 0;
+  if (!total) return buildPadKeyIndexMap(gridConfigs['3x4'].total);
+  const saved = loadPadKeysSavedObject(gridType);
+  if (saved && Object.keys(saved).length > 0) {
+    return buildPadKeyMapFromSaved(total, saved);
+  }
+  const pred = predecessorGridType(gridType);
+  if (!pred) {
+    return buildPadKeyIndexMap(total);
+  }
+  const predTotal = gridConfigs[pred].total;
+  const predMap = computePadKeysForGrid(pred);
+  const base = buildPadKeyIndexMap(total);
+  const out = { ...base };
+  for (let p = 0; p < predTotal; p++) {
+    const code = findCanonicalCodeForPad(predMap, p);
+    if (!code) continue;
+    for (const k of Object.keys(out)) {
+      if (out[k] === p) delete out[k];
+    }
+    delete out[code];
+    const mk = /^Key([A-Z])$/.exec(code);
+    if (mk) delete out[mk[1].toLowerCase()];
+    out[code] = p;
+    if (mk) out[mk[1].toLowerCase()] = p;
+  }
+  normalizePlayablePadKeyMap(out, total);
+  return out;
+}
+
+function rebuildPadKeyIndexMap() {
+  keyToPadIndex = computePadKeysForGrid(currentGridType);
 }
 
 export function saveKeyMapping(map) { try { const normalized = normalizeKeyMap(map); localStorage.setItem('pianoChampeteroKeyMap', JSON.stringify(normalized)); } catch (e) {} }
@@ -313,9 +359,11 @@ export function resetSettings() {
   localStorage.removeItem('pianoChampeteroKeyMap');
   Object.keys(gridConfigs).forEach(g => {
     try { localStorage.removeItem(padKeysStorageKey(g)); } catch {}
+    try { localStorage.removeItem(`pianoChampeteroPads_${g}`); } catch {}
   });
   Object.keys(tomAudioMap).forEach(k => tomAudioMap[k] = tomSamplersDefaults[k]);
   rebuildPadKeyIndexMap();
+  padsViewState = loadPadsViewSounds(currentGridType);
 }
 
 export async function loadAvailableSamplers() {

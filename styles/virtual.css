@@ -817,7 +817,7 @@ ul.sampler-list {
 /* ===================== PADS VIEW ===================== */
 .pads-view {
   width: 100%;
-  max-width: min(1100px, 100%);
+  max-width: min(1180px, 100%);
   margin: 0 auto;
   padding: 0 clamp(0.25rem, 1.2vw, 0.75rem);
 }
@@ -836,6 +836,46 @@ ul.sampler-list {
 .pads-grid.grid-4x4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 .pads-grid.grid-4x6 { grid-template-columns: repeat(6, minmax(0, 1fr)); }
 
+/*
+ * Desktop: tamaño de pad uniforme entre rejillas.
+ * Se limita por ancho Y por alto del viewport para evitar recortes de la última fila.
+ */
+@media (min-width: 1024px) {
+  .pads-view {
+    --desktop-gap: 6px;
+    --desktop-pad: 8px;
+    --pad-size-by-width: min(180px, calc((100vw - 420px - (5 * var(--desktop-gap))) / 6));
+    --pad-size-by-height: calc((100vh - 360px - (3 * var(--desktop-gap)) - (2 * var(--desktop-pad))) / 4);
+    --pad-size: max(88px, min(var(--pad-size-by-width), var(--pad-size-by-height)));
+  }
+
+  .pads-grid {
+    gap: var(--desktop-gap);
+    padding: var(--desktop-pad);
+  }
+
+  .pads-grid.grid-3x3 {
+    grid-template-columns: repeat(3, var(--pad-size));
+    justify-content: center;
+    max-width: unset;
+  }
+  .pads-grid.grid-3x4 {
+    grid-template-columns: repeat(4, var(--pad-size));
+    justify-content: center;
+    max-width: unset;
+  }
+  .pads-grid.grid-4x4 {
+    grid-template-columns: repeat(4, var(--pad-size));
+    justify-content: center;
+    max-width: unset;
+  }
+  .pads-grid.grid-4x6 {
+    grid-template-columns: repeat(6, var(--pad-size));
+    justify-content: center;
+    max-width: unset;
+  }
+}
+
 /* 4×4 y 4×6: en tablets/móvil menos columnas = pads más anchos (evita “apretados”) */
 @media (max-width: 960px) {
   .pads-grid.grid-4x6 {
@@ -848,7 +888,7 @@ ul.sampler-list {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
   .pads-grid.grid-4x6 {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
 
@@ -857,12 +897,15 @@ ul.sampler-list {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
   .pads-grid.grid-4x4 {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .pads-grid.grid-4x6 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 
 .pad-item {
-  aspect-ratio: 1.28 / 1;
+  aspect-ratio: 1 / 1;
   background: linear-gradient(145deg, #ff9a56 0%, #ff6b6b 100%);
   border: 2px solid rgba(255, 255, 255, 0.8);
   border-radius: 10px;
@@ -879,18 +922,10 @@ ul.sampler-list {
   padding: clamp(3px, 0.8vw, 5px);
 }
 
-.pads-grid.grid-4x4 .pad-item {
-  aspect-ratio: 1.22 / 1;
-}
-
-.pads-grid.grid-4x6 .pad-item {
-  aspect-ratio: 1.18 / 1;
-}
-
-@media (max-width: 720px) {
-  .pads-grid.grid-4x4 .pad-item,
-  .pads-grid.grid-4x6 .pad-item {
-    aspect-ratio: 1.32 / 1;
+@media (min-width: 1024px) {
+  .pad-item {
+    width: 100%;
+    padding: clamp(2px, 0.45vw, 4px);
   }
 }
 
@@ -918,10 +953,12 @@ ul.sampler-list {
 }
 
 .pad-sound {
-  font-size: clamp(0.5em, 1.2vw, 0.7em);
+  font-size: clamp(0.62em, 1.05vw, 0.88em);
   color: rgba(255, 255, 255, 0.95);
   text-align: center;
-  max-width: 90%;
+  max-width: 100%;
+  width: 100%;
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -930,13 +967,17 @@ ul.sampler-list {
   line-height: 1.1;
 }
 
+.pads-grid.grid-4x6 .pad-sound {
+  font-size: clamp(0.58em, 0.95vw, 0.8em);
+}
+
 /* Edit mode for pads view */
 .edit-mode .pad-item {
   animation: pulse-edit 1.5s ease-in-out infinite;
 }
 
 .edit-mode .pad-sound {
-  font-size: clamp(0.7em, 1.8vw, 1em);
+  font-size: clamp(0.72em, 1.45vw, 1.02em);
   text-align: center;
 }
 
@@ -982,6 +1023,6 @@ ul.sampler-list {
   }
 
   .pad-sound {
-    font-size: clamp(0.55em, 2vw, 0.7em);
+    font-size: clamp(0.62em, 2vw, 0.8em);
   }
 }
