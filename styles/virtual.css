@@ -935,7 +935,6 @@ ul.sampler-list {
   animation: pulse-edit 1.5s ease-in-out infinite;
 }
 
-.edit-mode .pad-key { display: none; }
 .edit-mode .pad-sound {
   font-size: clamp(0.7em, 1.8vw, 1em);
   text-align: center;

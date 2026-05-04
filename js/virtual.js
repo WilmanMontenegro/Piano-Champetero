@@ -123,9 +123,121 @@ let keyToPadIndex = Object.create(null);
 /** Set from DOMContentLoaded: generatePadsView lives at module scope and cannot see nested functions. */
 let openPadEditModalRef = null;
 
+function padKeysStorageKey(gridType) {
+  return `pianoChampeteroPadKeys_${gridType}`;
+}
+
+function loadPadKeysSavedObject(gridType) {
+  try {
+    const raw = localStorage.getItem(padKeysStorageKey(gridType));
+    if (!raw) return null;
+    const o = JSON.parse(raw);
+    return o && typeof o === 'object' ? o : null;
+  } catch {
+    return null;
+  }
+}
+
+function findCanonicalCodeForPad(map, padIndex) {
+  const hits = [];
+  for (const [k, v] of Object.entries(map)) {
+    if (v !== padIndex) continue;
+    if (/^Key[A-Z]$/.test(k) || /^Digit[0-9]$/.test(k) || /^Numpad[0-9]$/.test(k)) hits.push(k);
+  }
+  hits.sort();
+  return hits[0] || null;
+}
+
+/**
+ * One canonical key per pad index; re-adds lowercase letter aliases for Key* codes.
+ * @param {Record<string, number>} out
+ * @param {number} total
+ */
+function normalizePlayablePadKeyMap(out, total) {
+  for (const k of Object.keys(out)) {
+    const v = out[k];
+    if (typeof v !== 'number' || v < 0 || v >= total) delete out[k];
+  }
+  for (const k of Object.keys(out)) {
+    if (/^[a-z]$/.test(k)) delete out[k];
+  }
+  for (let p = 0; p < total; p++) {
+    const hits = [];
+    for (const [k, v] of Object.entries(out)) {
+      if (v !== p) continue;
+      if (/^Key[A-Z]$/.test(k) || /^Digit[0-9]$/.test(k) || /^Numpad[0-9]$/.test(k)) hits.push(k);
+    }
+    hits.sort();
+    const keep = hits[0];
+    for (const h of hits) {
+      if (h !== keep) delete out[h];
+    }
+  }
+  const usedKeys = new Set(Object.keys(out));
+  for (let p = 0; p < total; p++) {
+    if (findCanonicalCodeForPad(out, p)) continue;
+    let placed = false;
+    for (let off = 0; off < PAD_KEY_LAYOUT.length && !placed; off++) {
+      const ch = PAD_KEY_LAYOUT[(p + off) % PAD_KEY_LAYOUT.length];
+      const code = 'Key' + ch.toUpperCase();
+      if (!usedKeys.has(code)) {
+        out[code] = p;
+        out[ch] = p;
+        usedKeys.add(code);
+        usedKeys.add(ch);
+        placed = true;
+      }
+    }
+  }
+  for (const [k, v] of Object.entries({ ...out })) {
+    const m = /^Key([A-Z])$/.exec(k);
+    if (m) out[m[1].toLowerCase()] = v;
+  }
+}
+
+function persistPadKeysForCurrentGrid() {
+  const total = gridConfigs[currentGridType]?.total || 0;
+  normalizePlayablePadKeyMap(keyToPadIndex, total);
+  const canon = Object.create(null);
+  for (let p = 0; p < total; p++) {
+    const c = findCanonicalCodeForPad(keyToPadIndex, p);
+    if (c) canon[c] = p;
+  }
+  try {
+    localStorage.setItem(padKeysStorageKey(currentGridType), JSON.stringify(canon));
+  } catch {}
+}
+
 function rebuildPadKeyIndexMap() {
   const config = gridConfigs[currentGridType];
-  keyToPadIndex = buildPadKeyIndexMap(config ? config.total : 0);
+  const total = config ? config.total : 0;
+  const base = buildPadKeyIndexMap(total);
+  const saved = loadPadKeysSavedObject(currentGridType);
+  if (!saved || Object.keys(saved).length === 0) {
+    keyToPadIndex = base;
+    return;
+  }
+  const out = { ...base };
+  const entries = Object.entries(saved).sort((a, b) => a[0].localeCompare(b[0]));
+  for (const [rawKey, rawVal] of entries) {
+    let code = rawKey;
+    if (/^[a-z]$/.test(code)) code = 'Key' + code.toUpperCase();
+    else if (/^[A-Z]$/.test(code)) code = 'Key' + code;
+    else if (/^[0-9]$/.test(code)) code = 'Digit' + code;
+    if (!/^Key[A-Z]$/.test(code) && !/^Digit[0-9]$/.test(code) && !/^Numpad[0-9]$/.test(code)) continue;
+    const idx = rawVal | 0;
+    if (idx < 0 || idx >= total) continue;
+    for (const k of Object.keys(out)) {
+      if (out[k] === idx) delete out[k];
+    }
+    delete out[code];
+    const mk = /^Key([A-Z])$/.exec(code);
+    if (mk) delete out[mk[1].toLowerCase()];
+    out[code] = idx;
+    if (mk) out[mk[1].toLowerCase()] = idx;
+  }
+  normalizePlayablePadKeyMap(out, total);
+  keyToPadIndex = out;
 }
 
 export function saveKeyMapping(map) { try { const normalized = normalizeKeyMap(map); localStorage.setItem('pianoChampeteroKeyMap', JSON.stringify(normalized)); } catch (e) {} }
@@ -171,6 +283,14 @@ function prettyLabelFromId(id) {
   return id.toUpperCase();
 }
 
+function padKeyDisplayLabel(padIndex, total) {
+  if (padIndex < 0 || padIndex >= total) return '';
+  const code = findCanonicalCodeForPad(keyToPadIndex, padIndex);
+  if (code) return prettyLabelFromId(code);
+  const ch = PAD_KEY_LAYOUT[padIndex];
+  return ch ? ch.toUpperCase() : '';
+}
+
 export function prettyName(fileName) {
   if (!fileName) return '';
   let name = fileName.replace(/\.[^.]+$/, '').replace(/[-_]/g, ' ');
@@ -191,7 +311,11 @@ export function saveSamplers() {
 export function resetSettings() {
   localStorage.removeItem('pianoChampeteroSamplers');
   localStorage.removeItem('pianoChampeteroKeyMap');
+  Object.keys(gridConfigs).forEach(g => {
+    try { localStorage.removeItem(padKeysStorageKey(g)); } catch {}
+  });
   Object.keys(tomAudioMap).forEach(k => tomAudioMap[k] = tomSamplersDefaults[k]);
+  rebuildPadKeyIndexMap();
 }
 
 export async function loadAvailableSamplers() {
@@ -358,8 +482,6 @@ export function generatePadsView() {
   padsGrid.innerHTML = '';
   padsGrid.className = 'pads-grid grid-' + currentGridType;
 
-  const keys = PAD_KEY_LAYOUT.slice(0, config.total);
-
   for (let i = 0; i < config.total; i++) {
     const pad = document.createElement('button');
     pad.className = 'pad-item';
@@ -367,7 +489,7 @@ export function generatePadsView() {
 
     const keyLabel = document.createElement('span');
     keyLabel.className = 'pad-key';
-    keyLabel.textContent = keys[i] ? keys[i].toUpperCase() : '';
+    keyLabel.textContent = padKeyDisplayLabel(i, config.total);
 
     const soundLabel = document.createElement('span');
     soundLabel.className = 'pad-sound';
@@ -485,7 +607,28 @@ document.addEventListener('DOMContentLoaded', async () => {
     tabs.forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
     if (tabSampler) tabSampler.style.display = tab === 'sampler' ? '' : 'none';
     if (tabKey) tabKey.style.display = tab === 'key' ? '' : 'none';
-    if (tab === 'key' && keyInput) { keyInput.value = ''; keyInput.focus(); }
+    if (tab === 'key' && keyInput) {
+      if (padSeleccionado !== null && padSeleccionado !== undefined) {
+        const total = gridConfigs[currentGridType]?.total || 0;
+        keyInput.value = padKeyDisplayLabel(padSeleccionado, total);
+      } else if (tomSeleccionado) {
+        const tomId = tomSeleccionado.id;
+        const codes = Object.keys(keyToTomId)
+          .filter(k => keyToTomId[k] === tomId)
+          .map(k => {
+            if (/^Key[A-Z]$/.test(k) || /^Digit[0-9]$/.test(k) || /^Numpad[0-9]$/.test(k)) return k;
+            if (/^[a-z]$/.test(k)) return 'Key' + k.toUpperCase();
+            if (/^[0-9]$/.test(k)) return 'Digit' + k;
+            return null;
+          })
+          .filter(Boolean)
+          .sort();
+        keyInput.value = codes.length ? prettyLabelFromId(codes[0]) : '';
+      } else {
+        keyInput.value = '';
+      }
+      keyInput.focus();
+    }
   }
 
   tabs.forEach(t => t.addEventListener('click', () => switchTab(t.dataset.tab)));
@@ -609,7 +752,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
       listaSamplers.appendChild(li);
     });
-    if (keyInput) keyInput.value = '';
     if (modal) modal.style.display = 'flex';
   }
   openPadEditModalRef = openPadEditModal;
@@ -699,16 +841,32 @@ document.addEventListener('DOMContentLoaded', async () => {
     focusOnOpen: false,
     onConfirm: async () => {
       if (padSeleccionado !== null && padSeleccionado !== undefined) {
-        if (activeTab === 'sampler' && padSamplerSeleccionado) {
+        const totalPads = gridConfigs[currentGridType]?.total || 0;
+        let padModalDidChange = false;
+        if (padSamplerSeleccionado) {
           padsViewState[padSeleccionado] = padSamplerSeleccionado;
           savePadsViewSounds(currentGridType, padsViewState);
           const buf = await preloadPadsViewBuffer(padSeleccionado);
           if (buf) padsViewBuffers[padSeleccionado] = buf;
-          generatePadsView();
+          padModalDidChange = true;
         }
+        if (lastCapturedCode) {
+          Object.keys(keyToPadIndex).forEach(k => {
+            if (keyToPadIndex[k] === padSeleccionado) delete keyToPadIndex[k];
+          });
+          delete keyToPadIndex[lastCapturedCode];
+          const mkPad = /^Key([A-Z])$/.exec(lastCapturedCode);
+          if (mkPad) delete keyToPadIndex[mkPad[1].toLowerCase()];
+          keyToPadIndex[lastCapturedCode] = padSeleccionado;
+          if (mkPad) keyToPadIndex[mkPad[1].toLowerCase()] = padSeleccionado;
+          normalizePlayablePadKeyMap(keyToPadIndex, totalPads);
+          persistPadKeysForCurrentGrid();
+          padModalDidChange = true;
+        }
+        if (padModalDidChange) generatePadsView();
       } else if (tomSeleccionado) {
         const tomId = tomSeleccionado.id;
-        if (activeTab === 'sampler' && samplerSeleccionado) {
+        if (samplerSeleccionado) {
           tomAudioMap[tomId] = samplerSeleccionado;
           try {
             tomSamplerBuffers[tomId] = await loadSamplerBuffer('samplers/' + samplerSeleccionado);
@@ -718,7 +876,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           saveSamplers();
           actualizarNombresPads();
         }
-        if (activeTab === 'key' && lastCapturedCode) {
+        if (lastCapturedCode) {
           Object.keys(keyToTomId).forEach(k => { if (keyToTomId[k] === tomId) delete keyToTomId[k]; });
           if (keyToTomId[lastCapturedCode]) delete keyToTomId[lastCapturedCode];
           keyToTomId[lastCapturedCode] = tomId;
@@ -798,6 +956,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       keyToTomId = normalizeKeyMap(keyToTomIdDefaults);
       actualizarEtiquetasTeclas(keyToTomId);
       actualizarNombresPads();
+      if (currentViewMode === 'pads') generatePadsView();
     }
   });
 
