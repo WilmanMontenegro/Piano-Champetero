@@ -1,7 +1,6 @@
 /**
- * Physical letters for pad labels and keystrokes.
- * First 9 pads match the default battery layout (same keys as tom-1 … tom-9).
- * Extra pads extend with remaining letters in QWERTY row order, skipping the 9 battery keys.
+ * Linear row-by-row letters (physical QWERTY rows, top → bottom).
+ * Row 1: Q–P, row 2: A–L, row 3: Z–M. Same sequence for battery (first 9) and pads (first N).
  */
 export const PAD_KEY_LAYOUT = [
   'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p',
@@ -9,18 +8,11 @@ export const PAD_KEY_LAYOUT = [
   'z', 'x', 'c', 'v', 'b', 'n', 'm'
 ];
 
-/** Same order as default battery: tom-1 … tom-9 */
-export const BATTERY_DEFAULT_PAD_CHARS = ['q', 'w', 'e', 'a', 's', 'd', 'z', 'x', 'c'];
+/** Default battery: first 9 keys of linear layout (Q W E R T Y U I O) → tom-1 … tom-9 */
+export const BATTERY_DEFAULT_PAD_CHARS = PAD_KEY_LAYOUT.slice(0, 9);
 
-const BATTERY_CHAR_SET = new Set(BATTERY_DEFAULT_PAD_CHARS);
-
-/** Letters for pad index 9+ in scan order, excluding battery home keys */
-function extensionPadKeyChars() {
-  return PAD_KEY_LAYOUT.filter(ch => !BATTERY_CHAR_SET.has(ch));
-}
-
-/** Full default assignment order: pads 0–8 = battery, 9+ = extension */
-export const DEFAULT_PAD_KEY_CHAR_ORDER = [...BATTERY_DEFAULT_PAD_CHARS, ...extensionPadKeyChars()];
+/** Default pad index → letter: same linear order for all grids (no separate “extension” pool). */
+export const DEFAULT_PAD_KEY_CHAR_ORDER = [...PAD_KEY_LAYOUT];
 
 /**
  * @param {number} totalPads
