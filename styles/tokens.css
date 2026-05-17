@@ -1,0 +1,89 @@
+/* =====================================================
+   Design tokens — editar aquí colores, espaciado y escalas
+   ===================================================== */
+:root {
+  /* Colores caribeños / marca */
+  --color-principal: #FF9A56;
+  --color-secundario: #FF6B6B;
+  --color-amarillo: #FFE066;
+  --color-marron: #8B4513;
+  --color-footer: #FFF5E6;
+  --color-rosa-claro: #FFB7C5;
+  --color-blanco: #ffffff;
+  --color-gris-claro: #f8f9fa;
+  --color-gris-medio: #e0e0e0;
+  --color-gris-oscuro: #555555;
+  --color-negro: #000000;
+  --color-exito: #4CAF50;
+  --color-error: #FF6B6B;
+
+  /* Gradientes reutilizables */
+  --gradient-body: linear-gradient(135deg, #FFE066 0%, #FF9A56 25%, #FF6B6B 50%, #FFB7C5 75%, #FFF5E6 100%);
+  --gradient-footer: linear-gradient(135deg, var(--color-marron) 0%, #A0522D 50%, #CD853F 100%);
+  --gradient-nav-dropdown: linear-gradient(135deg, var(--color-marron) 0%, #A0522D 50%, #CD853F 100%);
+  --gradient-ticker: linear-gradient(90deg, var(--color-principal), var(--color-secundario));
+  --overlay-header: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.2));
+
+  /* Layout */
+  --layout-content-max: 900px;
+  --layout-content-gutter: 2rem;
+  --layout-inline-pad: clamp(0.75rem, 3vw, 1.5rem);
+  --header-border: 3px solid rgba(255, 224, 102, 0.6);
+
+  /*
+   * Nav — desktop-first (PC es el uso principal)
+   * Valores base = escritorio; se reducen solo en ventanas/contenedores estrechos
+   */
+  --nav-container-name: site-nav;
+  --nav-compact-max: 620px;
+  --nav-dropdown-max-width: 320px;
+  --nav-link-gap: 1.25em;
+  /* Escala con el ancho de pantalla en PC (tope ~1.3rem) */
+  --nav-link-size: clamp(1rem, 0.45rem + 0.72vw, 1.35rem);
+  --nav-menu-max-width: min(96vw, 1400px);
+
+  /* Radios y sombras */
+  --borde-radius: 8px;
+  --borde-radius-grande: 16px;
+  --borde-radius-nav-dropdown: 12px;
+  --sombra-btn: 0 2px 8px rgba(0, 0, 0, 0.1);
+  --sombra-btn-hover: 0 4px 16px rgba(0, 0, 0, 0.14);
+  --sombra-card: 0 4px 24px rgba(0, 0, 0, 0.1);
+  --sombra-nav-dropdown: 0 4px 12px rgba(0, 0, 0, 0.3);
+
+  /* Pads / toms — feedback al tocar (paleta caribeña) */
+  --pad-glow-idle: rgba(255, 154, 86, 0.35);
+  --pad-hit-ring: rgba(255, 224, 102, 0.95);
+  --tom-glow-idle: rgba(255, 224, 102, 0.35);
+  --hit-flash-duration: 0.16s;
+
+  /* Ticker */
+  --ticker-duration: 18s;
+  --ticker-font-size: 0.95em;
+
+  /* Tipografía */
+  --font-display: 'Seaweed Script', cursive;
+  --font-body: 'Roboto', Arial, sans-serif;
+  --font-size-xs: 0.875rem;
+  --font-size-sm: 1rem;
+  --font-size-md: 1.125rem;
+  --font-size-lg: 1.25rem;
+  --font-size-xl: 1.5rem;
+  --font-size-2xl: 1.875rem;
+  --font-size-3xl: 2.25rem;
+  --line-height-tight: 1.4;
+  --line-height-normal: 1.6;
+  --line-height-relaxed: 1.8;
+
+  /* Z-index */
+  --z-nav: 100;
+  --z-nav-hamburger: 101;
+  --z-modal: 1000;
+  --z-modal-overlay: 9999;
+  --z-ticker: 9999;
+
+  /*
+   * Breakpoints viewport (solo en responsive.css)
+   * 360 | 480 | 768 | 1024
+   */
+}

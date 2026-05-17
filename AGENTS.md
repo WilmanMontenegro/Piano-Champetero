@@ -16,12 +16,19 @@ Context for coding agents and humans: **Batería Champetera Virtual** — static
 ├── index.html, virtual.html, sobre-nosotros.html, contactanos.html, politicas-privacidad.html
 ├── header.html, nav.html          # Fetched into pages
 ├── js/
-│   ├── common.js                  # loadHeader, initNav, setYearFooter
+│   ├── site-config.js             # Parameters: ticker credits, AUDIO_UI, nav compact px (single source)
+│   ├── common.js                  # initSiteChrome (header+nav+ticker), setYearFooter
 │   ├── virtual.js                 # Battery + pads grid, audio, edit modals, storage maps
 │   ├── pad-keyboard.js            # Linear row-by-row default keys (battery + pads), buildPadKeyIndexMap, resolvePadIndexFromKeyboard
 │   ├── modal-utils.js             # initModal
 │   └── contactanos.js
-├── styles/reset.css, common.css, virtual.css (+ page CSS per HTML file)
+├── styles/
+│   ├── reset.css
+│   ├── tokens.css                 # Design tokens (:root variables)
+│   ├── common.css                 # Imports tokens + components + responsive; shared UI
+│   ├── components/nav.css, ticker.css
+│   ├── responsive.css             # Viewport breakpoints (desktop-first)
+│   └── virtual.css (+ page CSS per HTML file)
 ├── manifest.json, sw.js           # PWA
 └── samplers/                      # WAV/MP3 samples
 ```
@@ -33,7 +40,8 @@ Context for coding agents and humans: **Batería Champetera Virtual** — static
 - **CSS classes**: English, kebab-case  
 - **JS**: camelCase functions/vars, `UPPER_SNAKE` constants  
 - **UI strings**: Spanish (es-419)  
-- **CSS load order**: `reset.css` → `common.css` → page CSS. Shared UI lives in `common.css`; avoid duplicates and avoid `!important` (except third-party).
+- **CSS load order**: `reset.css` → `common.css` → page CSS (`virtual.css`, etc.). `common.css` imports `tokens.css`, `components/nav.css`, `components/ticker.css`, `responsive.css`. **Edit one place**: palette/spacing in `tokens.css`; nav in `components/nav.css` (container query at 620px = `NAV_COMPACT_MAX_PX` in `site-config.js`); ticker styles in `components/ticker.css`; viewport rules in `responsive.css`. Use `var(--token)` in page CSS; avoid duplicates and `!important` (except third-party).
+- **JS shell**: Each page calls `initSiteChrome()` (loads `header.html`, `nav.html`, builds ticker from `site-config.js`). New contributor → add to `TICKER_CONTRIBUTORS` in `site-config.js` only.
 
 **JS style**: ES modules, async/await, event delegation; no globals; no DOM work before `DOMContentLoaded` where the app already follows that pattern.
 
@@ -77,6 +85,7 @@ Same **edit** flow everywhere: **Editar** → pick a cell → modal **Sonido** /
 - **Desktop-first pads sizing** (`styles/virtual.css`):
   - Uses a shared pad size variable constrained by both viewport width and height to avoid vertical clipping while still using available width.
   - 24-pad view keeps 6 columns on desktop; smaller grids center with fewer columns but the same square pad size logic.
+- **Desktop-first product**: PC is the primary target (lowest audio/latency expectations on mobile). Layout, nav, and pads sizing optimize for wide screens first; mobile stays usable but secondary.
 - **Mobile remains secondary**: breakpoint rules reduce columns only when needed to avoid overflow and keep playability.
 
 ## Quick commands

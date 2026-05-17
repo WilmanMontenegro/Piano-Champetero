@@ -1,6 +1,7 @@
 // js/virtual.js — lógica de la batería para virtual.html
 // OPTIMIZADO: Latencia mínima, preload agresivo, sin requestAnimationFrame en play
-import { loadHeader, setYearFooter, resumeOnUserGesture } from './common.js';
+import { initSiteChrome, setYearFooter, resumeOnUserGesture } from './common.js';
+import { AUDIO_UI } from './site-config.js';
 import { initModal } from './modal-utils.js';
 import { DEFAULT_PAD_KEY_CHAR_ORDER, BATTERY_DEFAULT_PAD_CHARS, buildPadKeyIndexMap, resolvePadIndexFromKeyboard } from './pad-keyboard.js';
 
@@ -9,6 +10,8 @@ export const audioCtx = new (window.AudioContext || window.webkitAudioContext)({
   latencyHint: 'interactive',
   sampleRate: 48000
 });
+
+const HIT_FLASH_MS = AUDIO_UI.hitFlashMs;
 
 export const tomSamplersDefaults = {
   'tom-1': 'D (2).wav',
@@ -431,7 +434,7 @@ export async function activateTomSampler(tomId) {
     await audioCtx.resume();
   }
   playTomSampler(tomId);
-  setTimeout(() => button.classList.remove('active'), 60);
+  setTimeout(() => button.classList.remove('active'), HIT_FLASH_MS);
 }
 
 // Pads view functions
@@ -518,7 +521,7 @@ export async function activatePadSound(index) {
     await audioCtx.resume();
   }
   playPadSound(index);
-  setTimeout(() => padButton.classList.remove('active'), 60);
+  setTimeout(() => padButton.classList.remove('active'), HIT_FLASH_MS);
 }
 
 export function generatePadsView() {
@@ -533,7 +536,7 @@ export function generatePadsView() {
   for (let i = 0; i < config.total; i++) {
     const pad = document.createElement('button');
     pad.className = 'pad-item';
-    pad.dataset.padIndex = i;
+    pad.dataset.padIndex = String(i);
 
     const keyLabel = document.createElement('span');
     keyLabel.className = 'pad-key';
@@ -607,7 +610,7 @@ function actualizarEtiquetasTeclas(keyMap) {
 
 document.addEventListener('DOMContentLoaded', async () => {
   const isMainPage = document.getElementById('tom-1') !== null;
-  await loadHeader();
+  await initSiteChrome();
   const navVirtual = document.getElementById('nav-virtual');
   if (navVirtual) navVirtual.classList.add('active');
   setYearFooter();

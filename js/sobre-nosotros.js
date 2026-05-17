@@ -1,8 +1,8 @@
 // js/sobre-nosotros.js — lógica mínima para about page
-import { loadHeader, setYearFooter, resumeOnUserGesture } from './common.js';
+import { initSiteChrome, setYearFooter, resumeOnUserGesture } from './common.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
-  await loadHeader();
+  await initSiteChrome();
   setYearFooter();
   resumeOnUserGesture();
 });

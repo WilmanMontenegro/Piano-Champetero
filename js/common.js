@@ -1,4 +1,6 @@
 // js/common.js — utilidades UI compartidas entre páginas
+import { buildTickerInnerHtml } from './site-config.js';
+
 export function initNav() {
   return fetch('nav.html')
     .then(res => res.text())
@@ -121,4 +123,22 @@ export async function loadHeader() {
     // init hamburger
     initHamburgerMenu();
   }
+}
+
+/**
+ * Rellena #contributor-ticker desde js/site-config.js (una sola fuente de mensajes).
+ */
+export function loadContributorTicker() {
+  const root = document.getElementById('contributor-ticker');
+  if (!root) return Promise.resolve();
+
+  const pageFile = window.location.pathname.split('/').pop() || 'index.html';
+  const inner = buildTickerInnerHtml(pageFile);
+  root.innerHTML = `<div class="ticker-content">\n      ${inner}\n    </div>`;
+  return Promise.resolve();
+}
+
+/** Header + nav + cinta — llamar al inicio de cada página */
+export async function initSiteChrome() {
+  await Promise.all([loadHeader(), loadContributorTicker()]);
 }

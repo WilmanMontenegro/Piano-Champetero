@@ -1,64 +1,12 @@
 /* =====================================================
-   ESTILOS COMUNES - Piano Champetero
-   (usar junto con reset.css)
+   Estilos comunes — cargar después de reset.css
+   Estructura: tokens → componentes → responsive → base UI
    ===================================================== */
 
-/* NOTA: Google Fonts debe cargarse en el HTML para mejor performance */
-
-/* ===================== VARIABLES ===================== */
-:root {
-  /* Colores principales */
-  --color-principal: #FF9A56;
-  --color-secundario: #FF6B6B;
-  --color-amarillo: #FFE066;
-  --color-marron: #8B4513;
-
-  /* Colores de fondo */
-  --color-footer: #FFF5E6;
-  --color-rosa-claro: #FFB7C5;
-
-  /* Colores neutros */
-  --color-blanco: #ffffff;
-  --color-gris-claro: #f8f9fa;
-  --color-gris-medio: #e0e0e0;
-  --color-gris-oscuro: #555555;
-  --color-negro: #000000;
-
-  /* Colores de estado */
-  --color-exito: #4CAF50;
-  --color-error: #FF6B6B;
-
-  /* Espaciado y efectos */
-  --borde-radius: 8px;
-  --borde-radius-grande: 16px;
-  --sombra-btn: 0 2px 8px rgba(0,0,0,0.10);
-  --sombra-btn-hover: 0 4px 16px rgba(0,0,0,0.14);
-  --sombra-card: 0 4px 24px rgba(0,0,0,0.10);
-
-  /* Tipografía */
-  --font-size-xs: 0.875rem;
-  --font-size-sm: 1rem;
-  --font-size-md: 1.125rem;
-  --font-size-lg: 1.25rem;
-  --font-size-xl: 1.5rem;
-  --font-size-2xl: 1.875rem;
-  --font-size-3xl: 2.25rem;
-  --line-height-tight: 1.4;
-  --line-height-normal: 1.6;
-  --line-height-relaxed: 1.8;
-
-  /* Z-index layers */
-  --z-nav: 100;
-  --z-nav-hamburger: 101;
-  --z-modal: 1000;
-  --z-modal-overlay: 9999;
-
-  /* Breakpoints (para referencia en media queries) */
-  --breakpoint-mobile-sm: 360px;
-  --breakpoint-mobile: 480px;
-  --breakpoint-tablet-sm: 640px;
-  --breakpoint-tablet: 768px;
-}
+@import url('tokens.css');
+@import url('components/nav.css');
+@import url('components/ticker.css');
+@import url('responsive.css');
 
 /* ===================== BASE ===================== */
 * {
@@ -70,8 +18,8 @@ body {
   flex-direction: column;
   min-height: 100vh;
   overflow-x: hidden;
-  font-family: 'Roboto', Arial, sans-serif;
-  background: linear-gradient(135deg, #FFE066 0%, #FF9A56 25%, #FF6B6B 50%, #FFB7C5 75%, #FFF5E6 100%);
+  font-family: var(--font-body);
+  background: var(--gradient-body);
   background-attachment: fixed;
 }
 
@@ -93,17 +41,15 @@ section {
   border-radius: 18px;
   box-shadow: var(--sombra-card);
   padding: 2.2em 2em 1.5em;
-  max-width: min(900px, calc(100% - 2rem));
+  max-width: min(var(--layout-content-max), calc(100% - var(--layout-content-gutter)));
   width: 100%;
   margin: 2rem auto;
   overflow-wrap: break-word;
 }
 
 /* ===================== TIPOGRAFÍA ===================== */
-
-/* H1 principal (SEO) - Responsive */
 main > h1 {
-  font-family: 'Seaweed Script', cursive;
+  font-family: var(--font-display);
   text-align: center;
   color: #FFD700;
   margin: 1.5rem 1rem;
@@ -113,13 +59,12 @@ main > h1 {
   word-wrap: break-word;
   overflow-wrap: break-word;
   max-width: 100%;
-  box-sizing: border-box;
 }
 
 .page-title,
 .content-card h2,
 section h2 {
-  font-family: 'Seaweed Script', cursive;
+  font-family: var(--font-display);
   font-size: clamp(2em, 5vw, 2.7em);
   color: var(--color-principal);
   margin: 0 0 0.5em;
@@ -129,7 +74,7 @@ section h2 {
 
 .content-card h3,
 section h3 {
-  font-family: 'Seaweed Script', cursive;
+  font-family: var(--font-display);
   font-size: 1.8em;
   color: var(--color-marron);
 }
@@ -142,7 +87,6 @@ section p,
   font-size: var(--font-size-md);
 }
 
-/* Listas estilizadas (no aplica a .policy-container que usa bullets normales) */
 section ul:not(.policy-container ul, .modal-instructions) {
   list-style: none;
   padding: 0;
@@ -165,19 +109,21 @@ header {
   flex-direction: column;
   align-items: center;
   text-align: center;
-  background-image: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.2)), url('../images/bateria-champetera-atardecer.webp');
+  background-image: var(--overlay-header), url('../images/bateria-champetera-atardecer.webp');
   background-size: cover;
   background-position: center 65%;
   color: var(--color-blanco);
   text-shadow: 3px 3px 12px rgba(0, 0, 0, 0.8);
   padding: 2rem 0 0;
-  border-bottom: 3px solid rgba(255, 224, 102, 0.6);
+  border-bottom: var(--header-border);
   flex-shrink: 0;
   content-visibility: auto;
+  overflow-x: clip;
+  width: 100%;
 }
 
 .title {
-  font-family: 'Seaweed Script', cursive;
+  font-family: var(--font-display);
   font-size: clamp(2rem, 8vw, 7rem);
   font-weight: normal;
   margin: 0.5rem 0;
@@ -185,76 +131,8 @@ header {
   max-width: 100%;
   word-wrap: break-word;
   overflow-wrap: break-word;
-  line-height: 1.2;
+  line-height: var(--line-height-tight);
 }
-
-#nav-container { margin: 1rem 0; }
-
-/* ===================== NAVBAR ===================== */
-.main-nav {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  position: relative;
-}
-
-.nav-menu {
-  display: flex;
-  gap: 2.5em;
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.main-nav a {
-  color: var(--color-blanco);
-  font-size: 1.3em;
-  font-weight: 700;
-  text-decoration: none;
-  letter-spacing: 1px;
-  padding: 0.2em 0.5em;
-  border-radius: 4px;
-  background: none;
-  box-shadow: none;
-  transition: color 0.2s, background 0.2s;
-}
-
-.main-nav a:hover,
-.main-nav a.active:hover {
-  color: var(--color-principal);
-  background: rgba(255,255,255,0.08);
-}
-
-.main-nav a.active {
-  color: var(--color-principal);
-}
-
-/* Hamburger - oculto en desktop */
-.nav-hamburger {
-  display: none;
-  flex-direction: column;
-  justify-content: center;
-  gap: 5px;
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 10px;
-  z-index: var(--z-nav-hamburger);
-}
-
-.nav-hamburger span {
-  display: block;
-  width: 28px;
-  height: 3px;
-  background: var(--color-blanco);
-  border-radius: 3px;
-  transition: all 0.3s ease;
-}
-
-/* Animación X */
-.nav-hamburger.active span:nth-child(1) { transform: rotate(45deg) translate(6px, 6px); }
-.nav-hamburger.active span:nth-child(2) { opacity: 0; }
-.nav-hamburger.active span:nth-child(3) { transform: rotate(-45deg) translate(6px, -6px); }
 
 /* ===================== BOTONES ===================== */
 .btn-danger,
@@ -265,13 +143,12 @@ header {
   border-radius: var(--borde-radius);
   font-weight: bold;
   box-shadow: var(--sombra-btn);
-  transition: all 0.2s;
+  transition: background 0.2s, box-shadow 0.2s;
 }
 
 .btn-danger:hover,
 .btn-reset:hover {
   background: var(--color-marron);
-  color: var(--color-blanco);
   box-shadow: var(--sombra-btn-hover);
 }
 
@@ -282,7 +159,7 @@ header {
   border-radius: var(--borde-radius);
   font-weight: bold;
   box-shadow: var(--sombra-btn);
-  transition: all 0.2s;
+  transition: background 0.2s, box-shadow 0.2s, color 0.2s;
 }
 
 .btn-cancel:hover {
@@ -302,7 +179,7 @@ header {
   font-size: var(--font-size-md);
   box-shadow: var(--sombra-btn);
   margin-top: 1em;
-  transition: all 0.3s;
+  transition: background 0.3s, box-shadow 0.3s;
 }
 
 .cta-button:hover {
@@ -376,7 +253,7 @@ header {
 
 .modal-content h3 {
   color: var(--color-marron);
-  font-family: 'Seaweed Script', cursive;
+  font-family: var(--font-display);
   font-size: 2.2em;
   margin: 0.5rem 0 1rem;
 }
@@ -393,7 +270,7 @@ footer {
   width: 100%;
   padding: 0.8rem 0;
   text-align: center;
-  background: linear-gradient(135deg, var(--color-marron) 0%, #A0522D 50%, #CD853F 100%);
+  background: var(--gradient-footer);
   border-top: 3px solid rgba(255, 224, 102, 0.7);
   box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.3), inset 0 2px 10px rgba(255, 224, 102, 0.2);
   color: var(--color-footer);
@@ -401,7 +278,7 @@ footer {
   text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
   flex-shrink: 0;
   margin-top: auto;
-  transition: all 0.3s ease;
+  transition: box-shadow 0.3s, border-color 0.3s;
 }
 
 footer:hover {
@@ -409,7 +286,10 @@ footer:hover {
   border-top-color: rgba(255, 224, 102, 0.9);
 }
 
-footer p { margin: 0; letter-spacing: 0.5px; }
+footer p {
+  margin: 0;
+  letter-spacing: 0.5px;
+}
 
 .ad-inf {
   display: flex;
@@ -417,198 +297,4 @@ footer p { margin: 0; letter-spacing: 0.5px; }
   height: 5em;
   justify-content: center;
   align-items: center;
-}
-
-/* ===================== RESPONSIVE ===================== */
-
-/* Tablet - 768px */
-@media (max-width: 768px) {
-  .main-nav ul { gap: 1.5em; }
-  .main-nav a { font-size: 1.1em; }
-
-  .content-card,
-  section {
-    padding: 1.5em 1em;
-    margin: 1rem;
-  }
-
-  .page-title,
-  .content-card h2,
-  section h2 { font-size: 1.8em; }
-
-  section p,
-  .content-card p { font-size: var(--font-size-sm); }
-
-  .cta-button {
-    padding: 0.7em 1.5em;
-    font-size: var(--font-size-sm);
-  }
-
-  .modal-content {
-    padding: 1.5rem;
-    margin: 1rem;
-  }
-
-  .modal-content h3 { font-size: var(--font-size-2xl); }
-  .modal-content p { font-size: var(--font-size-sm); }
-}
-
-/* Móvil - 480px */
-@media (max-width: 480px) {
-  header {
-    padding: 1rem 0;
-    background-image: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.2)), url('../images/bateria-champetera-atardecer-mobile.webp');
-  }
-  main { justify-content: flex-start; padding: 1rem 0; }
-
-  .main-nav {
-    flex-direction: column;
-    gap: 0.8rem;
-  }
-
-  /* Hamburger visible */
-  .nav-hamburger {
-    display: flex;
-    margin: 0 auto;
-  }
-
-  /* Menú oculto por defecto */
-  .nav-menu {
-    display: none;
-    position: absolute;
-    top: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 90%;
-    max-width: 300px;
-    margin-top: 0.5rem;
-    background: linear-gradient(135deg, var(--color-marron) 0%, #A0522D 50%, #CD853F 100%);
-    flex-direction: column;
-    gap: 0;
-    padding: 0.8rem;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-    z-index: var(--z-nav);
-  }
-
-  /* Menú visible cuando está activo */
-  .nav-menu.active {
-    display: flex;
-  }
-
-  .nav-menu li { margin: 0; }
-
-  .nav-menu a {
-    font-size: 1em;
-    padding: 0.8em 1em;
-    display: block;
-    border-radius: 8px;
-    text-align: center;
-  }
-
-  .nav-menu a:hover {
-    background: rgba(255, 255, 255, 0.15);
-  }
-
-  section,
-  .content-card {
-    margin: 1rem;
-    padding: 1.5em 1em;
-  }
-
-  .modal-content { width: 95%; }
-}
-
-/* Móvil pequeño - 360px */
-@media (max-width: 360px) {
-  .title { font-size: 2em; }
-
-  section,
-  .content-card {
-    margin: 0.8rem 0.6rem;
-    padding: 1.2em 0.9em;
-  }
-}
-
-/* ===================== CINTA DE AGRADECIMIENTO ===================== */
-.contributor-ticker {
-  background: linear-gradient(90deg, var(--color-principal), var(--color-secundario));
-  color: var(--color-blanco);
-  padding: 0.6em 0;
-  overflow: hidden;
-  white-space: nowrap;
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 9999;
-  margin: 0;
-  width: 100%;
-  /* Optimizaciones de rendimiento */
-  contain: layout paint;
-  will-change: transform;
-  transform: translateZ(0);
-}
-
-.ticker-content {
-  display: inline-block;
-  animation: ticker-scroll 18s linear infinite;
-  /* GPU acceleration */
-  transform: translate3d(0, 0, 0);
-  will-change: transform;
-  backface-visibility: hidden;
-}
-
-.ticker-item {
-  display: inline-block;
-  padding: 0 1em;
-  font-size: 0.95em;
-  font-weight: 500;
-  /* Evitar repaints */
-  transform: translateZ(0);
-}
-
-.ticker-item strong {
-  font-weight: 700;
-  text-decoration: underline;
-}
-
-.ticker-item a {
-  color: var(--color-amarillo);
-  text-decoration: underline;
-  font-weight: 600;
-}
-
-.ticker-item a:hover {
-  color: var(--color-blanco);
-}
-
-.ticker-separator {
-  display: inline-block;
-  padding: 0 0.5em;
-  opacity: 0.7;
-}
-
-@keyframes ticker-scroll {
-  0% { transform: translate3d(0, 0, 0); }
-  100% { transform: translate3d(-50%, 0, 0); }
-}
-
-/* Pausar al pasar el mouse */
-.contributor-ticker:hover .ticker-content {
-  animation-play-state: paused;
-}
-
-/* Desactivar animación en dispositivos con preferencia de movimiento reducido */
-@media (prefers-reduced-motion: reduce) {
-  .ticker-content {
-    animation: none;
-  }
-}
-
-/* En móviles, usar animación más simple */
-@media (max-width: 480px) {
-  .ticker-content {
-    animation-duration: 40s;
-  }
 }

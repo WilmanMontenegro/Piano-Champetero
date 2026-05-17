@@ -1,0 +1,79 @@
+/* =====================================================
+   Componente: cinta de agradecimientos (contributor-ticker)
+   ===================================================== */
+
+.contributor-ticker {
+  background: var(--gradient-ticker);
+  color: var(--color-blanco);
+  padding: 0.6em 0;
+  overflow: hidden;
+  white-space: nowrap;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: var(--z-ticker);
+  margin: 0;
+  width: 100%;
+  contain: layout paint;
+  will-change: transform;
+  transform: translateZ(0);
+}
+
+.ticker-content {
+  display: inline-block;
+  animation: ticker-scroll var(--ticker-duration, 18s) linear infinite;
+  transform: translate3d(0, 0, 0);
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
+.ticker-item {
+  display: inline-block;
+  padding: 0 1em;
+  font-size: var(--ticker-font-size, 0.95em);
+  font-weight: 500;
+  transform: translateZ(0);
+}
+
+.ticker-item strong {
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+.ticker-item a {
+  color: var(--color-amarillo);
+  text-decoration: underline;
+  font-weight: 600;
+}
+
+.ticker-item a:hover {
+  color: var(--color-blanco);
+}
+
+.ticker-separator {
+  display: inline-block;
+  padding: 0 0.5em;
+  opacity: 0.7;
+}
+
+@keyframes ticker-scroll {
+  0% { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(-50%, 0, 0); }
+}
+
+.contributor-ticker:hover .ticker-content {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ticker-content {
+    animation: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .ticker-content {
+    --ticker-duration: 40s;
+  }
+}
