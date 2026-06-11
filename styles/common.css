@@ -119,8 +119,6 @@ header {
   padding: var(--header-padding-top) 0 0;
   border-bottom: var(--header-border);
   flex-shrink: 0;
-  content-visibility: auto;
-  overflow-x: clip;
   width: 100%;
 }
 

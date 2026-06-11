@@ -20,37 +20,54 @@ export function initNav() {
   .catch((error) => { console.error('Error loading nav:', error); });
 }
 
-// Toggle menú hamburguesa
+// Toggle menú hamburguesa — un solo binding global (evita listeners duplicados tras fetch async)
 function initHamburgerMenu() {
   const hamburger = document.getElementById('nav-hamburger');
   const navMenu = document.getElementById('nav-menu');
+  if (!hamburger || !navMenu) return;
 
-  if (!hamburger || !navMenu || hamburger.dataset.navBound === '1') return;
-  hamburger.dataset.navBound = '1';
+  if (document.documentElement.dataset.navChromeBound === '1') return;
+  document.documentElement.dataset.navChromeBound = '1';
 
-  hamburger.addEventListener('click', (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    const open = !navMenu.classList.contains('active');
-    hamburger.classList.toggle('active', open);
-    navMenu.classList.toggle('active', open);
-    hamburger.setAttribute('aria-expanded', open ? 'true' : 'false');
-  });
+  function setNavOpen(open) {
+    const btn = document.getElementById('nav-hamburger');
+    const menu = document.getElementById('nav-menu');
+    if (!btn || !menu) return;
+    btn.classList.toggle('active', open);
+    menu.classList.toggle('active', open);
+    document.documentElement.classList.toggle('nav-open', open);
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    btn.setAttribute('aria-label', open ? 'Cerrar menú' : 'Abrir menú');
+    menu.setAttribute('aria-hidden', open ? 'false' : 'true');
+  }
 
-  navMenu.querySelectorAll('a').forEach(link => {
-    link.addEventListener('click', () => {
-      hamburger.classList.remove('active');
-      navMenu.classList.remove('active');
-      hamburger.setAttribute('aria-expanded', 'false');
-    });
-  });
+  function toggleNav() {
+    const menu = document.getElementById('nav-menu');
+    if (!menu) return;
+    setNavOpen(!menu.classList.contains('active'));
+  }
 
   document.addEventListener('click', (e) => {
-    if (!navMenu.classList.contains('active')) return;
-    if (navMenu.contains(e.target) || hamburger.contains(e.target)) return;
-    hamburger.classList.remove('active');
-    navMenu.classList.remove('active');
-    hamburger.setAttribute('aria-expanded', 'false');
+    const btn = document.getElementById('nav-hamburger');
+    const menu = document.getElementById('nav-menu');
+    if (!btn || !menu) return;
+
+    if (btn.contains(e.target)) {
+      e.preventDefault();
+      toggleNav();
+      return;
+    }
+
+    if (menu.contains(e.target)) {
+      if (e.target.closest('a')) setNavOpen(false);
+      return;
+    }
+
+    if (menu.classList.contains('active')) setNavOpen(false);
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') setNavOpen(false);
   });
 }
 
@@ -164,5 +181,6 @@ export function initWhatsAppFab() {
 /** Header + nav + cinta — llamar al inicio de cada página */
 export async function initSiteChrome() {
   await Promise.all([loadHeader(), loadContributorTicker()]);
+  initHamburgerMenu();
   initWhatsAppFab();
 }

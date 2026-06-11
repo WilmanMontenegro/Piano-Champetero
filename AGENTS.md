@@ -57,7 +57,7 @@ Do **not** use or add `.claude/` or `.vscode/` config (legacy / local IDE). **Cu
 | Espacio bajo cinta fija | `styles/tokens.css` → `--ticker-block-height`; `body { padding-top }` en `common.css` |
 | WhatsApp community invite URL | `js/site-config.js` → `WHATSAPP_COMMUNITY_URL` (ticker, Contáctanos, botón flotante) |
 | Hit flash duration on pads/toms | `js/site-config.js` → `AUDIO_UI.hitFlashMs` |
-| Nav hamburger threshold | `NAV_MOBILE_MAX_PX` (767) in `site-config.js`; móvil `@media (max-width: 767px)` in `nav.css` |
+| Nav hamburger (móvil) | `js/common.js` → `initHamburgerMenu()` (delegación en `document`, clase `html.nav-open`); panel fijo en `nav.css` ≤767px |
 | Desktop/tablet/mobile breakpoints | `styles/tokens.css` → `--bp-desktop-min` 1024, `--bp-tablet-min` 768, `--bp-mobile-max` 767; `responsive.css` |
 | Battery / pads behavior | `js/virtual.js`, `styles/virtual.css` |
 
@@ -104,7 +104,8 @@ Same **edit** flow: **Editar** → cell → modal **Sonido** / **Tecla** → **G
 ## UI / layout (current)
 
 - **Ticker:** `#contributor-ticker` filled by `loadContributorTicker()` from `site-config.js` (loop duplicates segments in JS). Styles in `components/ticker.css`.
-- **Nav:** Desktop-first — horizontal bar on desktop (≥1024) and tablet (768–1023); hamburger on mobile (≤767). Active page: yellow text + underline (no box border).
+- **Nav:** Desktop-first — horizontal bar on desktop (≥1024) and tablet (768–1023); hamburger on mobile (≤767). Panel fijo + overlay (`html.nav-open`); toggle en `initHamburgerMenu()`. Active page: yellow text + underline (no box border).
+- **Header:** tokens `--header-title-size`, `--header-padding-top`; sin `content-visibility` (recortaba dropdown). Mismo chrome en todas las páginas.
 - **Pad/tom hit feedback:** Caribbean palette glow on press (`virtual.css` + `AUDIO_UI.hitFlashMs`); idle pads use brand gradient (not per-pad rainbow).
 - **virtual.html:** mismo header/nav que el resto (`header.html` + estilos globales); botón **Inmersión** oculta cinta, header y footer.
 - **Desktop-first product:** PC primary; mobile usable but secondary (touch/audio latency).
