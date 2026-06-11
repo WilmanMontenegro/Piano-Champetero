@@ -33,6 +33,12 @@ export const TICKER_CONTRIBUTORS = [
     emoji: '✨',
   },
   {
+    id: 'brando-blanco',
+    name: 'Brando Blanco',
+    thanksFor: 'por proponer el visualizador de ondas de audio',
+    emoji: '〰️',
+  },
+  {
     id: 'jorge-mercado',
     name: 'Jorge Mercado',
     thanksFor: 'por tu sugerencia sobre la edición de samplers',
