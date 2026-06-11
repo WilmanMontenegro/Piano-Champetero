@@ -1,10 +1,26 @@
 // js/contactanos.js — lógica para la página de contacto
 import { initSiteChrome, setYearFooter, resumeOnUserGesture } from './common.js';
+import { WHATSAPP_COMMUNITY_URL } from './site-config.js';
+import { WHATSAPP_GROUP_ICON_SVG } from './whatsapp-group-icon.js';
+
+function initWhatsAppCommunityCTA() {
+  if (!WHATSAPP_COMMUNITY_URL) return;
+  const container = document.getElementById('contact-whatsapp-cta');
+  if (!container) return;
+  const link = container.querySelector('.contact-button--whatsapp');
+  if (link) link.href = WHATSAPP_COMMUNITY_URL;
+  const iconWrap = container.querySelector('.contact-icon');
+  const btnIcon = link?.querySelector('.contact-button__icon');
+  if (iconWrap) iconWrap.innerHTML = WHATSAPP_GROUP_ICON_SVG;
+  if (btnIcon) btnIcon.innerHTML = WHATSAPP_GROUP_ICON_SVG;
+  container.hidden = false;
+}
 
 document.addEventListener('DOMContentLoaded', async () => {
   await initSiteChrome();
   setYearFooter();
   resumeOnUserGesture();
+  initWhatsAppCommunityCTA();
 
   const isContactPage = document.getElementById('contact-form') !== null;
   if (!isContactPage) return;

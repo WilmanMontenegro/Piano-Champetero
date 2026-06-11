@@ -1,20 +1,56 @@
-# Piano-Champetero
+# Batería Champetera Virtual
 
-Bateria/Pads virtuales de champeta (sitio estatico en GitHub Pages) con audio en navegador, mapeo de teclas y personalizacion por `localStorage`.
+Sitio estático de **batería y pads champeteros** en el navegador ([bateriachampetera.com](https://bateriachampetera.com)). Audio con Web Audio API, teclado personalizable y preferencias en `localStorage`. Desplegado en **GitHub Pages** desde `main`.
 
-## Estado actual (resumen rapido)
+## Desarrollo con Cursor
 
-- Vista pads con rejillas `3x3`, `3x4`, `4x4`, `4x6` (9/12/16/24).
-- Pads cuadrados en vista principal (`aspect-ratio: 1 / 1`), con enfoque desktop-first.
-- Herencia en cascada de sonidos y teclas entre rejillas cuando no existe guardado por rejilla:
-  - `12 <- 9`, `16 <- 12`, `24 <- 16`.
-- Teclas por defecto: orden lineal fila por fila (`QWERTYUIOP`, luego `ASDFGHJKL`, luego `ZXCVBNM`). La batería usa los primeros 9; los pads siguen la misma secuencia según el tamaño de la rejilla.
-- Ticker superior continuo (loop sin corte visible) en las paginas principales.
+Este proyecto se mantiene con **[Cursor](https://cursor.com)** (agente + reglas en `.cursor/rules/`). El contexto para humanos y agentes está en **[AGENTS.md](./AGENTS.md)** — léelo antes de cambios grandes.
 
-## Desarrollo local
+No se usa Claude Code; la carpeta `.claude/` no forma parte del repo.
+
+## Estado actual
+
+- Vistas **Batería** (9 toms) y **Pads** (rejillas 9 / 12 / 16 / 24).
+- Teclas por defecto en orden lineal QWERTY (misma lógica batería y pads).
+- Herencia en cascada de sonidos y teclas entre rejillas (`12←9`, `16←12`, `24←16`).
+- **Brillo al tocar** pads y toms (paleta caribeña).
+- Nav **desktop-first**; menú hamburguesa solo si el header es estrecho.
+- Cinta de agradecimientos desde `js/site-config.js` (un solo lugar para nombres).
+
+## En progreso
+
+- Organización del catálogo de sonidos (máquinas tipo DD14, SK5).
+- Vista **piano champetero**.
+
+## Estructura rápida
+
+```
+styles/tokens.css          → colores y variables
+styles/components/         → nav, ticker
+js/site-config.js          → cinta, parámetros de UI
+js/common.js               → initSiteChrome()
+js/virtual.js              → batería / pads
+```
+
+## Local
 
 ```bash
 python -m http.server 8000
 ```
 
-Abrir `http://localhost:8000/virtual.html`.
+Abrir [http://localhost:8000/virtual.html](http://localhost:8000/virtual.html) (HTTP obligatorio para ES modules).
+
+## Publicar
+
+```bash
+git push origin main
+```
+
+GitHub Pages actualiza en unos minutos. Tras cambiar CSS/JS, subir `CACHE_NAME` en `sw.js` para invalidar caché PWA.
+
+## Documentación
+
+| Archivo | Contenido |
+|---------|-----------|
+| [AGENTS.md](./AGENTS.md) | Convenciones, storage, layout, roadmap |
+| [.cursor/rules/](./.cursor/rules/) | Reglas always-on para Cursor |

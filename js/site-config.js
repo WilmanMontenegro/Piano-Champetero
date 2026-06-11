@@ -6,6 +6,15 @@
 /** Must match --nav-compact-max in styles/tokens.css (container query uses px literal). */
 export const NAV_COMPACT_MAX_PX = 620;
 
+/**
+ * WhatsApp Community invite link (Comunidades → enlace de invitación).
+ * Leave empty to hide ticker line and contact CTA until the community is live.
+ */
+export const WHATSAPP_COMMUNITY_URL = 'https://chat.whatsapp.com/JDQqXwQoJ8V3YcD52zjZfR';
+
+/** Label for floating WhatsApp button (es-419). */
+export const WHATSAPP_COMMUNITY_LABEL = 'Únete al grupo';
+
 export const AUDIO_UI = {
   hitFlashMs: 140,
 };
@@ -63,9 +72,22 @@ export const TICKER_STATIC_LINES_VIRTUAL = [
  * @param {string} [pageFile] e.g. "index.html"
  * @returns {{ html: string }[]}
  */
+function buildStaticTickerLines(baseLines) {
+  if (!WHATSAPP_COMMUNITY_URL) return baseLines;
+  const href = escapeHtml(WHATSAPP_COMMUNITY_URL);
+  return [
+    {
+      id: 'whatsapp-community',
+      html: `Únete a nuestra comunidad en <a href="${href}" target="_blank" rel="noopener noreferrer">WhatsApp</a> — ideas, ritmos y soporte`,
+    },
+    ...baseLines,
+  ];
+}
+
 export function getTickerSegments(pageFile = '') {
   const file = pageFile || 'index.html';
-  const staticLines = file === 'virtual.html' ? TICKER_STATIC_LINES_VIRTUAL : TICKER_STATIC_LINES;
+  const base = file === 'virtual.html' ? TICKER_STATIC_LINES_VIRTUAL : TICKER_STATIC_LINES;
+  const staticLines = buildStaticTickerLines(base);
 
   const thanks = TICKER_CONTRIBUTORS.filter(
     (c) => !c.pages || c.pages.includes(file)

@@ -1,2 +1,3 @@
 # Local / tooling noise (keep AGENTS.md tracked)
 .playwright-mcp/
+.claude/

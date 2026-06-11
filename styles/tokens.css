@@ -16,6 +16,8 @@
   --color-negro: #000000;
   --color-exito: #4CAF50;
   --color-error: #FF6B6B;
+  --color-whatsapp: #25d366;
+  --color-whatsapp-hover: #1ebe57;
 
   /* Gradientes reutilizables */
   --gradient-body: linear-gradient(135deg, #FFE066 0%, #FF9A56 25%, #FF6B6B 50%, #FFB7C5 75%, #FFF5E6 100%);
@@ -81,6 +83,7 @@
   --z-modal: 1000;
   --z-modal-overlay: 9999;
   --z-ticker: 9999;
+  --z-whatsapp-fab: 9500;
 
   /*
    * Breakpoints viewport (solo en responsive.css)

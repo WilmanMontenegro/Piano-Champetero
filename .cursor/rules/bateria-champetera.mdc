@@ -1,0 +1,27 @@
+---
+description: Contexto del proyecto Batería Champetera Virtual para el agente de Cursor
+alwaysApply: true
+---
+
+# Batería Champetera Virtual
+
+Lee y sigue **`AGENTS.md`** en la raíz del repo (fuente principal de contexto).
+
+## Entorno
+
+- El mantenedor usa **Cursor** (no Claude Code). No crear ni depender de `.claude/`.
+- Sitio estático: **HTML / CSS / JS** (ES modules), sin build. Deploy: push a `main` → GitHub Pages → [bateriachampetera.com](https://bateriachampetera.com).
+
+## Antes de editar
+
+- **Código** en inglés; **texto de UI** en español (es-419).
+- Tokens en `styles/tokens.css`; nav en `styles/components/nav.css`; cinta en `js/site-config.js` (`TICKER_CONTRIBUTORS`).
+- Páginas: `initSiteChrome()` en `DOMContentLoaded` (header, nav, ticker).
+- **Desktop-first**: PC es el uso principal; móvil secundario (latencia táctil/audio).
+- No commitear salvo que el usuario lo pida explícitamente.
+
+## Pendiente conocido (producto)
+
+- Catálogo de sonidos por máquina (DD14, SK5, etc.) — en diseño.
+- Vista **piano champetero** — en diseño.
+- Comunidad WhatsApp — enlace en `js/site-config.js` → `WHATSAPP_COMMUNITY_URL`.

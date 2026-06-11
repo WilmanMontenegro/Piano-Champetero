@@ -50,6 +50,16 @@
   margin-bottom: 0.8em;
 }
 
+.contact-icon svg {
+  width: 1.1em;
+  height: 1.1em;
+  color: var(--color-whatsapp);
+}
+
+.contact-option--whatsapp .contact-icon {
+  color: var(--color-whatsapp);
+}
+
 .contact-option h3 {
   font-size: var(--font-size-lg);
   color: var(--color-marron);
@@ -80,6 +90,27 @@
 .contact-button:hover {
   background: var(--color-secundario);
   box-shadow: var(--sombra-btn-hover);
+}
+
+.contact-button--whatsapp {
+  background: #25d366;
+}
+
+.contact-button__icon {
+  display: inline-flex;
+  width: 1.35em;
+  height: 1.35em;
+  flex-shrink: 0;
+}
+
+.contact-button__icon svg {
+  width: 100%;
+  height: 100%;
+  color: var(--color-blanco);
+}
+
+.contact-button--whatsapp:hover {
+  background: #1ebe57;
 }
 
 /* Formulario de contacto */

@@ -1,5 +1,6 @@
 // js/common.js — utilidades UI compartidas entre páginas
-import { buildTickerInnerHtml } from './site-config.js';
+import { buildTickerInnerHtml, WHATSAPP_COMMUNITY_URL, WHATSAPP_COMMUNITY_LABEL } from './site-config.js';
+import { WHATSAPP_GROUP_ICON_SVG } from './whatsapp-group-icon.js';
 
 export function initNav() {
   return fetch('nav.html')
@@ -138,7 +139,29 @@ export function loadContributorTicker() {
   return Promise.resolve();
 }
 
+/** Floating WhatsApp join button — visible on all pages when URL is set. */
+export function initWhatsAppFab() {
+  if (!WHATSAPP_COMMUNITY_URL || document.getElementById('whatsapp-fab')) return;
+
+  const link = document.createElement('a');
+  link.id = 'whatsapp-fab';
+  link.className = 'whatsapp-fab';
+  link.href = WHATSAPP_COMMUNITY_URL;
+  link.target = '_blank';
+  link.rel = 'noopener noreferrer';
+  link.setAttribute(
+    'aria-label',
+    `${WHATSAPP_COMMUNITY_LABEL} de Batería Champetera Virtual en WhatsApp`
+  );
+  link.innerHTML = `
+    <span class="whatsapp-fab__icon">${WHATSAPP_GROUP_ICON_SVG}</span>
+    <span class="whatsapp-fab__label">${WHATSAPP_COMMUNITY_LABEL}</span>
+  `;
+  document.body.appendChild(link);
+}
+
 /** Header + nav + cinta — llamar al inicio de cada página */
 export async function initSiteChrome() {
   await Promise.all([loadHeader(), loadContributorTicker()]);
+  initWhatsAppFab();
 }

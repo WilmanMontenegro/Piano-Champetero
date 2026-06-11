@@ -1,6 +1,18 @@
 # AGENTS.md
 
-Context for coding agents and humans: **Batería Champetera Virtual** — static champeta drum kit on GitHub Pages ([bateriachampetera.com](https://bateriachampetera.com)).
+Context for **Cursor** agents and humans: **Batería Champetera Virtual** — static champeta drum kit on GitHub Pages ([bateriachampetera.com](https://bateriachampetera.com)).
+
+## Development environment
+
+| Tool | Role |
+|------|------|
+| **Cursor** | Primary IDE + AI pair programming (rules in `.cursor/rules/`) |
+| **GitHub** | `main` branch → GitHub Pages deploy |
+| **Search Console** | Organic traffic (~3K clicks/28d as of May 2026) |
+
+Do **not** use or add `.claude/` config (legacy). Project context lives in this file and `README.md`.
+
+**Maintainer priorities:** desktop UX first, organize sampler catalog (DD14/SK5), piano view in progress, WhatsApp community (invite link in `site-config.js`).
 
 ## Tech stack
 
@@ -9,29 +21,43 @@ Context for coding agents and humans: **Batería Champetera Virtual** — static
 - **Web Audio API** for playback
 - **localStorage** for preferences and maps
 - **GitHub Pages** from `main`
+- **PWA:** `manifest.json`, `sw.js` (cache bust via `CACHE_NAME` version in `sw.js`)
 
 ## Repo layout
 
 ```
 ├── index.html, virtual.html, sobre-nosotros.html, contactanos.html, politicas-privacidad.html
-├── header.html, nav.html          # Fetched into pages
+├── header.html, nav.html              # Fetched by common.js
 ├── js/
-│   ├── site-config.js             # Parameters: ticker credits, AUDIO_UI, nav compact px (single source)
-│   ├── common.js                  # initSiteChrome (header+nav+ticker), setYearFooter
-│   ├── virtual.js                 # Battery + pads grid, audio, edit modals, storage maps
-│   ├── pad-keyboard.js            # Linear row-by-row default keys (battery + pads), buildPadKeyIndexMap, resolvePadIndexFromKeyboard
-│   ├── modal-utils.js             # initModal
+│   ├── site-config.js                 # Parameters: ticker, AUDIO_UI, nav compact px
+│   ├── common.js                      # initSiteChrome(), initNav, setYearFooter
+│   ├── virtual.js                     # Battery + pads, audio, modals, storage
+│   ├── pad-keyboard.js                # Default key layout (linear QWERTY rows)
+│   ├── modal-utils.js
 │   └── contactanos.js
 ├── styles/
 │   ├── reset.css
-│   ├── tokens.css                 # Design tokens (:root variables)
-│   ├── common.css                 # Imports tokens + components + responsive; shared UI
+│   ├── tokens.css                     # Design tokens (:root)
+│   ├── common.css                     # @imports components + shared UI
 │   ├── components/nav.css, ticker.css
-│   ├── responsive.css             # Viewport breakpoints (desktop-first)
-│   └── virtual.css (+ page CSS per HTML file)
-├── manifest.json, sw.js           # PWA
-└── samplers/                      # WAV/MP3 samples
+│   ├── responsive.css                 # Viewport breakpoints (desktop-first)
+│   └── virtual.css (+ page CSS per HTML)
+├── manifest.json, sw.js
+└── samplers/                          # WAV/MP3 samples
 ```
+
+## Where to edit (single source of truth)
+
+| Change | File |
+|--------|------|
+| Colors, spacing, shadows | `styles/tokens.css` |
+| Nav layout, active link style | `styles/components/nav.css` |
+| Ticker credits / static lines | `js/site-config.js` → `TICKER_CONTRIBUTORS`, `TICKER_STATIC_LINES` |
+| WhatsApp community invite URL | `js/site-config.js` → `WHATSAPP_COMMUNITY_URL` (ticker, Contáctanos, botón flotante) |
+| Hit flash duration on pads/toms | `js/site-config.js` → `AUDIO_UI.hitFlashMs` |
+| Nav hamburger threshold | `NAV_COMPACT_MAX_PX` in `site-config.js` + `--nav-compact-max` in tokens; container query `620px` in `nav.css` |
+| Desktop/tablet breakpoints | `styles/responsive.css` |
+| Battery / pads behavior | `js/virtual.js`, `styles/virtual.css` |
 
 ## Conventions (strict)
 
@@ -40,14 +66,15 @@ Context for coding agents and humans: **Batería Champetera Virtual** — static
 - **CSS classes**: English, kebab-case  
 - **JS**: camelCase functions/vars, `UPPER_SNAKE` constants  
 - **UI strings**: Spanish (es-419)  
-- **CSS load order**: `reset.css` → `common.css` → page CSS (`virtual.css`, etc.). `common.css` imports `tokens.css`, `components/nav.css`, `components/ticker.css`, `responsive.css`. **Edit one place**: palette/spacing in `tokens.css`; nav in `components/nav.css` (container query at 620px = `NAV_COMPACT_MAX_PX` in `site-config.js`); ticker styles in `components/ticker.css`; viewport rules in `responsive.css`. Use `var(--token)` in page CSS; avoid duplicates and `!important` (except third-party).
-- **JS shell**: Each page calls `initSiteChrome()` (loads `header.html`, `nav.html`, builds ticker from `site-config.js`). New contributor → add to `TICKER_CONTRIBUTORS` in `site-config.js` only.
+- **CSS load order**: `reset.css` → `common.css` → page CSS. `common.css` imports `tokens.css`, `components/nav.css`, `components/ticker.css`, `responsive.css`. Use `var(--token)` in page CSS; avoid duplicates and `!important` (except third-party).
 
-**JS style**: ES modules, async/await, event delegation; no globals; no DOM work before `DOMContentLoaded` where the app already follows that pattern.
+**JS shell:** Each page calls `initSiteChrome()` on `DOMContentLoaded` (loads `header.html`, `nav.html`, builds ticker from `site-config.js`). Contributor names in ticker: **first name + first surname** (e.g. `Jiliar Silgado`).
+
+**JS style:** ES modules, async/await, event delegation; no globals.
 
 ## Product: battery vs pads
 
-Same **edit** flow everywhere: **Editar** → pick a cell → modal **Sonido** / **Tecla** → **Guardar**. Only the **layout** changes (9 toms vs grid up to 4×6) and pads expose more sampler slots per grid.
+Same **edit** flow: **Editar** → cell → modal **Sonido** / **Tecla** → **Guardar**. Layout differs (9 toms vs grid up to 4×6).
 
 ## Storage keys (localStorage)
 
@@ -55,41 +82,43 @@ Same **edit** flow everywhere: **Editar** → pick a cell → modal **Sonido** /
 |----------------|---------|
 | `pianoChampeteroKeyMap` | Battery: `KeyboardEvent.code` → `tom-1` … `tom-9` |
 | `pianoChampeteroSamplers` | Battery tom → sampler filename |
-| `pianoChampeteroPads_${gridType}` | Pads view: array of sampler filenames for that grid |
-| `pianoChampeteroPadKeys_${gridType}` | Pads: canonical codes only → pad index `{ "KeyQ": 0, … }`; **one key per pad**, normalized on load/save |
+| `pianoChampeteroPads_${gridType}` | Pads: sampler filenames per grid |
+| `pianoChampeteroPadKeys_${gridType}` | Pads: one canonical key per pad index |
 | `pianoChampeteroViewMode` | `"bateria"` \| `"pads"` |
-| `pianoChampeteroGridType` | e.g. `3x3`, `3x4`, `4x4`, `4x6` |
+| `pianoChampeteroGridType` | `3x3`, `3x4`, `4x4`, `4x6` |
 
-**Edit modal save** (`virtual.js`): applies **sampler** when `samplerSeleccionado` / `padSamplerSeleccionado` is set and **key** when `lastCapturedCode` is set — **not** gated on which tab is visible.
+**Edit modal save** (`virtual.js`): applies sampler and key independently when set — not gated on visible tab.
 
-**Reset** (`resetSettings`): clears battery samplers map, `pianoChampeteroKeyMap`, and every `pianoChampeteroPadKeys_*` for grids in `gridConfigs`.
-
-**Pads inheritance (current behavior)** (`virtual.js`):
-- Grid order is fixed by size: `3x3` (9) → `3x4` (12) → `4x4` (16) → `4x6` (24).
-- If `pianoChampeteroPads_${gridType}` is missing/invalid, sounds inherit from the immediate predecessor for shared indexes (`12←9`, `16←12`, `24←16`), and new indexes are filled with defaults.
-- If `pianoChampeteroPadKeys_${gridType}` is missing/empty, key mapping also inherits predecessor assignments for shared indexes, then normalizes one canonical key per pad.
-- If the grid has valid saved data, saved data wins (no inheritance override).
-- `resetSettings` also clears all `pianoChampeteroPads_*` keys, so inheritance chain is reapplied after reset.
+**Pads inheritance:** `12←9`, `16←12`, `24←16` for sounds and keys when no valid saved data for that grid. Saved data wins. `resetSettings` clears pads keys and reapplies chain.
 
 ## Audio / keyboard
 
-- **Battery**: `keyToTomId`, `activateTomSampler`, 9 pads.  
-- **Pads**: `keyToPadIndex` built from `buildPadKeyIndexMap` + saved overrides; `resolvePadIndexFromKeyboard` in `pad-keyboard.js`.  
-- **Default keys (no saved pad keys / fresh battery map)**: one **linear** order for everyone — physical rows top to bottom: `q…p`, then `a…l`, then `z…m`. Battery uses the first 9 (`q,w,e,r,t,y,u,i,o` → tom-1…9); pads use the first N for grid size. `keyToTomIdDefaults` and `buildPadKeyIndexMap` both use `pad-keyboard.js` (`PAD_KEY_LAYOUT` / `BATTERY_DEFAULT_PAD_CHARS`).  
-- **AudioContext**: resume on user gesture (browser policy).
+- **Battery:** `activateTomSampler`, 9 toms.  
+- **Pads:** `buildPadKeyIndexMap`, `resolvePadIndexFromKeyboard` in `pad-keyboard.js`.  
+- **Default keys:** linear row order `q…p`, `a…l`, `z…m`; battery uses first 9.  
+- **AudioContext:** resume on user gesture.
 
-## UI / layout notes (current)
+## UI / layout (current)
 
-- **Ticker loop**: pages with the "pads available" message duplicate ticker content blocks so `ticker-scroll` (`translateX(-50%)`) loops without visible cut.
-- **Pads are square** in view mode (`aspect-ratio: 1 / 1`).
-- **Desktop-first pads sizing** (`styles/virtual.css`):
-  - Uses a shared pad size variable constrained by both viewport width and height to avoid vertical clipping while still using available width.
-  - 24-pad view keeps 6 columns on desktop; smaller grids center with fewer columns but the same square pad size logic.
-- **Desktop-first product**: PC is the primary target (lowest audio/latency expectations on mobile). Layout, nav, and pads sizing optimize for wide screens first; mobile stays usable but secondary.
-- **Mobile remains secondary**: breakpoint rules reduce columns only when needed to avoid overflow and keep playability.
+- **Ticker:** `#contributor-ticker` filled by `loadContributorTicker()` from `site-config.js` (loop duplicates segments in JS). Styles in `components/ticker.css`.
+- **Nav:** Desktop-first — horizontal bar scales with viewport; hamburger only when `#nav-container` ≤ 620px (container query). Active page: yellow text + underline (no box border).
+- **Pad/tom hit feedback:** Caribbean palette glow on press (`virtual.css` + `AUDIO_UI.hitFlashMs`); idle pads use brand gradient (not per-pad rainbow).
+- **Pads:** square (`aspect-ratio: 1 / 1`); desktop sizing in `virtual.css` (width + height constrained).
+- **Desktop-first product:** PC primary; mobile usable but secondary (touch/audio latency).
+
+## Roadmap (not shipped)
+
+- Sampler catalog UI: machine selects (DD14, SK5, …) — contributor idea (Jiliar Silgado).
+- Piano champetero view — collaboration inquiry (Jair).
 
 ## Quick commands
 
-- Local: `python -m http.server 8000` (HTTP required for modules)  
-- Deploy: push `main` → GitHub Pages  
-- SEO / analytics: GTM `GTM-N5MRWRKL`, AdSense, JSON-LD, `sitemap.xml`
+- Local: `python -m http.server 8000` → `http://localhost:8000/virtual.html`  
+- Deploy: push `main` → GitHub Pages (wait 1–3 min)  
+- After CSS/JS changes: bump `CACHE_NAME` in `sw.js`  
+- SEO / ads: GTM `GTM-N5MRWRKL`, AdSense, PropellerAds, JSON-LD, `sitemap.xml`
+
+## Git
+
+- Do not commit unless the user asks.
+- Do not commit `.claude/`, `.playwright-mcp/`, or secrets.
