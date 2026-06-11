@@ -30,12 +30,6 @@ export const TICKER_CONTRIBUTORS = [
     emoji: '✨',
   },
   {
-    id: 'jhon-karo',
-    name: 'Jhon Karo',
-    thanksFor: 'por sugerir más pads para la batería champeta',
-    emoji: '🥁',
-  },
-  {
     id: 'jorge-mercado',
     name: 'Jorge Mercado',
     thanksFor: 'por tu sugerencia sobre la edición de samplers',
@@ -78,7 +72,7 @@ function buildStaticTickerLines(baseLines) {
   return [
     {
       id: 'whatsapp-community',
-      html: `Únete a nuestra comunidad en <a href="${href}" target="_blank" rel="noopener noreferrer">WhatsApp</a> — ideas, ritmos y soporte`,
+      html: `¡Únete al <a href="${href}" target="_blank" rel="noopener noreferrer">grupo de WhatsApp</a>! Comparte ritmos, ideas y vacila con la comunidad champetera 🥁`,
     },
     ...baseLines,
   ];

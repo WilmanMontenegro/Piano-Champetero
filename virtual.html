@@ -117,7 +117,7 @@
   </script>
 </head>
 
-<body>
+<body class="virtual-page">
   <!-- Google Tag Manager (noscript) -->
   <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-N5MRWRKL" height="0" width="0"
       style="display:none;visibility:hidden"></iframe></noscript>
@@ -215,6 +215,13 @@
       <div class="pads-hint" id="pads-hint" style="display:none;">
         <i class="fa-solid fa-keyboard"></i> Presiona una tecla o haz clic para tocar
       </div>
+      <section class="audio-viz-panel" id="audio-viz-panel" aria-label="Visualizador de audio">
+        <div class="audio-viz-header">
+          <span class="audio-viz-title"><i class="fa-solid fa-wave-square" aria-hidden="true"></i> Visualizador</span>
+          <button type="button" id="audio-viz-toggle" class="ctrl-btn audio-viz-toggle" aria-pressed="true">Activo</button>
+        </div>
+        <canvas id="audio-viz-canvas" class="audio-viz-canvas" aria-hidden="true"></canvas>
+      </section>
     <!-- Modal unificado de edición -->
     <div id="modal-edit" class="modal-edit" style="display:none;">
       <div class="modal-content">

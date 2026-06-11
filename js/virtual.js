@@ -4,12 +4,16 @@ import { initSiteChrome, setYearFooter, resumeOnUserGesture } from './common.js'
 import { AUDIO_UI } from './site-config.js';
 import { initModal } from './modal-utils.js';
 import { DEFAULT_PAD_KEY_CHAR_ORDER, BATTERY_DEFAULT_PAD_CHARS, buildPadKeyIndexMap, resolvePadIndexFromKeyboard } from './pad-keyboard.js';
+import { initAudioBus, connectHitToOutput } from './audio-bus.js';
+import { initAudioVisualizer, pulseAudioVisualizer } from './audio-visualizer.js';
 
 // AudioContext con latencia mínima
 export const audioCtx = new (window.AudioContext || window.webkitAudioContext)({
   latencyHint: 'interactive',
   sampleRate: 48000
 });
+
+const { analyser } = initAudioBus(audioCtx);
 
 const HIT_FLASH_MS = AUDIO_UI.hitFlashMs;
 
@@ -420,8 +424,10 @@ export function playTomSampler(tomId) {
   const gainNode = audioCtx.createGain();
   gainNode.gain.value = volume;
   source.buffer = buffer;
-  source.connect(gainNode).connect(audioCtx.destination);
+  source.connect(gainNode);
+  connectHitToOutput(gainNode);
   source.start(0); // start(0) = inmediato, sin delay
+  pulseAudioVisualizer();
 }
 
 // ACTIVAR TOM: Resume audio context si es necesario, luego play directo
@@ -506,8 +512,10 @@ export function playPadSound(index) {
   const gainNode = audioCtx.createGain();
   gainNode.gain.value = volume;
   source.buffer = buffer;
-  source.connect(gainNode).connect(audioCtx.destination);
+  source.connect(gainNode);
+  connectHitToOutput(gainNode);
   source.start(0); // inmediato
+  pulseAudioVisualizer();
 }
 
 // ACTIVAR PAD: Resume si es necesario, luego play directo
@@ -618,6 +626,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   if (!isMainPage) return;
 
+  initAudioVisualizer({ analyser });
+
   const savedKeys = loadKeyMapping();
   if (savedKeys) keyToTomId = normalizeKeyMap(savedKeys);
   else keyToTomId = normalizeKeyMap(keyToTomIdDefaults);
@@ -713,8 +723,10 @@ document.addEventListener('DOMContentLoaded', async () => {
           const gainNode = audioCtx.createGain();
           gainNode.gain.value = _currentVolume;
           source.buffer = buffer;
-          source.connect(gainNode).connect(audioCtx.destination);
+          source.connect(gainNode);
+          connectHitToOutput(gainNode);
           source.start(0);
+          pulseAudioVisualizer();
           window._previewSource = source;
         } catch (e) { /* ignore preview errors */ }
       });
@@ -791,8 +803,10 @@ document.addEventListener('DOMContentLoaded', async () => {
           const gainNode = audioCtx.createGain();
           gainNode.gain.value = _currentVolume;
           source.buffer = buffer;
-          source.connect(gainNode).connect(audioCtx.destination);
+          source.connect(gainNode);
+          connectHitToOutput(gainNode);
           source.start(0);
+          pulseAudioVisualizer();
           window._previewSource = source;
         } catch {}
       });
@@ -978,8 +992,10 @@ document.addEventListener('DOMContentLoaded', async () => {
           const gainNode = audioCtx.createGain();
           gainNode.gain.value = _currentVolume;
           source.buffer = buffer;
-          source.connect(gainNode).connect(audioCtx.destination);
+          source.connect(gainNode);
+          connectHitToOutput(gainNode);
           source.start(0);
+          pulseAudioVisualizer();
           window._previewSource = source;
         } catch (e) { /* ignore preview errors */ }
       });
