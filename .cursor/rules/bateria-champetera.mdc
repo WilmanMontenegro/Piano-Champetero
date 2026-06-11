@@ -9,7 +9,7 @@ Lee y sigue **`AGENTS.md`** en la raíz del repo (fuente principal de contexto).
 
 ## Entorno
 
-- El mantenedor usa **Cursor** (no Claude Code). No crear ni depender de `.claude/`.
+- Solo **Cursor** para IA en este repo. No crear ni depender de `.claude/` ni `.vscode/`.
 - Sitio estático: **HTML / CSS / JS** (ES modules), sin build. Deploy: push a `main` → GitHub Pages → [bateriachampetera.com](https://bateriachampetera.com).
 
 ## Antes de editar

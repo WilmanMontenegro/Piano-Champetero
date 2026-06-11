@@ -1,3 +1,4 @@
-# Local / tooling noise (keep AGENTS.md tracked)
+# Local / IDE tooling (keep AGENTS.md and .cursor/rules/ tracked)
 .playwright-mcp/
 .claude/
+.vscode/

@@ -10,7 +10,7 @@ Context for **Cursor** agents and humans: **Batería Champetera Virtual** — st
 | **GitHub** | `main` branch → GitHub Pages deploy |
 | **Search Console** | Organic traffic (~3K clicks/28d as of May 2026) |
 
-Do **not** use or add `.claude/` config (legacy). Project context lives in this file and `README.md`.
+Do **not** use or add `.claude/` or `.vscode/` config (legacy / local IDE). **Cursor only** — rules in `.cursor/rules/`, context in this file and `README.md`.
 
 **Maintainer priorities:** desktop UX first, organize sampler catalog (DD14/SK5), piano view in progress, WhatsApp community (invite link in `site-config.js`).
 
@@ -121,4 +121,4 @@ Same **edit** flow: **Editar** → cell → modal **Sonido** / **Tecla** → **G
 ## Git
 
 - Do not commit unless the user asks.
-- Do not commit `.claude/`, `.playwright-mcp/`, or secrets.
+- Do not commit `.claude/`, `.vscode/`, `.playwright-mcp/`, or secrets.

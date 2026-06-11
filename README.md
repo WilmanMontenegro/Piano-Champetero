@@ -6,7 +6,7 @@ Sitio estático de **batería y pads champeteros** en el navegador ([bateriacham
 
 Este proyecto se mantiene con **[Cursor](https://cursor.com)** (agente + reglas en `.cursor/rules/`). El contexto para humanos y agentes está en **[AGENTS.md](./AGENTS.md)** — léelo antes de cambios grandes.
 
-No se usa Claude Code; la carpeta `.claude/` no forma parte del repo.
+No se usa Claude Code ni configuración de VS Code en el repo (`.claude/`, `.vscode/` están en `.gitignore`).
 
 ## Estado actual
 
