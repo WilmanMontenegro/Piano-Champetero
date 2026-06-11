@@ -27,23 +27,10 @@ export const AUDIO_UI = {
 /** @type {TickerContributor[]} */
 export const TICKER_CONTRIBUTORS = [
   {
-    id: 'jiliar',
-    name: 'Jiliar Silgado',
-    thanksFor: 'por sugerir el efecto de luz al tocar los pads',
-    emoji: '✨',
-  },
-  {
     id: 'brando-blanco',
     name: 'Brando Blanco',
     thanksFor: 'por proponer el visualizador de ondas de audio',
     emoji: '〰️',
-  },
-  {
-    id: 'jorge-mercado',
-    name: 'Jorge Mercado',
-    thanksFor: 'por tu sugerencia sobre la edición de samplers',
-    emoji: '🥁',
-    pages: ['sobre-nosotros.html', 'politicas-privacidad.html'],
   },
 ];
 
