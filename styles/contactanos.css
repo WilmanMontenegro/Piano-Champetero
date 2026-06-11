@@ -293,7 +293,7 @@
 /* ===================== RESPONSIVE ===================== */
 
 /* Tablet - 768px */
-@media (max-width: 768px) {
+@media (max-width: 767px) {
   .contact-container {
     margin: 1em;
     padding: 1.5em;

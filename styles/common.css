@@ -22,6 +22,7 @@ body {
   font-family: var(--font-body);
   background: var(--gradient-body);
   background-attachment: fixed;
+  padding-top: var(--ticker-block-height); /* cinta fija — todas las páginas */
 }
 
 main {
@@ -115,7 +116,7 @@ header {
   background-position: center 65%;
   color: var(--color-blanco);
   text-shadow: 3px 3px 12px rgba(0, 0, 0, 0.8);
-  padding: 2rem 0 0;
+  padding: var(--header-padding-top) 0 0;
   border-bottom: var(--header-border);
   flex-shrink: 0;
   content-visibility: auto;
@@ -125,14 +126,14 @@ header {
 
 .title {
   font-family: var(--font-display);
-  font-size: clamp(2rem, 8vw, 7rem);
+  font-size: var(--header-title-size);
   font-weight: normal;
-  margin: 0.5rem 0;
+  margin: var(--header-title-margin-block) 0;
   padding: 0 1rem;
   max-width: 100%;
   word-wrap: break-word;
   overflow-wrap: break-word;
-  line-height: var(--line-height-tight);
+  line-height: 1.15;
 }
 
 /* ===================== BOTONES ===================== */

@@ -118,6 +118,13 @@
 </head>
 
 <body class="virtual-page">
+  <script>
+    try {
+      if (localStorage.getItem('pianoChampeteroImmersionMode') === '1') {
+        document.body.classList.add('immersion-mode');
+      }
+    } catch (e) { /* ignore */ }
+  </script>
   <!-- Google Tag Manager (noscript) -->
   <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-N5MRWRKL" height="0" width="0"
       style="display:none;visibility:hidden"></iframe></noscript>
@@ -195,6 +202,10 @@
           <button id="edit-btn" class="ctrl-btn"><i class="fa-solid fa-pencil"></i> Editar</button>
           <button id="reset-settings-btn" class="ctrl-btn reset-btn" title="⚠️ Restablecer sonidos y teclas por defecto"><i class="fa-solid fa-rotate-left"></i> Restablecer</button>
           <button id="help-btn" class="ctrl-btn" title="¿Cómo editar samplers?"><i class="fa-solid fa-question"></i> Ayuda</button>
+          <button id="immersion-btn" type="button" class="ctrl-btn immersion-btn" title="Ocultar menú y cinta para más espacio" aria-pressed="false">
+            <i class="fa-solid fa-expand" aria-hidden="true"></i>
+            <span class="immersion-btn-label">Inmersión</span>
+          </button>
         </div>
         <div class="divider"></div>
         <div class="control-group">

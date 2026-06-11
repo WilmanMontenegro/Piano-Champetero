@@ -580,8 +580,8 @@ ul.sampler-list {
 
 /* ===================== RESPONSIVE ===================== */
 
-/* Móvil - 480px */
-@media (max-width: 480px) {
+/* Móvil ≤767 */
+@media (max-width: 767px) {
   .battery {
     width: 100%;
     max-width: none;
@@ -921,7 +921,7 @@ ul.sampler-list {
   }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 767px) {
   .pads-grid.grid-3x4 {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
@@ -1138,25 +1138,73 @@ ul.sampler-list {
 }
 
 /* =====================================================
-   virtual.html — escenario compacto (cabe en ~900px alto)
-   Solo esta página; inicio y demás mantienen header grande.
+   virtual.html — escenario del kit + modo inmersión
+   Header/nav: mismos estilos globales (common + responsive).
    ===================================================== */
 .virtual-page {
-  padding-top: 2.15rem; /* cinta fija arriba */
+  transition: padding-top 0.35s ease;
 }
 
+/* Solo transición para colapsar en inmersión (no altera tamaños del header) */
 .virtual-page header {
-  padding: 0.5rem 0 0;
+  transition: opacity 0.35s ease, max-height 0.45s ease, padding 0.35s ease, border-bottom-width 0.3s ease;
+  max-height: 480px;
+  overflow: hidden;
 }
 
-.virtual-page .title {
-  font-size: clamp(1.25rem, 3.2vw, 2.5rem);
-  margin: 0.15rem 0 0.25rem;
-  line-height: 1.12;
+.virtual-page .contributor-ticker {
+  transition: transform 0.35s ease, opacity 0.3s ease;
 }
 
-.virtual-page #nav-container {
-  margin: 0.25rem 0 0.45rem;
+.virtual-page footer {
+  transition: opacity 0.3s ease, max-height 0.35s ease, padding 0.3s ease, margin 0.3s ease;
+  max-height: 120px;
+  overflow: hidden;
+}
+
+.virtual-page.immersion-mode {
+  padding-top: 0;
+}
+
+.virtual-page.immersion-mode header {
+  max-height: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  opacity: 0;
+  border-bottom-width: 0;
+  pointer-events: none;
+}
+
+.virtual-page.immersion-mode .contributor-ticker {
+  transform: translateY(-100%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.virtual-page.immersion-mode footer {
+  max-height: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  margin: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.virtual-page.immersion-mode .whatsapp-fab {
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(0.9);
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .virtual-page,
+  .virtual-page header,
+  .virtual-page .contributor-ticker,
+  .virtual-page footer,
+  .virtual-page.immersion-mode .whatsapp-fab {
+    transition: none;
+  }
 }
 
 .virtual-page main {
@@ -1238,37 +1286,13 @@ ul.sampler-list {
 }
 
 @media (min-width: 1024px) {
-  .virtual-page header {
-    padding: 0.55rem 0 0;
-  }
-
-  .virtual-page #nav-container {
-    margin: 0.3rem 0 0.5rem;
-  }
-
-  .virtual-page .nav-menu a {
-    padding: 0.22em 0.6em;
-  }
-
   .virtual-page .pads-view {
-    --pad-size-by-height: calc((100vh - 300px - (3 * var(--desktop-gap)) - (2 * var(--desktop-pad))) / 4);
+    --pad-size-by-height: calc((100vh - 420px - (3 * var(--desktop-gap)) - (2 * var(--desktop-pad))) / 4);
   }
 }
 
 /* Pantallas bajas (ej. laptop 768px alto, 1366×768) */
 @media (max-height: 860px) {
-  .virtual-page {
-    padding-top: 1.85rem;
-  }
-
-  .virtual-page .title {
-    font-size: clamp(1.1rem, 2.8vw, 1.85rem);
-  }
-
-  .virtual-page #nav-container {
-    margin: 0.15rem 0 0.35rem;
-  }
-
   .virtual-page .audio-viz-canvas {
     height: 44px;
   }
@@ -1284,7 +1308,7 @@ ul.sampler-list {
   }
 
   .virtual-page .pads-view {
-    --pad-size-by-height: calc((100vh - 260px - (3 * var(--desktop-gap)) - (2 * var(--desktop-pad))) / 4);
+    --pad-size-by-height: calc((100vh - 380px - (3 * var(--desktop-gap)) - (2 * var(--desktop-pad))) / 4);
   }
 }
 
@@ -1298,8 +1322,8 @@ ul.sampler-list {
   margin-top: 1.5em;
 }
 
-/* ===================== RESPONSIVE VIEWS ===================== */
-@media (max-width: 480px) {
+/* ===================== RESPONSIVE VIEWS (móvil ≤767) ===================== */
+@media (max-width: 767px) {
   .view-toggle-btn {
     font-size: 0.8rem;
     padding: 0.4em 0.9em;

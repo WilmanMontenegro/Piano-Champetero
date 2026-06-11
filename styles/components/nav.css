@@ -1,17 +1,14 @@
 /* =====================================================
-   Nav — desktop-first
-   Escritorio: fila horizontal legible y alineada
-   Hamburguesa: solo si #nav-container ≤ 620px (sin espacio real)
+   Nav — desktop-first, 3 breakpoints (tokens.css)
+   Desktop ≥1024 | Tablet 768–1023 | Móvil ≤767 → hamburguesa
    ===================================================== */
 
 #nav-container {
-  margin: 1rem 0;
+  margin: var(--header-nav-margin-block) 0;
   width: 100%;
   max-width: 100%;
   padding-inline: var(--layout-inline-pad);
   box-sizing: border-box;
-  container-type: inline-size;
-  container-name: site-nav;
 }
 
 .main-nav {
@@ -55,7 +52,7 @@
   transform: rotate(-45deg) translate(6px, -6px);
 }
 
-/* Escritorio / panel ancho (default) */
+/* Escritorio / tablet: barra horizontal (default) */
 .nav-menu {
   display: flex;
   flex-wrap: nowrap;
@@ -112,12 +109,22 @@
   text-underline-offset: 0.35em;
 }
 
-/*
- * Modo compacto: solo cuando el contenedor del nav es demasiado estrecho
- * (~5 enlaces largos no caben en una línea incluso con texto reducido)
- */
-/* 620px = NAV_COMPACT_MAX_PX in js/site-config.js (--nav-compact-max in tokens.css) */
-@container site-nav (max-width: 620px) {
+/* Tablet: enlaces un poco más compactos, puede hacer wrap */
+@media (min-width: 768px) and (max-width: 1023px) {
+  #nav-container {
+    --nav-link-size: clamp(0.8rem, 1.05vw, 0.92rem);
+    --nav-link-gap: clamp(0.4rem, 1vw, 0.85em);
+  }
+
+  .nav-menu {
+    flex-wrap: wrap;
+    row-gap: 0.35em;
+    justify-content: center;
+  }
+}
+
+/* Móvil ≤767px — hamburguesa + dropdown */
+@media (max-width: 767px) {
   .main-nav {
     flex-direction: column;
     gap: 0.65rem;
@@ -134,7 +141,7 @@
     top: 100%;
     left: 50%;
     transform: translateX(-50%);
-    width: min(100%, var(--nav-dropdown-max-width));
+    width: min(92vw, var(--nav-dropdown-max-width));
     margin-top: 0.5rem;
     padding: 0.8rem;
     background: var(--gradient-nav-dropdown);
@@ -144,7 +151,7 @@
     gap: 0;
     border-radius: var(--borde-radius-nav-dropdown);
     box-shadow: var(--sombra-nav-dropdown);
-    z-index: var(--z-nav);
+    z-index: var(--z-nav-hamburger);
   }
 
   .nav-menu.active {
@@ -167,4 +174,9 @@
   .nav-menu a.active:hover {
     background: rgba(255, 255, 255, 0.15);
   }
+}
+
+/* Dropdown no lo recorta el header (overflow-x: clip en common.css) */
+header:has(.nav-menu.active) {
+  overflow: visible;
 }

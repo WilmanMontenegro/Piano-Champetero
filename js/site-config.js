@@ -3,8 +3,11 @@
  * Code in English; user-facing strings in Spanish (es-419).
  */
 
-/** Must match --nav-compact-max in styles/tokens.css (container query uses px literal). */
-export const NAV_COMPACT_MAX_PX = 620;
+/** Viewport breakpoints — must match styles/tokens.css */
+export const BREAKPOINT_DESKTOP_MIN_PX = 1024;
+export const BREAKPOINT_TABLET_MIN_PX = 768;
+/** Max viewport width for mobile nav (hamburger below tablet). */
+export const NAV_MOBILE_MAX_PX = 767;
 
 /**
  * WhatsApp Community invite link (Comunidades → enlace de invitación).

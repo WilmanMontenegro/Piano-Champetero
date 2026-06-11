@@ -1,6 +1,6 @@
 // js/common.js — utilidades UI compartidas entre páginas
 import { buildTickerInnerHtml, WHATSAPP_COMMUNITY_URL, WHATSAPP_COMMUNITY_LABEL } from './site-config.js';
-import { WHATSAPP_GROUP_ICON_SVG } from './whatsapp-group-icon.js';
+import { WHATSAPP_GROUP_ICON_SVG, WHATSAPP_FAB_ICON_SVG } from './whatsapp-group-icon.js';
 
 export function initNav() {
   return fetch('nav.html')
@@ -25,32 +25,33 @@ function initHamburgerMenu() {
   const hamburger = document.getElementById('nav-hamburger');
   const navMenu = document.getElementById('nav-menu');
 
-  if (hamburger && navMenu) {
-    // Toggle al hacer clic en hamburger
-    hamburger.addEventListener('click', (e) => {
-      e.stopPropagation();
-      hamburger.classList.toggle('active');
-      navMenu.classList.toggle('active');
-    });
+  if (!hamburger || !navMenu || hamburger.dataset.navBound === '1') return;
+  hamburger.dataset.navBound = '1';
 
-    // Cerrar menú al hacer clic en un enlace
-    navMenu.querySelectorAll('a').forEach(link => {
-      link.addEventListener('click', () => {
-        hamburger.classList.remove('active');
-        navMenu.classList.remove('active');
-      });
-    });
+  hamburger.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const open = !navMenu.classList.contains('active');
+    hamburger.classList.toggle('active', open);
+    navMenu.classList.toggle('active', open);
+    hamburger.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
 
-    // Cerrar menú al hacer clic fuera
-    document.addEventListener('click', (e) => {
-      if (navMenu.classList.contains('active') &&
-          !navMenu.contains(e.target) &&
-          !hamburger.contains(e.target)) {
-        hamburger.classList.remove('active');
-        navMenu.classList.remove('active');
-      }
+  navMenu.querySelectorAll('a').forEach(link => {
+    link.addEventListener('click', () => {
+      hamburger.classList.remove('active');
+      navMenu.classList.remove('active');
+      hamburger.setAttribute('aria-expanded', 'false');
     });
-  }
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!navMenu.classList.contains('active')) return;
+    if (navMenu.contains(e.target) || hamburger.contains(e.target)) return;
+    hamburger.classList.remove('active');
+    navMenu.classList.remove('active');
+    hamburger.setAttribute('aria-expanded', 'false');
+  });
 }
 
 export function setYearFooter() {
@@ -102,7 +103,7 @@ export async function loadHeader() {
     const fallback = `
       <h1 class="title">Batería Champetera Virtual</h1>
       <nav class="main-nav">
-        <button class="nav-hamburger" id="nav-hamburger" aria-label="Abrir menú">
+        <button class="nav-hamburger" id="nav-hamburger" type="button" aria-label="Abrir menú" aria-expanded="false" aria-controls="nav-menu">
           <span></span>
           <span></span>
           <span></span>
@@ -154,7 +155,7 @@ export function initWhatsAppFab() {
     `${WHATSAPP_COMMUNITY_LABEL} de Batería Champetera Virtual en WhatsApp`
   );
   link.innerHTML = `
-    <span class="whatsapp-fab__icon">${WHATSAPP_GROUP_ICON_SVG}</span>
+    <span class="whatsapp-fab__icon">${WHATSAPP_FAB_ICON_SVG}</span>
     <span class="whatsapp-fab__label">${WHATSAPP_COMMUNITY_LABEL}</span>
   `;
   document.body.appendChild(link);

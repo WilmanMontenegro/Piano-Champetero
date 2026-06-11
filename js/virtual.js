@@ -616,6 +616,32 @@ function actualizarEtiquetasTeclas(keyMap) {
   });
 }
 
+const IMMERSION_STORAGE_KEY = 'pianoChampeteroImmersionMode';
+
+function setImmersionMode(on) {
+  document.body.classList.toggle('immersion-mode', on);
+  const btn = document.getElementById('immersion-btn');
+  if (btn) {
+    btn.classList.toggle('active', on);
+    btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+    btn.title = on ? 'Mostrar menú y cinta' : 'Ocultar menú y cinta para más espacio';
+    const icon = btn.querySelector('i');
+    const label = btn.querySelector('.immersion-btn-label');
+    if (icon) icon.className = on ? 'fa-solid fa-compress' : 'fa-solid fa-expand';
+    if (label) label.textContent = on ? 'Salir' : 'Inmersión';
+  }
+  try { localStorage.setItem(IMMERSION_STORAGE_KEY, on ? '1' : '0'); } catch (e) { /* ignore */ }
+}
+
+function initImmersionMode() {
+  const btn = document.getElementById('immersion-btn');
+  if (!btn) return;
+  setImmersionMode(document.body.classList.contains('immersion-mode'));
+  btn.addEventListener('click', () => {
+    setImmersionMode(!document.body.classList.contains('immersion-mode'));
+  });
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
   const isMainPage = document.getElementById('tom-1') !== null;
   await initSiteChrome();
@@ -1031,4 +1057,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     openBtnId: 'help-btn',
     closeBtnId: 'close-help-btn'
   });
+
+  initImmersionMode();
 });

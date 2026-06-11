@@ -51,12 +51,14 @@ Do **not** use or add `.claude/` or `.vscode/` config (legacy / local IDE). **Cu
 | Change | File |
 |--------|------|
 | Colors, spacing, shadows | `styles/tokens.css` |
+| Header title size / padding | `styles/tokens.css` → `--header-title-size`, `--header-padding-top`, `--header-nav-margin-block` |
 | Nav layout, active link style | `styles/components/nav.css` |
 | Ticker credits / static lines | `js/site-config.js` → `TICKER_CONTRIBUTORS`, `TICKER_STATIC_LINES` |
+| Espacio bajo cinta fija | `styles/tokens.css` → `--ticker-block-height`; `body { padding-top }` en `common.css` |
 | WhatsApp community invite URL | `js/site-config.js` → `WHATSAPP_COMMUNITY_URL` (ticker, Contáctanos, botón flotante) |
 | Hit flash duration on pads/toms | `js/site-config.js` → `AUDIO_UI.hitFlashMs` |
-| Nav hamburger threshold | `NAV_COMPACT_MAX_PX` in `site-config.js` + `--nav-compact-max` in tokens; container query `620px` in `nav.css` |
-| Desktop/tablet breakpoints | `styles/responsive.css` |
+| Nav hamburger threshold | `NAV_MOBILE_MAX_PX` (767) in `site-config.js`; móvil `@media (max-width: 767px)` in `nav.css` |
+| Desktop/tablet/mobile breakpoints | `styles/tokens.css` → `--bp-desktop-min` 1024, `--bp-tablet-min` 768, `--bp-mobile-max` 767; `responsive.css` |
 | Battery / pads behavior | `js/virtual.js`, `styles/virtual.css` |
 
 ## Conventions (strict)
@@ -85,6 +87,7 @@ Same **edit** flow: **Editar** → cell → modal **Sonido** / **Tecla** → **G
 | `pianoChampeteroPads_${gridType}` | Pads: sampler filenames per grid |
 | `pianoChampeteroPadKeys_${gridType}` | Pads: one canonical key per pad index |
 | `pianoChampeteroViewMode` | `"bateria"` \| `"pads"` |
+| `pianoChampeteroImmersionMode` | `"1"` \| `"0"` — oculta cinta/header/footer en virtual.html |
 | `pianoChampeteroGridType` | `3x3`, `3x4`, `4x4`, `4x6` |
 
 **Edit modal save** (`virtual.js`): applies sampler and key independently when set — not gated on visible tab.
@@ -101,9 +104,9 @@ Same **edit** flow: **Editar** → cell → modal **Sonido** / **Tecla** → **G
 ## UI / layout (current)
 
 - **Ticker:** `#contributor-ticker` filled by `loadContributorTicker()` from `site-config.js` (loop duplicates segments in JS). Styles in `components/ticker.css`.
-- **Nav:** Desktop-first — horizontal bar scales with viewport; hamburger only when `#nav-container` ≤ 620px (container query). Active page: yellow text + underline (no box border).
+- **Nav:** Desktop-first — horizontal bar on desktop (≥1024) and tablet (768–1023); hamburger on mobile (≤767). Active page: yellow text + underline (no box border).
 - **Pad/tom hit feedback:** Caribbean palette glow on press (`virtual.css` + `AUDIO_UI.hitFlashMs`); idle pads use brand gradient (not per-pad rainbow).
-- **Pads:** square (`aspect-ratio: 1 / 1`); desktop sizing in `virtual.css` (width + height constrained).
+- **virtual.html:** mismo header/nav que el resto (`header.html` + estilos globales); botón **Inmersión** oculta cinta, header y footer.
 - **Desktop-first product:** PC primary; mobile usable but secondary (touch/audio latency).
 
 ## Roadmap (not shipped)

@@ -31,13 +31,25 @@
   --layout-content-gutter: 2rem;
   --layout-inline-pad: clamp(0.75rem, 3vw, 1.5rem);
   --header-border: 3px solid rgba(255, 224, 102, 0.6);
+  --header-padding-top: 1.15rem;
+  --header-title-size: clamp(1.75rem, 5.5vw, 4.25rem);
+  --header-title-margin-block: 0.3rem;
+  --header-nav-margin-block: 0.65rem;
 
   /*
-   * Nav — desktop-first (PC es el uso principal)
-   * Valores base = escritorio; se reducen solo en ventanas/contenedores estrechos
+   * Breakpoints viewport — 3 niveles (usar estos valores en CSS)
+   * Móvil:  max-width 767px  (--bp-mobile-max)
+   * Tablet: 768px – 1023px   (--bp-tablet-min – --bp-desktop-min - 1)
+   * Desktop: min-width 1024px (--bp-desktop-min)
    */
+  --bp-mobile-max: 767px;
+  --bp-tablet-min: 768px;
+  --bp-desktop-min: 1024px;
+
+  --ticker-block-height: 2.15rem;
+
   --nav-container-name: site-nav;
-  --nav-compact-max: 620px;
+  --nav-mobile-max: 767px;
   --nav-dropdown-max-width: 320px;
   --nav-link-gap: 1.25em;
   /* Escala con el ancho de pantalla en PC (tope ~1.3rem) */
@@ -84,9 +96,4 @@
   --z-modal-overlay: 9999;
   --z-ticker: 9999;
   --z-whatsapp-fab: 9500;
-
-  /*
-   * Breakpoints viewport (solo en responsive.css)
-   * 360 | 480 | 768 | 1024
-   */
 }
