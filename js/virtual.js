@@ -6,6 +6,10 @@ import { initModal } from './modal-utils.js';
 import { DEFAULT_PAD_KEY_CHAR_ORDER, BATTERY_DEFAULT_PAD_CHARS, buildPadKeyIndexMap, resolvePadIndexFromKeyboard } from './pad-keyboard.js';
 import { initAudioBus, connectHitToOutput } from './audio-bus.js';
 import { initAudioVisualizer, pulseAudioVisualizer } from './audio-visualizer.js';
+import { resolveSamplerPath, samplerUrl, samplerBasename } from './sampler-path.js';
+import { mountSamplerBrowser, loadSamplerCatalog } from './sampler-browser.js';
+import { isNoteRepeatEnabled, startNoteRepeat, stopNoteRepeat, stopAllNoteRepeat } from './note-repeat.js';
+import { stopSamplerPreview, previewSamplerPath } from './sampler-preview.js';
 
 // AudioContext con latencia mínima
 export const audioCtx = new (window.AudioContext || window.webkitAudioContext)({
@@ -16,6 +20,22 @@ export const audioCtx = new (window.AudioContext || window.webkitAudioContext)({
 const { analyser } = initAudioBus(audioCtx);
 
 const HIT_FLASH_MS = AUDIO_UI.hitFlashMs;
+const RETRIGGER_MASK_SEC = (AUDIO_UI.retriggerMaskMs ?? 45) / 1000;
+
+/** @type {Map<string, number>} voiceKey → audioContext.currentTime */
+const lastTriggerAt = new Map();
+/** @type {Map<string, { source: AudioBufferSourceNode, gain: GainNode }>} */
+const activeVoices = new Map();
+/** Keyboard codes currently held (our note repeat, not OS repeat). */
+const keysHeldForRepeat = new Set();
+
+function tomVoiceKey(tomId) {
+  return `tom:${tomId}`;
+}
+
+function padVoiceKey(index) {
+  return `pad:${index}`;
+}
 
 export const tomSamplersDefaults = {
   'tom-1': 'D (2).wav',
@@ -143,6 +163,62 @@ export let padsViewBuffers = {};
 
 // Cache global de TODOS los samplers cargados (evita re-fetch)
 const globalSamplerCache = {};
+
+/** @type {Map<string, string>} */
+let samplerByFullPath = new Map();
+/** @type {Map<string, string[]>} */
+let samplerByBasename = new Map();
+
+function rebuildSamplerIndexes(paths) {
+  samplerByFullPath = new Map();
+  samplerByBasename = new Map();
+  const addPath = (p) => {
+    if (!p) return;
+    const norm = p.replace(/\\/g, '/');
+    samplerByFullPath.set(norm.toLowerCase(), norm);
+    const base = samplerBasename(norm).toLowerCase();
+    const list = samplerByBasename.get(base) || [];
+    if (!list.some((x) => x.toLowerCase() === norm.toLowerCase())) list.push(norm);
+    samplerByBasename.set(base, list);
+  };
+  paths.forEach(addPath);
+  samplerList.forEach(addPath);
+}
+
+function resolveStoredSampler(stored) {
+  return resolveSamplerPath(stored, samplerByFullPath, samplerByBasename);
+}
+
+/** Audio listo antes del golpe — resume en captura, sin await en el play. */
+function initAudioWarmup() {
+  const warm = () => {
+    if (audioCtx.state === 'suspended') void audioCtx.resume();
+  };
+  document.addEventListener('pointerdown', warm, { capture: true, passive: true });
+  document.addEventListener('keydown', warm, { capture: true, passive: true });
+  document.addEventListener('touchstart', warm, { capture: true, passive: true });
+  document.addEventListener('user-gesture', warm);
+}
+
+function assignedSamplerPaths() {
+  const files = new Set(Object.values(tomAudioMap).filter(Boolean));
+  padsViewState.forEach((f) => { if (f) files.add(f); });
+  return files;
+}
+
+async function preloadSamplerFile(fileName) {
+  if (!fileName) return null;
+  const url = samplerUrl(fileName);
+  if (globalSamplerCache[url]) return globalSamplerCache[url];
+  try {
+    const buffer = await loadSamplerBuffer(url);
+    tomSamplerBuffers[fileName] = buffer;
+    return buffer;
+  } catch {
+    tomSamplerBuffers[fileName] = null;
+    return null;
+  }
+}
 
 let keyToPadIndex = Object.create(null);
 
@@ -354,11 +430,11 @@ export function prettyName(fileName) {
 }
 
 export function saveSamplers() {
-  const onlyName = {};
+  const payload = {};
   Object.keys(tomAudioMap).forEach(k => {
-    onlyName[k] = tomAudioMap[k] ? tomAudioMap[k].split('/').pop() : '';
+    payload[k] = tomAudioMap[k] ? tomAudioMap[k].replace(/\\/g, '/') : '';
   });
-  try { localStorage.setItem('pianoChampeteroSamplers', JSON.stringify(onlyName)); } catch {}
+  try { localStorage.setItem('pianoChampeteroSamplers', JSON.stringify(payload)); } catch {}
 }
 
 export function resetSettings() {
@@ -373,14 +449,37 @@ export function resetSettings() {
   padsViewState = loadPadsViewSounds(currentGridType);
 }
 
+let catalogEnhanceStarted = false;
+
 export async function loadAvailableSamplers() {
-  samplersDisponibles = samplerList;
-  const availableFiles = new Map(samplersDisponibles.map(f => [f.toLowerCase(), f]));
-  Object.keys(tomAudioMap).forEach(tomId => {
-    let name = tomAudioMap[tomId] ? tomAudioMap[tomId].split('/').pop() : '';
-    if (!name) { tomAudioMap[tomId] = tomSamplersDefaults[tomId]; return; }
-    const realName = availableFiles.get(name.toLowerCase());
-    if (realName) tomAudioMap[tomId] = realName;
+  rebuildSamplerIndexes([...samplerList]);
+
+  Object.keys(tomAudioMap).forEach((tomId) => {
+    const stored = tomAudioMap[tomId];
+    if (!stored) {
+      tomAudioMap[tomId] = tomSamplersDefaults[tomId];
+      return;
+    }
+    tomAudioMap[tomId] = resolveStoredSampler(stored) || stored || tomSamplersDefaults[tomId];
+  });
+
+  padsViewState = padsViewState.map((p) => (p ? resolveStoredSampler(p) || p : p));
+  samplersDisponibles = [...samplerList];
+
+  if (catalogEnhanceStarted) return;
+  catalogEnhanceStarted = true;
+
+  // Catálogo solo para el modal Editar — no bloquea precarga ni el play.
+  void loadSamplerCatalog().then((cat) => {
+    if (!cat?.files?.length) return;
+    rebuildSamplerIndexes(cat.files.map((f) => f.path));
+    samplersDisponibles = [...new Set([...samplerList, ...cat.files.map((f) => f.path)])];
+    Object.keys(tomAudioMap).forEach((tomId) => {
+      const stored = tomAudioMap[tomId];
+      if (stored) tomAudioMap[tomId] = resolveStoredSampler(stored) || stored;
+    });
+    padsViewState = padsViewState.map((p) => (p ? resolveStoredSampler(p) || p : p));
+    void preloadAllSamplers();
   });
 }
 
@@ -394,53 +493,83 @@ export async function loadSamplerBuffer(url) {
   return buffer;
 }
 
-// Preload agresivo: carga TODOS los samplers usados en paralelo
+// Preload: solo sonidos asignados (batería + pads actuales). Catálogo = bajo demanda en Editar.
 export async function preloadAllSamplers() {
   await loadAvailableSamplers();
-  const uniqueFiles = new Set(Object.values(tomAudioMap).filter(Boolean));
-  const loadPromises = Array.from(uniqueFiles).map(async (fileName) => {
-    const url = 'samplers/' + fileName;
-    try { tomSamplerBuffers[fileName] = await loadSamplerBuffer(url); } catch { tomSamplerBuffers[fileName] = null; }
-  });
-  await Promise.all(loadPromises);
+  await Promise.all([...assignedSamplerPaths()].map((fileName) => preloadSamplerFile(fileName)));
 }
 
-// Preload de samplers específicos por nombre de archivo (reutiliza cache)
 async function preloadSamplerByName(fileName) {
-  if (!fileName) return null;
-  const url = 'samplers/' + fileName;
-  try { return await loadSamplerBuffer(url); } catch { return null; }
+  return preloadSamplerFile(fileName);
 }
 
-// PLAY OPTIMIZADO: Sin requestAnimationFrame, start(0) directo
-export function playTomSampler(tomId) {
-  const fileName = tomAudioMap[tomId];
-  if (!fileName) return;
-  const buffer = tomSamplerBuffers[fileName] || globalSamplerCache['samplers/' + fileName];
-  if (!buffer) return;
-  const slider = document.getElementById('volume-slider');
-  const volume = slider ? +slider.value : currentVolume;
+function playSamplerVoice(buffer, voiceKey) {
+  const now = audioCtx.currentTime;
+  const last = lastTriggerAt.get(voiceKey) ?? 0;
+  if (now - last < RETRIGGER_MASK_SEC) return;
+
+  const prev = activeVoices.get(voiceKey);
+  if (prev) {
+    try { prev.source.stop(); } catch { /* already stopped */ }
+    activeVoices.delete(voiceKey);
+  }
+
+  lastTriggerAt.set(voiceKey, now);
+
   const source = audioCtx.createBufferSource();
   const gainNode = audioCtx.createGain();
-  gainNode.gain.value = volume;
+  gainNode.gain.value = _currentVolume;
   source.buffer = buffer;
   source.connect(gainNode);
   connectHitToOutput(gainNode);
-  source.start(0); // start(0) = inmediato, sin delay
+
+  const voice = { source, gain: gainNode };
+  activeVoices.set(voiceKey, voice);
+  source.onended = () => {
+    if (activeVoices.get(voiceKey) === voice) activeVoices.delete(voiceKey);
+  };
+
+  source.start(0);
   pulseAudioVisualizer();
 }
 
-// ACTIVAR TOM: Resume audio context si es necesario, luego play directo
-export async function activateTomSampler(tomId) {
+// PLAY: buffer ya en RAM, start(0), sin await
+export function playTomSampler(tomId) {
+  const fileName = tomAudioMap[tomId];
+  if (!fileName) return;
+  const url = samplerUrl(fileName);
+  const buffer = tomSamplerBuffers[fileName] || globalSamplerCache[url];
+  if (!buffer) {
+    void preloadSamplerFile(fileName);
+    return;
+  }
+  playSamplerVoice(buffer, `tom:${tomId}`);
+}
+
+function flashTomButton(tomId) {
   const button = document.getElementById(tomId);
   if (!button) return;
   button.classList.add('active');
-  // Resume el audio context si está suspendido, luego toca inmediatamente
-  if (audioCtx.state === 'suspended') {
-    await audioCtx.resume();
-  }
-  playTomSampler(tomId);
   setTimeout(() => button.classList.remove('active'), HIT_FLASH_MS);
+}
+
+export function activateTomSampler(tomId, { flash = true } = {}) {
+  if (flash) flashTomButton(tomId);
+  if (audioCtx.state === 'running') {
+    playTomSampler(tomId);
+    return;
+  }
+  void audioCtx.resume().then(() => playTomSampler(tomId));
+}
+
+function beginTomNoteRepeat(tomId) {
+  if (!isNoteRepeatEnabled()) return;
+  const key = tomVoiceKey(tomId);
+  startNoteRepeat(key, () => playTomSampler(tomId));
+}
+
+function endTomNoteRepeat(tomId) {
+  stopNoteRepeat(tomVoiceKey(tomId));
 }
 
 // Pads view functions
@@ -502,34 +631,42 @@ export async function preloadPadsViewBuffer(index) {
   return await preloadSamplerByName(fileName);
 }
 
-// PLAY PAD OPTIMIZADO: Sin requestAnimationFrame
 export function playPadSound(index) {
-  const buffer = padsViewBuffers[index];
-  if (!buffer) return;
-  const slider = document.getElementById('volume-slider');
-  const volume = slider ? +slider.value : currentVolume;
-  const source = audioCtx.createBufferSource();
-  const gainNode = audioCtx.createGain();
-  gainNode.gain.value = volume;
-  source.buffer = buffer;
-  source.connect(gainNode);
-  connectHitToOutput(gainNode);
-  source.start(0); // inmediato
-  pulseAudioVisualizer();
+  const fileName = padsViewState[index];
+  const url = fileName ? samplerUrl(fileName) : '';
+  const buffer = padsViewBuffers[index] || (url ? globalSamplerCache[url] : null);
+  if (!buffer) {
+    if (fileName) void preloadPadsViewBuffer(index).then((buf) => { if (buf) padsViewBuffers[index] = buf; });
+    return;
+  }
+  playSamplerVoice(buffer, `pad:${index}`);
 }
 
-// ACTIVAR PAD: Resume si es necesario, luego play directo
-export async function activatePadSound(index) {
+function flashPadButton(index) {
   const padsGrid = document.getElementById('pads-grid');
-  if (!padsGrid) return;
-  const padButton = padsGrid.children[index];
+  const padButton = padsGrid?.children[index];
   if (!padButton) return;
   padButton.classList.add('active');
-  if (audioCtx.state === 'suspended') {
-    await audioCtx.resume();
-  }
-  playPadSound(index);
   setTimeout(() => padButton.classList.remove('active'), HIT_FLASH_MS);
+}
+
+export function activatePadSound(index, { flash = true } = {}) {
+  if (flash) flashPadButton(index);
+  if (audioCtx.state === 'running') {
+    playPadSound(index);
+    return;
+  }
+  void audioCtx.resume().then(() => playPadSound(index));
+}
+
+function beginPadNoteRepeat(index) {
+  if (!isNoteRepeatEnabled()) return;
+  const key = padVoiceKey(index);
+  startNoteRepeat(key, () => playPadSound(index));
+}
+
+function endPadNoteRepeat(index) {
+  stopNoteRepeat(padVoiceKey(index));
 }
 
 export function generatePadsView() {
@@ -558,13 +695,19 @@ export function generatePadsView() {
     pad.appendChild(soundLabel);
     padsGrid.appendChild(pad);
 
-    pad.addEventListener('click', async () => {
+    pad.addEventListener('pointerdown', (e) => {
+      if (e.button !== 0) return;
       if (modoEdicion) {
+        e.preventDefault();
         if (openPadEditModalRef) openPadEditModalRef(i);
         return;
       }
-      await activatePadSound(i);
+      activatePadSound(i);
+      beginPadNoteRepeat(i);
+      try { pad.setPointerCapture(e.pointerId); } catch { /* ignore */ }
     });
+    pad.addEventListener('pointerup', () => endPadNoteRepeat(i));
+    pad.addEventListener('pointercancel', () => endPadNoteRepeat(i));
   }
 
   // Preload buffers en paralelo para pads view
@@ -653,6 +796,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (!isMainPage) return;
 
   initAudioVisualizer({ analyser });
+  initAudioWarmup();
 
   const savedKeys = loadKeyMapping();
   if (savedKeys) keyToTomId = normalizeKeyMap(savedKeys);
@@ -668,7 +812,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (sliderVolumen) {
     const actualizarLabel = v => labelPorcentaje && (labelPorcentaje.textContent = Math.round(v * 100) + '%');
     if (labelPorcentaje) actualizarLabel(sliderVolumen.value);
-    sliderVolumen.addEventListener('input', e => { _currentVolume = +e.target.value; if (labelPorcentaje) actualizarLabel(_currentVolume); });
+    _currentVolume = +sliderVolumen.value;
+    sliderVolumen.addEventListener('input', e => { _currentVolume = +e.target.value; currentVolume = _currentVolume; if (labelPorcentaje) actualizarLabel(_currentVolume); });
     sliderVolumen.addEventListener('wheel', e => {
       e.preventDefault();
       const step = parseFloat(sliderVolumen.step) || 0.01;
@@ -681,13 +826,35 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   const editBtn = document.getElementById('edit-btn');
   const modal = document.getElementById('modal-edit');
-  const listaSamplers = document.getElementById('sampler-list');
+  const samplerListEl = document.getElementById('sampler-list');
+  const samplerBrowserRoot = document.getElementById('sampler-browser');
   const tabSampler = document.getElementById('tab-sampler');
   const tabKey = document.getElementById('tab-key');
   const keyInput = document.getElementById('new-key-input');
   const saveBtn = document.getElementById('save-edit-btn');
   const cancelBtn = document.getElementById('cancel-edit-btn');
   const tabs = modal ? modal.querySelectorAll('.modal-tab') : [];
+
+  const previewDeps = {
+    getVolume: () => _currentVolume,
+    loadBuffer: loadSamplerBuffer,
+    connectHit: connectHitToOutput,
+    pulseViz: pulseAudioVisualizer,
+  };
+
+  function previewSamplerFile(relativePath) {
+    void previewSamplerPath(audioCtx, relativePath, previewDeps);
+  }
+
+  function fillSamplerTab(currentPath, onPick) {
+    if (!samplerBrowserRoot) return;
+    mountSamplerBrowser(samplerBrowserRoot, {
+      currentPath,
+      legacyList: samplerList,
+      onSelect: onPick,
+      onPreview: previewSamplerFile,
+    });
+  }
 
   function switchTab(tab) {
     activeTab = tab;
@@ -722,64 +889,45 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   function abrirModal(boton) {
     tomSeleccionado = boton;
+    padSeleccionado = null;
     lastCapturedCode = null;
     switchTab('sampler');
-    if (!modal || !listaSamplers) return;
-    samplerSeleccionado = null;
-    listaSamplers.innerHTML = '';
-    const currentFile = tomAudioMap[boton.id] || '';
-    samplerList.forEach(nombreArchivo => {
-      const li = document.createElement('li');
-      li.textContent = nombreArchivo.replace(/\.[^.]+$/, '');
-      li.title = nombreArchivo;
-      li.className = 'sampler-item';
-      li.tabIndex = 0;
-      li.addEventListener('click', async () => {
-        document.querySelectorAll('.sampler-item').forEach(el => el.classList.remove('selected'));
-        li.classList.add('selected');
-        samplerSeleccionado = nombreArchivo;
-        if (window._previewSource && typeof window._previewSource.stop === 'function') {
-          try { window._previewSource.stop(); } catch {}
-        }
-        try {
-          const path = 'samplers/' + nombreArchivo;
-          if (audioCtx.state !== 'running') await audioCtx.resume();
-          const buffer = await loadSamplerBuffer(path);
-          const source = audioCtx.createBufferSource();
-          const gainNode = audioCtx.createGain();
-          gainNode.gain.value = _currentVolume;
-          source.buffer = buffer;
-          source.connect(gainNode);
-          connectHitToOutput(gainNode);
-          source.start(0);
-          pulseAudioVisualizer();
-          window._previewSource = source;
-        } catch (e) { /* ignore preview errors */ }
-      });
-      li.addEventListener('keydown', ev => { if (ev.key === 'Enter' || ev.key === ' ') li.click(); });
-      if (currentFile.toLowerCase() === nombreArchivo.toLowerCase()) {
-        li.classList.add('selected'); samplerSeleccionado = nombreArchivo;
-      }
-      listaSamplers.appendChild(li);
-    });
+    samplerSeleccionado = tomAudioMap[boton.id] || null;
+    padSamplerSeleccionado = null;
+    fillSamplerTab(samplerSeleccionado || '', (path) => { samplerSeleccionado = path; });
     if (keyInput) keyInput.value = '';
-    modal.style.display = 'flex';
+    if (editModal) editModal.open();
+    else if (modal) modal.style.display = 'flex';
   }
 
   function cerrarModal() {
-    if (modal) modal.style.display = 'none';
-    if (window._previewSource && typeof window._previewSource.stop === 'function') {
-      try { window._previewSource.stop(); } catch {}
-    }
+    stopSamplerPreview();
     tomSeleccionado = null;
     samplerSeleccionado = null;
+    if (editModal) editModal.close();
+    else if (modal) modal.style.display = 'none';
   }
+
+  /** @type {ReturnType<typeof initModal> | null} */
+  let editModal = null;
 
   if (editBtn) editBtn.addEventListener('click', () => {
     modoEdicion = !modoEdicion;
-    editBtn.innerHTML = modoEdicion ? '<i class="fa-solid fa-check"></i> Listo' : '<i class="fa-solid fa-pencil"></i> Editar';
+    editBtn.innerHTML = modoEdicion
+      ? '<i class="fa-solid fa-check" aria-hidden="true"></i> Listo'
+      : '<i class="fa-solid fa-pencil" aria-hidden="true"></i> Editar';
     editBtn.classList.toggle('edit-mode-active', modoEdicion);
+    editBtn.setAttribute('aria-pressed', modoEdicion ? 'true' : 'false');
+    editBtn.title = modoEdicion
+      ? 'Salir del modo edición y volver a tocar la batería'
+      : 'Cambiar sonidos y teclas de los pads';
     document.body.classList.toggle('edit-mode', modoEdicion);
+    const editHint = document.getElementById('edit-mode-hint');
+    if (editHint) editHint.hidden = !modoEdicion;
+    if (modoEdicion) {
+      keysHeldForRepeat.clear();
+      stopAllNoteRepeat();
+    }
     if (!modoEdicion) cerrarModal();
   });
 
@@ -802,48 +950,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   function openPadEditModal(padIndex) {
     tomSeleccionado = null;
     padSeleccionado = padIndex;
-    padSamplerSeleccionado = null;
+    padSamplerSeleccionado = padsViewState[padIndex] || null;
+    samplerSeleccionado = null;
     lastCapturedCode = null;
     switchTab('sampler');
-    if (!modal || !listaSamplers) return;
-    listaSamplers.innerHTML = '';
-    const currentFile = padsViewState[padIndex] || '';
-    samplerList.forEach(nombreArchivo => {
-      const li = document.createElement('li');
-      li.textContent = nombreArchivo.replace(/\.[^.]+$/, '');
-      li.title = nombreArchivo;
-      li.className = 'sampler-item';
-      li.tabIndex = 0;
-      li.addEventListener('click', async () => {
-        document.querySelectorAll('.sampler-item').forEach(el => el.classList.remove('selected'));
-        li.classList.add('selected');
-        padSamplerSeleccionado = nombreArchivo;
-        if (window._previewSource && typeof window._previewSource.stop === 'function') {
-          try { window._previewSource.stop(); } catch {}
-        }
-        try {
-          const path = 'samplers/' + nombreArchivo;
-          if (audioCtx.state !== 'running') await audioCtx.resume();
-          const buffer = await loadSamplerBuffer(path);
-          const source = audioCtx.createBufferSource();
-          const gainNode = audioCtx.createGain();
-          gainNode.gain.value = _currentVolume;
-          source.buffer = buffer;
-          source.connect(gainNode);
-          connectHitToOutput(gainNode);
-          source.start(0);
-          pulseAudioVisualizer();
-          window._previewSource = source;
-        } catch {}
-      });
-      li.addEventListener('keydown', ev => { if (ev.key === 'Enter' || ev.key === ' ') li.click(); });
-      if (currentFile.toLowerCase() === nombreArchivo.toLowerCase()) {
-        li.classList.add('selected');
-        padSamplerSeleccionado = nombreArchivo;
-      }
-      listaSamplers.appendChild(li);
-    });
-    if (modal) modal.style.display = 'flex';
+    fillSamplerTab(padSamplerSeleccionado || '', (path) => { padSamplerSeleccionado = path; });
+    if (editModal) editModal.open();
+    else if (modal) modal.style.display = 'flex';
   }
   openPadEditModalRef = openPadEditModal;
 
@@ -859,7 +972,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     modal.addEventListener('keydown', e => {
       if (activeTab === 'sampler' && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
         e.preventDefault();
-        const items = listaSamplers ? Array.from(listaSamplers.querySelectorAll('.sampler-item')) : [];
+        const items = samplerListEl ? Array.from(samplerListEl.querySelectorAll('.sampler-item')) : [];
         if (items.length === 0) return;
         const currentIndex = items.findIndex(item => item.classList.contains('selected'));
         let newIndex;
@@ -886,31 +999,82 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   Object.keys(tomAudioMap).forEach(tomId => {
     const boton = document.getElementById(tomId);
-    if (boton) boton.addEventListener('click', async e => {
-      if (modoEdicion) {
-        e.stopPropagation(); e.preventDefault();
-        abrirModal(boton);
-        return;
-      }
-      await activateTomSampler(tomId);
-    });
+    if (boton) {
+      boton.addEventListener('pointerdown', e => {
+        if (e.button !== 0) return;
+        if (modoEdicion) {
+          e.preventDefault();
+          e.stopPropagation();
+          abrirModal(boton);
+          return;
+        }
+        activateTomSampler(tomId);
+        beginTomNoteRepeat(tomId);
+        try { boton.setPointerCapture(e.pointerId); } catch { /* ignore */ }
+      });
+      boton.addEventListener('pointerup', () => endTomNoteRepeat(tomId));
+      boton.addEventListener('pointercancel', () => endTomNoteRepeat(tomId));
+    }
   });
 
-  document.addEventListener('keydown', async e => {
+  function keyboardHoldId(e) {
+    return e.code || e.key || '';
+  }
+
+  function releaseKeyboardHold(e) {
+    const holdId = keyboardHoldId(e);
+    if (!holdId || !keysHeldForRepeat.has(holdId)) return;
+    keysHeldForRepeat.delete(holdId);
+
+    if (currentViewMode === 'pads') {
+      const padIndex = resolvePadIndexFromKeyboard(e, keyToPadIndex);
+      if (padIndex !== undefined) endPadNoteRepeat(padIndex);
+      return;
+    }
+
+    const code = e.code || '';
+    const inferredKey = (/^[0-9]$/.test(e.key)) ? ('Digit' + e.key) : ('Key' + (e.key || '').toUpperCase());
+    const tomId = keyToTomId[code] || keyToTomId[inferredKey] || keyToTomId[(e.key || '').toLowerCase()];
+    if (tomId) endTomNoteRepeat(tomId);
+  }
+
+  document.addEventListener('keydown', e => {
     if (modal && modal.style.display === 'flex') return;
     if (modoEdicion) return;
+    if (e.repeat) return;
     const code = e.code || '';
     if (!e.key && !code) return;
+    const holdId = keyboardHoldId(e);
+    if (keysHeldForRepeat.has(holdId)) return;
+
     const inferredKey = (/^[0-9]$/.test(e.key)) ? ('Digit' + e.key) : ('Key' + (e.key || '').toUpperCase());
 
     if (currentViewMode === 'pads') {
       const padIndex = resolvePadIndexFromKeyboard(e, keyToPadIndex);
-      if (padIndex !== undefined) { e.preventDefault(); await activatePadSound(padIndex); }
+      if (padIndex === undefined) return;
+      e.preventDefault();
+      keysHeldForRepeat.add(holdId);
+      activatePadSound(padIndex);
+      beginPadNoteRepeat(padIndex);
     } else {
       const tomId = keyToTomId[code] || keyToTomId[inferredKey] || keyToTomId[(e.key || '').toLowerCase()];
-      if (tomId) { e.preventDefault(); await activateTomSampler(tomId); }
+      if (!tomId) return;
+      e.preventDefault();
+      keysHeldForRepeat.add(holdId);
+      activateTomSampler(tomId);
+      beginTomNoteRepeat(tomId);
     }
   }, true);
+
+  document.addEventListener('keyup', e => {
+    if (modoEdicion) return;
+    releaseKeyboardHold(e);
+  }, true);
+
+  window.addEventListener('blur', () => {
+    keysHeldForRepeat.clear();
+    stopAllNoteRepeat();
+  });
 
   window.addEventListener('focus', async () => {
     if (audioCtx.state === 'suspended') await audioCtx.resume();
@@ -926,7 +1090,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // ===== INICIALIZAR MODALES =====
 
-  const editModal = initModal('modal-edit', {
+  editModal = initModal('modal-edit', {
     closeBtnId: 'cancel-edit-btn',
     confirmBtnId: 'save-edit-btn',
     focusOnOpen: false,
@@ -959,11 +1123,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         const tomId = tomSeleccionado.id;
         if (samplerSeleccionado) {
           tomAudioMap[tomId] = samplerSeleccionado;
-          try {
-            tomSamplerBuffers[tomId] = await loadSamplerBuffer('samplers/' + samplerSeleccionado);
-          } catch {
-            tomSamplerBuffers[tomId] = null;
-          }
+          const buf = await preloadSamplerFile(samplerSeleccionado);
+          if (buf) tomSamplerBuffers[samplerSeleccionado] = buf;
           saveSamplers();
           actualizarNombresPads();
         }
@@ -978,66 +1139,13 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     },
     onClose: () => {
-      if (window._previewSource && typeof window._previewSource.stop === 'function') {
-        try { window._previewSource.stop(); } catch {}
-      }
+      stopSamplerPreview();
       tomSeleccionado = null;
       samplerSeleccionado = null;
       padSeleccionado = null;
       padSamplerSeleccionado = null;
     }
   });
-
-  const originalAbrirModal = abrirModal;
-  abrirModal = function(boton) {
-    tomSeleccionado = boton;
-    lastCapturedCode = null;
-    switchTab('sampler');
-    if (!modal || !listaSamplers) return;
-    samplerSeleccionado = null;
-    listaSamplers.innerHTML = '';
-    const currentFile = tomAudioMap[boton.id] || '';
-    samplerList.forEach(nombreArchivo => {
-      const li = document.createElement('li');
-      li.textContent = nombreArchivo.replace(/\.[^.]+$/, '');
-      li.title = nombreArchivo;
-      li.className = 'sampler-item';
-      li.tabIndex = 0;
-      li.addEventListener('click', async () => {
-        document.querySelectorAll('.sampler-item').forEach(el => el.classList.remove('selected'));
-        li.classList.add('selected');
-        samplerSeleccionado = nombreArchivo;
-        if (window._previewSource && typeof window._previewSource.stop === 'function') {
-          try { window._previewSource.stop(); } catch {}
-        }
-        try {
-          const path = 'samplers/' + nombreArchivo;
-          if (audioCtx.state !== 'running') await audioCtx.resume();
-          const buffer = await loadSamplerBuffer(path);
-          const source = audioCtx.createBufferSource();
-          const gainNode = audioCtx.createGain();
-          gainNode.gain.value = _currentVolume;
-          source.buffer = buffer;
-          source.connect(gainNode);
-          connectHitToOutput(gainNode);
-          source.start(0);
-          pulseAudioVisualizer();
-          window._previewSource = source;
-        } catch (e) { /* ignore preview errors */ }
-      });
-      li.addEventListener('keydown', ev => { if (ev.key === 'Enter' || ev.key === ' ') li.click(); });
-      if (currentFile.toLowerCase() === nombreArchivo.toLowerCase()) {
-        li.classList.add('selected'); samplerSeleccionado = nombreArchivo;
-      }
-      listaSamplers.appendChild(li);
-    });
-    if (keyInput) keyInput.value = '';
-    if (editModal) editModal.open();
-  };
-
-  cerrarModal = function() {
-    if (editModal) editModal.close();
-  };
 
   initModal('modal-confirm-reset', {
     openBtnId: 'reset-settings-btn',

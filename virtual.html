@@ -199,7 +199,7 @@
     <div class="drum-kit-container">
       <div class="controls-bar">
         <div class="control-group">
-          <button id="edit-btn" class="ctrl-btn"><i class="fa-solid fa-pencil"></i> Editar</button>
+          <button id="edit-btn" type="button" class="ctrl-btn" aria-pressed="false" title="Cambiar sonidos y teclas de los pads"><i class="fa-solid fa-pencil" aria-hidden="true"></i> Editar</button>
           <button id="reset-settings-btn" class="ctrl-btn reset-btn" title="⚠️ Restablecer sonidos y teclas por defecto"><i class="fa-solid fa-rotate-left"></i> Restablecer</button>
           <button id="help-btn" class="ctrl-btn" title="¿Cómo editar samplers?"><i class="fa-solid fa-question"></i> Ayuda</button>
           <button id="immersion-btn" type="button" class="ctrl-btn immersion-btn" title="Ocultar menú y cinta para más espacio" aria-pressed="false">
@@ -223,6 +223,11 @@
           <div id="grid-options" class="grid-options"></div>
         </div>
       </div>
+      <p class="edit-mode-hint" id="edit-mode-hint" hidden>
+        <i class="fa-solid fa-pencil" aria-hidden="true"></i>
+        Modo edición: tocá un pad para cambiarlo.
+        <strong>Pulsa «Listo» arriba</strong> para volver a tocar.
+      </p>
       <div class="pads-hint" id="pads-hint" style="display:none;">
         <i class="fa-solid fa-keyboard"></i> Presiona una tecla o haz clic para tocar
       </div>
@@ -241,7 +246,16 @@
           <button class="modal-tab" data-tab="key">⌨️ Tecla</button>
         </div>
         <div id="tab-sampler" class="tab-panel">
-          <ul id="sampler-list" class="sampler-list"></ul>
+          <div id="sampler-browser" class="sampler-browser">
+            <input id="sampler-search" class="sampler-search" type="search" placeholder="Buscar sonido…" autocomplete="off" aria-label="Buscar sonido">
+            <div class="sampler-nav-row">
+              <button type="button" id="sampler-back-btn" class="sampler-back-btn" hidden aria-label="Volver a la carpeta anterior">
+                <i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Atrás
+              </button>
+              <nav id="sampler-breadcrumb" class="sampler-breadcrumb" aria-label="Carpeta de sonidos"></nav>
+            </div>
+            <ul id="sampler-list" class="sampler-list"></ul>
+          </div>
         </div>
         <div id="tab-key" class="tab-panel" style="display:none;">
           <p class="tab-hint">Presiona una tecla del teclado para asignarla a este pad (vista Batería o vista Pads).</p>

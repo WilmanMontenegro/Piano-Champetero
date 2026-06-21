@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bateria-champeta-v34';
+const CACHE_NAME = 'bateria-champeta-v49';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -7,6 +7,7 @@ const STATIC_ASSETS = [
   '/sobre-nosotros.html',
   '/politicas-privacidad.html',
   '/manifest.json',
+  '/samplers-catalog.json',
   '/styles/reset.css',
   '/styles/tokens.css',
   '/styles/components/nav.css',
@@ -22,6 +23,10 @@ const STATIC_ASSETS = [
   '/js/common.js',
   '/js/audio-bus.js',
   '/js/audio-visualizer.js',
+  '/js/sampler-path.js',
+  '/js/sampler-browser.js',
+  '/js/sampler-preview.js',
+  '/js/note-repeat.js',
   '/js/virtual.js',
   '/js/contactanos.js',
   '/js/modal-utils.js',

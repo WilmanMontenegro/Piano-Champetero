@@ -20,12 +20,26 @@ export const WHATSAPP_COMMUNITY_LABEL = 'Únete al grupo';
 
 export const AUDIO_UI = {
   hitFlashMs: 140,
+  /** Same pad: min ms between hits (Roland "Mask Time"). Blocks double-trigger / key repeat. */
+  retriggerMaskMs: 45,
+  /** Hold key or pad — sample retriggers at interval (champeta rolls). */
+  noteRepeat: {
+    enabled: true,
+    /** Ms between repeats while held (~110 ≈ rollo rápido champeta). */
+    intervalMs: 110,
+  },
 };
 
 /** @typedef {{ id: string, name: string, thanksFor: string, emoji?: string, pages?: string[] }} TickerContributor */
 
 /** @type {TickerContributor[]} */
 export const TICKER_CONTRIBUTORS = [
+  {
+    id: 'dominick-sounds',
+    name: 'Dominick',
+    thanksFor: 'por ayudar con los sonidos de la batería',
+    emoji: '🥁',
+  },
   {
     id: 'brando-blanco',
     name: 'Brando Blanco',

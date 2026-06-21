@@ -15,11 +15,32 @@
   font-weight: 400;
 }
 
+.contributors {
+  text-align: center;
+  color: var(--color-marron);
+}
+
+.contributors-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: var(--font-size-md);
+  line-height: var(--line-height-relaxed);
+}
+
+.contributors-list li + li {
+  margin-top: 0.5rem;
+}
+
 /* ===================== RESPONSIVE ===================== */
 
 /* Tablet pequeño - 640px */
 @media (max-width: 640px) {
   .about-us p {
+    font-size: var(--font-size-sm);
+  }
+
+  .contributors-list {
     font-size: var(--font-size-sm);
   }
 }
