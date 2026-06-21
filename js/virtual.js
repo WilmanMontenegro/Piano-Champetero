@@ -207,6 +207,53 @@ function resolveStoredSampler(stored) {
   return resolveSamplerPath(stored, samplerByFullPath, samplerByBasename);
 }
 
+/** Paths that exist on GitHub Pages (flat files under samplers/). */
+function isDeployableSamplerPath(path) {
+  if (!path) return false;
+  const norm = path.replace(/\\/g, '/');
+  return !norm.includes('/') && samplerList.some((s) => s.toLowerCase() === norm.toLowerCase());
+}
+
+/** Nested/local paths → flat basename if on server, else null (use default). */
+function preferDeployableSampler(stored) {
+  if (!stored) return null;
+  const resolved = resolveStoredSampler(stored) || stored;
+  if (isDeployableSamplerPath(resolved)) return resolved;
+  const flat = samplerBasename(resolved);
+  const match = samplerList.find((s) => s.toLowerCase() === flat.toLowerCase());
+  return match || null;
+}
+
+function reconcileSamplerAssignments() {
+  let changed = false;
+  Object.keys(tomAudioMap).forEach((tomId) => {
+    const stored = tomAudioMap[tomId];
+    const preferred = preferDeployableSampler(stored);
+    const next = preferred ?? tomSamplersDefaults[tomId];
+    if (next !== stored) {
+      tomAudioMap[tomId] = next;
+      changed = true;
+    }
+  });
+  const padTotal = gridConfigs[currentGridType]?.total ?? 12;
+  const padDefaults = getDefaultPadsSounds(padTotal);
+  padsViewState = padsViewState.map((p, i) => {
+    if (!p) return p;
+    const preferred = preferDeployableSampler(p);
+    if (preferred) {
+      if (preferred !== p) changed = true;
+      return preferred;
+    }
+    const next = padDefaults[i] || '';
+    if (next !== p) changed = true;
+    return next;
+  });
+  if (changed) {
+    saveSamplers();
+    savePadsViewSounds(currentGridType, padsViewState);
+  }
+}
+
 /** Audio listo antes del golpe — resume en captura, sin await en el play. */
 function initAudioWarmup() {
   const warm = () => {
@@ -226,16 +273,25 @@ function assignedSamplerPaths() {
 
 async function preloadSamplerFile(fileName) {
   if (!fileName) return null;
-  const url = samplerUrl(fileName);
-  if (globalSamplerCache[url]) return globalSamplerCache[url];
-  try {
-    const buffer = await loadSamplerBuffer(url);
-    tomSamplerBuffers[fileName] = buffer;
-    return buffer;
-  } catch {
-    tomSamplerBuffers[fileName] = null;
-    return null;
+  const candidates = [fileName];
+  const flat = samplerBasename(fileName);
+  if (flat && flat !== fileName) candidates.push(flat);
+
+  for (const path of candidates) {
+    const url = samplerUrl(path);
+    if (globalSamplerCache[url]) {
+      tomSamplerBuffers[fileName] = globalSamplerCache[url];
+      return globalSamplerCache[url];
+    }
+    try {
+      const buffer = await loadSamplerBuffer(url);
+      tomSamplerBuffers[fileName] = buffer;
+      if (path !== fileName) tomSamplerBuffers[path] = buffer;
+      return buffer;
+    } catch { /* try flat fallback */ }
   }
+  tomSamplerBuffers[fileName] = null;
+  return null;
 }
 
 let keyToPadIndex = Object.create(null);
@@ -471,17 +527,8 @@ let catalogEnhanceStarted = false;
 
 export async function loadAvailableSamplers() {
   rebuildSamplerIndexes([...samplerList]);
+  reconcileSamplerAssignments();
 
-  Object.keys(tomAudioMap).forEach((tomId) => {
-    const stored = tomAudioMap[tomId];
-    if (!stored) {
-      tomAudioMap[tomId] = tomSamplersDefaults[tomId];
-      return;
-    }
-    tomAudioMap[tomId] = resolveStoredSampler(stored) || stored || tomSamplersDefaults[tomId];
-  });
-
-  padsViewState = padsViewState.map((p) => (p ? resolveStoredSampler(p) || p : p));
   samplersDisponibles = [...samplerList];
 
   if (catalogEnhanceStarted) return;
@@ -490,13 +537,9 @@ export async function loadAvailableSamplers() {
   // Catálogo solo para el modal Editar — no bloquea precarga ni el play.
   void loadSamplerCatalog().then((cat) => {
     if (!cat?.files?.length) return;
-    rebuildSamplerIndexes(cat.files.map((f) => f.path));
+    rebuildSamplerIndexes([...samplerList, ...cat.files.map((f) => f.path)]);
     samplersDisponibles = [...new Set([...samplerList, ...cat.files.map((f) => f.path)])];
-    Object.keys(tomAudioMap).forEach((tomId) => {
-      const stored = tomAudioMap[tomId];
-      if (stored) tomAudioMap[tomId] = resolveStoredSampler(stored) || stored;
-    });
-    padsViewState = padsViewState.map((p) => (p ? resolveStoredSampler(p) || p : p));
+    reconcileSamplerAssignments();
     void preloadAllSamplers();
   });
 }
@@ -505,6 +548,7 @@ export async function loadAvailableSamplers() {
 export async function loadSamplerBuffer(url) {
   if (globalSamplerCache[url]) return globalSamplerCache[url];
   const response = await fetch(url);
+  if (!response.ok) throw new Error(`Sampler HTTP ${response.status}`);
   const arrayBuffer = await response.arrayBuffer();
   const buffer = await audioCtx.decodeAudioData(arrayBuffer);
   globalSamplerCache[url] = buffer;

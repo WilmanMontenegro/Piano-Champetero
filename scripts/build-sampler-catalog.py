@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
-"""Build samplers-catalog.json from a local gallery folder (default: ~/Documentos/piano)."""
+"""Build samplers-catalog.json.
+
+  python3 scripts/build-sampler-catalog.py --deploy   # GitHub Pages (flat samplers/ only)
+  python3 scripts/build-sampler-catalog.py [folder]   # full local gallery (default: ~/Documentos/piano)
+"""
 
 from __future__ import annotations
 
@@ -44,6 +48,8 @@ def scan_legacy_root(samplers_dir: Path) -> dict | None:
 
     files: list[dict] = []
     for entry in sorted(samplers_dir.iterdir(), key=lambda p: p.name.lower()):
+        if entry.is_symlink():
+            continue
         if entry.is_file() and is_audio(entry):
             files.append({"name": entry.name, "type": "file", "path": entry.name})
 
@@ -99,12 +105,35 @@ def simplify_folder(node: dict) -> dict:
     }
 
 
+def build_deploy_catalog(repo: Path) -> tuple[dict, list[dict]]:
+    """Production: only real audio files in repo samplers/ (no symlinks, no subfolders)."""
+    legacy = scan_legacy_root(repo / "samplers")
+    if not legacy:
+        legacy = {"name": LEGACY_FOLDER_LABEL, "type": "folder", "children": []}
+    root = simplify_folder({"name": ROOT_NAME, "type": "folder", "children": [legacy]})
+    return root, flatten_files(root)
+
+
 def main() -> int:
     repo = Path(__file__).resolve().parent.parent
+    out_file = repo / "samplers-catalog.json"
+
+    if len(sys.argv) > 1 and sys.argv[1] == "--deploy":
+        root, files = build_deploy_catalog(repo)
+        payload = {
+            "version": 1,
+            "source": "deploy:samplers/",
+            "generatedAt": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+            "root": root,
+            "files": files,
+        }
+        out_file.write_text(json.dumps(payload, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+        print(f"Wrote {out_file} ({len(files)} deployable files)")
+        return 0
+
     source = Path(
         sys.argv[1] if len(sys.argv) > 1 else os.path.expanduser("~/Documentos/piano")
     ).expanduser()
-    out_file = repo / "samplers-catalog.json"
 
     if not source.is_dir():
         print(f"Missing source folder: {source}", file=sys.stderr)
