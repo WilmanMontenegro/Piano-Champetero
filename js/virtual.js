@@ -207,18 +207,19 @@ function resolveStoredSampler(stored) {
   return resolveSamplerPath(stored, samplerByFullPath, samplerByBasename);
 }
 
-/** Paths that exist on GitHub Pages (flat files under samplers/). */
-function isDeployableSamplerPath(path) {
+/** Path listed in catalog / samplerList (exists under samplers/). */
+function isKnownSamplerPath(path) {
   if (!path) return false;
-  const norm = path.replace(/\\/g, '/');
-  return !norm.includes('/') && samplerList.some((s) => s.toLowerCase() === norm.toLowerCase());
+  const norm = path.replace(/\\/g, '/').toLowerCase();
+  if (samplerByFullPath.has(norm)) return true;
+  return !norm.includes('/') && samplerList.some((s) => s.toLowerCase() === norm);
 }
 
-/** Nested/local paths → flat basename if on server, else null (use default). */
+/** Resolve stored path; flat basename fallback when only root copy exists. */
 function preferDeployableSampler(stored) {
   if (!stored) return null;
   const resolved = resolveStoredSampler(stored) || stored;
-  if (isDeployableSamplerPath(resolved)) return resolved;
+  if (isKnownSamplerPath(resolved)) return resolved;
   const flat = samplerBasename(resolved);
   const match = samplerList.find((s) => s.toLowerCase() === flat.toLowerCase());
   return match || null;
@@ -523,25 +524,18 @@ export function resetSettings() {
   padsViewState = loadPadsViewSounds(currentGridType);
 }
 
-let catalogEnhanceStarted = false;
-
 export async function loadAvailableSamplers() {
   rebuildSamplerIndexes([...samplerList]);
-  reconcileSamplerAssignments();
 
-  samplersDisponibles = [...samplerList];
-
-  if (catalogEnhanceStarted) return;
-  catalogEnhanceStarted = true;
-
-  // Catálogo solo para el modal Editar — no bloquea precarga ni el play.
-  void loadSamplerCatalog().then((cat) => {
-    if (!cat?.files?.length) return;
+  const cat = await loadSamplerCatalog().catch(() => null);
+  if (cat?.files?.length) {
     rebuildSamplerIndexes([...samplerList, ...cat.files.map((f) => f.path)]);
     samplersDisponibles = [...new Set([...samplerList, ...cat.files.map((f) => f.path)])];
-    reconcileSamplerAssignments();
-    void preloadAllSamplers();
-  });
+  } else {
+    samplersDisponibles = [...samplerList];
+  }
+
+  reconcileSamplerAssignments();
 }
 
 // Carga un sampler con cache global (evita re-fetch)

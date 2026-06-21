@@ -106,11 +106,19 @@ def simplify_folder(node: dict) -> dict:
 
 
 def build_deploy_catalog(repo: Path) -> tuple[dict, list[dict]]:
-    """Production: only real audio files in repo samplers/ (no symlinks, no subfolders)."""
-    legacy = scan_legacy_root(repo / "samplers")
-    if not legacy:
-        legacy = {"name": LEGACY_FOLDER_LABEL, "type": "folder", "children": []}
-    root = simplify_folder({"name": ROOT_NAME, "type": "folder", "children": [legacy]})
+    """Production: flat files in samplers/ + real subfolders (same tree as local gallery)."""
+    samplers_dir = repo / "samplers"
+    root_children: list[dict] = []
+    legacy = scan_legacy_root(samplers_dir)
+    if legacy:
+        root_children.append(legacy)
+    if samplers_dir.is_dir():
+        for entry in sorted(samplers_dir.iterdir(), key=lambda p: p.name.lower()):
+            if entry.name.startswith(".") or entry.is_symlink():
+                continue
+            if entry.is_dir():
+                root_children.append(scan_folder(entry, samplers_dir))
+    root = simplify_folder({"name": ROOT_NAME, "type": "folder", "children": root_children})
     return root, flatten_files(root)
 
 
