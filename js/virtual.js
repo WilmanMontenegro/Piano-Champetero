@@ -86,7 +86,25 @@ export const keyToTomIdDefaults = Object.fromEntries(
 );
 
 export const tomSamplerBuffers = {};
-export let currentVolume = 0.5;
+const VOLUME_STORAGE_KEY = 'pianoChampeteroVolume';
+const DEFAULT_VOLUME = 0.5;
+
+function readStoredVolume() {
+  try {
+    const raw = localStorage.getItem(VOLUME_STORAGE_KEY);
+    if (raw == null) return DEFAULT_VOLUME;
+    const v = parseFloat(raw);
+    return Number.isFinite(v) ? Math.min(1, Math.max(0, v)) : DEFAULT_VOLUME;
+  } catch {
+    return DEFAULT_VOLUME;
+  }
+}
+
+function saveStoredVolume(v) {
+  try { localStorage.setItem(VOLUME_STORAGE_KEY, String(v)); } catch { /* ignore */ }
+}
+
+export let currentVolume = readStoredVolume();
 export let samplersDisponibles = [];
 
 let keyToTomId = {};
@@ -811,9 +829,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   const labelPorcentaje = document.getElementById('volume-percent');
   if (sliderVolumen) {
     const actualizarLabel = v => labelPorcentaje && (labelPorcentaje.textContent = Math.round(v * 100) + '%');
-    if (labelPorcentaje) actualizarLabel(sliderVolumen.value);
-    _currentVolume = +sliderVolumen.value;
-    sliderVolumen.addEventListener('input', e => { _currentVolume = +e.target.value; currentVolume = _currentVolume; if (labelPorcentaje) actualizarLabel(_currentVolume); });
+    sliderVolumen.value = String(_currentVolume);
+    if (labelPorcentaje) actualizarLabel(_currentVolume);
+    sliderVolumen.addEventListener('input', e => {
+      _currentVolume = +e.target.value;
+      currentVolume = _currentVolume;
+      saveStoredVolume(_currentVolume);
+      if (labelPorcentaje) actualizarLabel(_currentVolume);
+    });
     sliderVolumen.addEventListener('wheel', e => {
       e.preventDefault();
       const step = parseFloat(sliderVolumen.step) || 0.01;
