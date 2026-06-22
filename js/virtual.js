@@ -615,11 +615,21 @@ export function playTomSampler(tomId) {
   playSamplerVoice(buffer, `tom:${tomId}`);
 }
 
+/** @param {HTMLElement | null | undefined} el */
+function flashHitElement(el) {
+  if (!el) return;
+  if (el._flashTimer) clearTimeout(el._flashTimer);
+  el.classList.remove('active');
+  void el.offsetWidth;
+  el.classList.add('active');
+  el._flashTimer = setTimeout(() => {
+    el.classList.remove('active');
+    el._flashTimer = undefined;
+  }, HIT_FLASH_MS);
+}
+
 function flashTomButton(tomId) {
-  const button = document.getElementById(tomId);
-  if (!button) return;
-  button.classList.add('active');
-  setTimeout(() => button.classList.remove('active'), HIT_FLASH_MS);
+  flashHitElement(document.getElementById(tomId));
 }
 
 export function activateTomSampler(tomId, { flash = true } = {}) {
@@ -634,7 +644,10 @@ export function activateTomSampler(tomId, { flash = true } = {}) {
 function beginTomNoteRepeat(tomId) {
   if (!isNoteRepeatEnabled()) return;
   const key = tomVoiceKey(tomId);
-  startNoteRepeat(key, () => playTomSampler(tomId));
+  startNoteRepeat(key, () => {
+    flashTomButton(tomId);
+    playTomSampler(tomId);
+  });
 }
 
 function endTomNoteRepeat(tomId) {
@@ -712,11 +725,7 @@ export function playPadSound(index) {
 }
 
 function flashPadButton(index) {
-  const padsGrid = document.getElementById('pads-grid');
-  const padButton = padsGrid?.children[index];
-  if (!padButton) return;
-  padButton.classList.add('active');
-  setTimeout(() => padButton.classList.remove('active'), HIT_FLASH_MS);
+  flashHitElement(document.getElementById('pads-grid')?.children[index]);
 }
 
 export function activatePadSound(index, { flash = true } = {}) {
@@ -731,7 +740,10 @@ export function activatePadSound(index, { flash = true } = {}) {
 function beginPadNoteRepeat(index) {
   if (!isNoteRepeatEnabled()) return;
   const key = padVoiceKey(index);
-  startNoteRepeat(key, () => playPadSound(index));
+  startNoteRepeat(key, () => {
+    flashPadButton(index);
+    playPadSound(index);
+  });
 }
 
 function endPadNoteRepeat(index) {
