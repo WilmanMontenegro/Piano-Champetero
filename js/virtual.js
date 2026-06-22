@@ -38,35 +38,36 @@ function padVoiceKey(index) {
 }
 
 export const tomSamplersDefaults = {
-  'tom-1': 'D (2).wav',
-  'tom-2': 'F4.wav',
-  'tom-3': 'Pitico.wav',
-  'tom-4': 'SKTAC.WAV',
-  'tom-5': 'Y.wav',
-  'tom-6': 'Lazer.wav',
-  'tom-7': 'perro bajo.WAV',
-  'tom-8': 'SK2.WAV',
-  'tom-9': 'Smar 1.wav'
+  'tom-1': 'FABIAN LOOP EFECT/D (2).wav',
+  'tom-2': 'piano creciente/F4.wav',
+  'tom-3': 'SK5/Pitico.wav',
+  'tom-4': 'SK5/SKTAC.WAV',
+  'tom-5': 'piano creciente/Y.wav',
+  'tom-6': 'SK5/Lazer.wav',
+  'tom-7': 'SK5/perro bajo.WAV',
+  'tom-8': 'SK5/SK2.WAV',
+  'tom-9': 'FREDDY X LS Samples/Smar 1.wav'
 };
 
+/** Flat legacy paths under Legado sitio/ (unique files not duplicated in gallery folders). */
 export const samplerList = [
-  '00COMO DD14.wav', '00DEEJAY.mp3', '00EFECTO SANTOYA-TRA.wav', '00EXELENT.wav', '00FOUR-1.wav',
-  '00PERRO-1.wav', '00Yeut01 Sk.wav', '00ctm6.wav', '00estrellitt.wav', '00piii Samples.wav',
-  '00uio el original.wav', '11-BALETA (1).wav', '142.wav', '159.wav', '16.wav', '17.wav', '18.wav',
-  '20.wav', '20_2.wav', '217.wav', '555.wav', '63_SNARE.wav', 'BAJO CHAMPETA.wav', 'Bateria 1.wav',
-  'Bateria 4.wav', 'Bateria 8.wav', 'CAS.wav', 'CCC.wav', 'CM perreo 4x4 (11).wav',
-  'CM perreo 4x4 (12).wav', 'C_Kick.wav', 'D (2).wav', 'DD50 SANRE.wav', 'DD50 SNARE5.wav', 'EEEE.wav',
-  'Effect 16.wav', 'Effect 2.wav', 'Effect 9.wav', 'F4.wav', 'GAVIOTA dd14.wav', 'Golpe SK5.wav',
-  'HEY VACANO.wav', 'Lazer.wav', 'Leon.wav', 'OU3.wav', 'PITICO CARNAVAL.wav', 'PITICO CARNAVAL2.wav',
-  'PITICO CARNAVAL3.wav', 'PITO3-D.wav', 'PITO4-.wav', 'PON1.wav', 'PS 555 ORIGINAL.wav',
-  'Palmas Criollas.wav', 'Pitico.wav', 'Platillo.wav', 'Ponte Ready.wav', 'Rudeboy_AyAy.wav',
-  'SK1.WAV', 'SK2.WAV', 'SKTAC.WAV', 'SKTUN.WAV', 'SN DD14.wav', 'SNARE 7.wav', 'SNARE8.wav',
-  'Sampler Yeah.mp3', 'Smar 1.wav', 'T10  Samples.wav', 'T9  Samples.wav', 'TAMOS fUECTE COMO RAMBO .wav',
-  'TE LO REPITO.mp3', 'TIMBAL 2 (ELIEL).wav', 'TUS.wav', 'Todo el mundo espelucao.wav', 'Treyban1.wav',
-  'VACILE RAPIDO (3).wav', 'VIIP.wav', 'Vesatile_Sound_Phrase_PL.wav', 'WARA2.wav', 'Wuaaa.wav', 'Y.wav',
-  'canario.wav', 'hipo.wav', 'laser profeta 1.wav', 'laser profeta 2.wav', 'mono-1.wav', 'mono-3.wav',
-  'perro bajo.WAV', 'pimpollo CENCERRO.wav', 'pitico medio.wav', 'sk5 -dog 1.wav', 'sk5 -dog 17.wav',
-  'sk5 -lazer.wav', 'sk5 -llion.wav', 'snare (100).wav'
+  'Legado sitio/00COMO DD14.wav', 'Legado sitio/00ctm6.wav', 'Legado sitio/00DEEJAY.mp3', 'Legado sitio/00EFECTO SANTOYA-TRA.wav',
+  'Legado sitio/00EXELENT.wav', 'Legado sitio/00FOUR-1.wav', 'Legado sitio/00piii Samples.wav', 'Legado sitio/00Yeut01 Sk.wav',
+  'Legado sitio/11-BALETA (1).wav', 'Legado sitio/142.wav', 'Legado sitio/159.wav', 'Legado sitio/16.wav',
+  'Legado sitio/17.wav', 'Legado sitio/18.wav', 'Legado sitio/20.wav', 'Legado sitio/20_2.wav',
+  'Legado sitio/217.wav', 'Legado sitio/555.wav', 'Legado sitio/63_SNARE.wav', 'Legado sitio/BAJO CHAMPETA.wav',
+  'Legado sitio/Bateria 4.wav', 'Legado sitio/Bateria 8.wav', 'Legado sitio/C_Kick.wav', 'Legado sitio/canario.wav',
+  'Legado sitio/CAS.wav', 'Legado sitio/CM perreo 4x4 (11).wav', 'Legado sitio/CM perreo 4x4 (12).wav', 'Legado sitio/DD50 SANRE.wav',
+  'Legado sitio/DD50 SNARE5.wav', 'Legado sitio/EEEE.wav', 'Legado sitio/Effect 16.wav', 'Legado sitio/Effect 2.wav',
+  'Legado sitio/Effect 9.wav', 'Legado sitio/GAVIOTA dd14.wav', 'Legado sitio/HEY VACANO.wav', 'Legado sitio/laser profeta 2.wav',
+  'Legado sitio/OU3.wav', 'Legado sitio/pimpollo CENCERRO.wav', 'Legado sitio/PITICO CARNAVAL.wav', 'Legado sitio/PITICO CARNAVAL2.wav',
+  'Legado sitio/PITICO CARNAVAL3.wav', 'Legado sitio/PITO3-D.wav', 'Legado sitio/PITO4-.wav', 'Legado sitio/Platillo.wav',
+  'Legado sitio/Ponte Ready.wav', 'Legado sitio/PS 555 ORIGINAL.wav', 'Legado sitio/Rudeboy_AyAy.wav', 'Legado sitio/Sampler Yeah.mp3',
+  'Legado sitio/sk5 -dog 1.wav', 'Legado sitio/sk5 -dog 17.wav', 'Legado sitio/SN DD14.wav', 'Legado sitio/snare (100).wav',
+  'Legado sitio/SNARE 7.wav', 'Legado sitio/SNARE8.wav', 'Legado sitio/T10  Samples.wav', 'Legado sitio/T9  Samples.wav',
+  'Legado sitio/TAMOS fUECTE COMO RAMBO .wav', 'Legado sitio/TE LO REPITO.mp3', 'Legado sitio/Todo el mundo espelucao.wav', 'Legado sitio/Treyban1.wav',
+  'Legado sitio/TUS.wav', 'Legado sitio/VACILE RAPIDO (3).wav', 'Legado sitio/Vesatile_Sound_Phrase_PL.wav', 'Legado sitio/VIIP.wav',
+  'Legado sitio/Wuaaa.wav'
 ];
 
 export const tomAudioMap = (function init() {
@@ -212,7 +213,8 @@ function isKnownSamplerPath(path) {
   if (!path) return false;
   const norm = path.replace(/\\/g, '/').toLowerCase();
   if (samplerByFullPath.has(norm)) return true;
-  return !norm.includes('/') && samplerList.some((s) => s.toLowerCase() === norm);
+  const flat = samplerBasename(path).toLowerCase();
+  return samplerList.some((s) => s.toLowerCase() === norm || samplerBasename(s).toLowerCase() === flat);
 }
 
 /** Resolve stored path; flat basename fallback when only root copy exists. */
@@ -221,7 +223,9 @@ function preferDeployableSampler(stored) {
   const resolved = resolveStoredSampler(stored) || stored;
   if (isKnownSamplerPath(resolved)) return resolved;
   const flat = samplerBasename(resolved);
-  const match = samplerList.find((s) => s.toLowerCase() === flat.toLowerCase());
+  const match = samplerList.find(
+    (s) => s.toLowerCase() === flat.toLowerCase() || samplerBasename(s).toLowerCase() === flat.toLowerCase()
+  );
   return match || null;
 }
 
