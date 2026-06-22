@@ -51,8 +51,8 @@ export const tomSamplersDefaults = {
 
 /** Site-original samples (not in gallery folders); synced from Originales web/. */
 export const samplerList = [
-  'Originales web/00COMO DD14.wav', 'Originales web/00ctm6.wav', 'Originales web/00DEEJAY.mp3', 'Originales web/00EFECTO SANTOYA-TRA.wav',
-  'Originales web/00EXELENT.wav', 'Originales web/00FOUR-1.wav', 'Originales web/00piii Samples.wav', 'Originales web/00Yeut01 Sk.wav',
+  'Originales web/COMO DD14.wav', 'Originales web/ctm6.wav', 'Originales web/DEEJAY.mp3', 'Originales web/EFECTO SANTOYA-TRA.wav',
+  'Originales web/EXELENT.wav', 'Originales web/FOUR-1.wav', 'Originales web/piii Samples.wav', 'Originales web/Yeut01 Sk.wav',
   'Originales web/11-BALETA (1).wav', 'Originales web/142.wav', 'Originales web/159.wav', 'Originales web/16.wav',
   'Originales web/17.wav', 'Originales web/18.wav', 'Originales web/20.wav', 'Originales web/20_2.wav',
   'Originales web/217.wav', 'Originales web/555.wav', 'Originales web/63_SNARE.wav', 'Originales web/BAJO CHAMPETA.wav',
@@ -220,7 +220,10 @@ function isKnownSamplerPath(path) {
 /** Resolve stored path; flat basename fallback when only root copy exists. */
 function normalizeStoredSamplerPath(stored) {
   if (!stored) return stored;
-  return stored.replace(/^Legado sitio\//, 'Originales web/').replace(/\\/g, '/');
+  let s = stored.replace(/^Legado sitio\//, 'Originales web/').replace(/\\/g, '/');
+  s = s.replace(/^(Originales web\/)00/, '$1');
+  if (/^00/.test(s) && !s.includes('/')) s = s.slice(2);
+  return s;
 }
 
 function preferDeployableSampler(stored) {
