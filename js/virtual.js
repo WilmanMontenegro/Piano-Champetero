@@ -8,7 +8,7 @@ import { initAudioBus, connectHitToOutput } from './audio-bus.js';
 import { initAudioVisualizer, pulseAudioVisualizer } from './audio-visualizer.js';
 import { resolveSamplerPath, samplerUrl, samplerBasename } from './sampler-path.js';
 import { mountSamplerBrowser, loadSamplerCatalog } from './sampler-browser.js';
-import { isNoteRepeatEnabled, startNoteRepeat, stopNoteRepeat, stopAllNoteRepeat } from './note-repeat.js';
+import { isNoteRepeatEnabled, setNoteRepeatEnabled, startNoteRepeat, stopNoteRepeat, stopAllNoteRepeat } from './note-repeat.js';
 import { stopSamplerPreview, previewSamplerPath } from './sampler-preview.js';
 
 // AudioContext con latencia mínima
@@ -854,6 +854,23 @@ function initImmersionMode() {
   });
 }
 
+function initNoteRepeatToggle() {
+  const btn = document.getElementById('note-repeat-btn');
+  const label = document.getElementById('note-repeat-btn-label');
+  if (!btn) return;
+  const apply = (on) => {
+    setNoteRepeatEnabled(on);
+    btn.classList.toggle('active', on);
+    btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+    if (label) label.textContent = on ? 'Activo' : 'Apagado';
+    btn.title = on
+      ? 'Redoble activo (Note Repeat): mantén tecla o pad para repetir el sonido. Pulsa otra vez para volver a one-shot.'
+      : 'Activa el redoble: al sostener tecla o pad, el sonido repite en ráfaga — como Note Repeat en el MPC. Apagado = un golpe por pulsación.';
+  };
+  apply(isNoteRepeatEnabled());
+  btn.addEventListener('click', () => apply(!isNoteRepeatEnabled()));
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
   const isMainPage = document.getElementById('tom-1') !== null;
   await initSiteChrome();
@@ -866,6 +883,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   initAudioVisualizer({ analyser });
   initAudioWarmup();
+  initNoteRepeatToggle();
 
   const savedKeys = loadKeyMapping();
   if (savedKeys) keyToTomId = normalizeKeyMap(savedKeys);

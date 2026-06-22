@@ -20,13 +20,16 @@ export const WHATSAPP_COMMUNITY_LABEL = 'Únete al grupo';
 
 export const AUDIO_UI = {
   hitFlashMs: 140,
-  /** Same pad: min ms between hits (Roland "Mask Time"). Blocks double-trigger / key repeat. */
+  /** Same pad: min ms between hits (Roland Mask Time 0–64 ms). */
   retriggerMaskMs: 45,
-  /** Hold key or pad — sample retriggers at interval (champeta rolls). */
+  /**
+   * Note repeat (MPC "Note Repeat") — off by default; user enables "Redoble" in UI.
+   * One-shot: tap or hold = sample plays once (Akai SAMPLE PLAY = ONE SHOT).
+   * Redoble on: retriggers at intervalMs while held (tempo ref: 1/16 @ 120 BPM ≈ 125 ms).
+   */
   noteRepeat: {
-    enabled: true,
-    /** Ms between repeats while held (~110 ≈ rollo rápido champeta). */
-    intervalMs: 110,
+    enabled: false,
+    intervalMs: 125,
   },
 };
 
