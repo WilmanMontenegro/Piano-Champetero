@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
-# Dev only: symlink ~/Documentos/piano into samplers/ when you do NOT want to copy ~450MB.
-# Production uses real files under samplers/ — refresh with:
-#   rsync -a ~/Documentos/piano/ samplers/
-#   python3 scripts/build-sampler-catalog.py --deploy
+# Dev only: symlinks (no copia). Producción: scripts/sync-piano-to-samplers.sh
+# NUNCA escribe en ~/Documentos/piano — solo lectura.
 set -euo pipefail
 
 PIANO="${1:-$HOME/Documentos/piano}"
