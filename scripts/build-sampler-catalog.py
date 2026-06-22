@@ -15,7 +15,7 @@ from datetime import datetime, timezone
 
 AUDIO_SUFFIXES = {".wav", ".mp3"}
 ROOT_NAME = "Samplers"
-LEGACY_FOLDER_LABEL = "Legado sitio"
+LEGACY_FOLDER_LABEL = "Originales web"
 
 
 def is_audio(path: Path) -> bool:

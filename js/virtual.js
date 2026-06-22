@@ -49,25 +49,25 @@ export const tomSamplersDefaults = {
   'tom-9': 'FREDDY X LS Samples/Smar 1.wav'
 };
 
-/** Flat legacy paths under Legado sitio/ (unique files not duplicated in gallery folders). */
+/** Site-original samples (not in gallery folders); synced from Originales web/. */
 export const samplerList = [
-  'Legado sitio/00COMO DD14.wav', 'Legado sitio/00ctm6.wav', 'Legado sitio/00DEEJAY.mp3', 'Legado sitio/00EFECTO SANTOYA-TRA.wav',
-  'Legado sitio/00EXELENT.wav', 'Legado sitio/00FOUR-1.wav', 'Legado sitio/00piii Samples.wav', 'Legado sitio/00Yeut01 Sk.wav',
-  'Legado sitio/11-BALETA (1).wav', 'Legado sitio/142.wav', 'Legado sitio/159.wav', 'Legado sitio/16.wav',
-  'Legado sitio/17.wav', 'Legado sitio/18.wav', 'Legado sitio/20.wav', 'Legado sitio/20_2.wav',
-  'Legado sitio/217.wav', 'Legado sitio/555.wav', 'Legado sitio/63_SNARE.wav', 'Legado sitio/BAJO CHAMPETA.wav',
-  'Legado sitio/Bateria 4.wav', 'Legado sitio/Bateria 8.wav', 'Legado sitio/C_Kick.wav', 'Legado sitio/canario.wav',
-  'Legado sitio/CAS.wav', 'Legado sitio/CM perreo 4x4 (11).wav', 'Legado sitio/CM perreo 4x4 (12).wav', 'Legado sitio/DD50 SANRE.wav',
-  'Legado sitio/DD50 SNARE5.wav', 'Legado sitio/EEEE.wav', 'Legado sitio/Effect 16.wav', 'Legado sitio/Effect 2.wav',
-  'Legado sitio/Effect 9.wav', 'Legado sitio/GAVIOTA dd14.wav', 'Legado sitio/HEY VACANO.wav', 'Legado sitio/laser profeta 2.wav',
-  'Legado sitio/OU3.wav', 'Legado sitio/pimpollo CENCERRO.wav', 'Legado sitio/PITICO CARNAVAL.wav', 'Legado sitio/PITICO CARNAVAL2.wav',
-  'Legado sitio/PITICO CARNAVAL3.wav', 'Legado sitio/PITO3-D.wav', 'Legado sitio/PITO4-.wav', 'Legado sitio/Platillo.wav',
-  'Legado sitio/Ponte Ready.wav', 'Legado sitio/PS 555 ORIGINAL.wav', 'Legado sitio/Rudeboy_AyAy.wav', 'Legado sitio/Sampler Yeah.mp3',
-  'Legado sitio/sk5 -dog 1.wav', 'Legado sitio/sk5 -dog 17.wav', 'Legado sitio/SN DD14.wav', 'Legado sitio/snare (100).wav',
-  'Legado sitio/SNARE 7.wav', 'Legado sitio/SNARE8.wav', 'Legado sitio/T10  Samples.wav', 'Legado sitio/T9  Samples.wav',
-  'Legado sitio/TAMOS fUECTE COMO RAMBO .wav', 'Legado sitio/TE LO REPITO.mp3', 'Legado sitio/Todo el mundo espelucao.wav', 'Legado sitio/Treyban1.wav',
-  'Legado sitio/TUS.wav', 'Legado sitio/VACILE RAPIDO (3).wav', 'Legado sitio/Vesatile_Sound_Phrase_PL.wav', 'Legado sitio/VIIP.wav',
-  'Legado sitio/Wuaaa.wav'
+  'Originales web/00COMO DD14.wav', 'Originales web/00ctm6.wav', 'Originales web/00DEEJAY.mp3', 'Originales web/00EFECTO SANTOYA-TRA.wav',
+  'Originales web/00EXELENT.wav', 'Originales web/00FOUR-1.wav', 'Originales web/00piii Samples.wav', 'Originales web/00Yeut01 Sk.wav',
+  'Originales web/11-BALETA (1).wav', 'Originales web/142.wav', 'Originales web/159.wav', 'Originales web/16.wav',
+  'Originales web/17.wav', 'Originales web/18.wav', 'Originales web/20.wav', 'Originales web/20_2.wav',
+  'Originales web/217.wav', 'Originales web/555.wav', 'Originales web/63_SNARE.wav', 'Originales web/BAJO CHAMPETA.wav',
+  'Originales web/Bateria 4.wav', 'Originales web/Bateria 8.wav', 'Originales web/C_Kick.wav', 'Originales web/canario.wav',
+  'Originales web/CAS.wav', 'Originales web/CM perreo 4x4 (11).wav', 'Originales web/CM perreo 4x4 (12).wav', 'Originales web/DD50 SANRE.wav',
+  'Originales web/DD50 SNARE5.wav', 'Originales web/EEEE.wav', 'Originales web/Effect 16.wav', 'Originales web/Effect 2.wav',
+  'Originales web/Effect 9.wav', 'Originales web/GAVIOTA dd14.wav', 'Originales web/HEY VACANO.wav', 'Originales web/laser profeta 2.wav',
+  'Originales web/OU3.wav', 'Originales web/pimpollo CENCERRO.wav', 'Originales web/PITICO CARNAVAL.wav', 'Originales web/PITICO CARNAVAL2.wav',
+  'Originales web/PITICO CARNAVAL3.wav', 'Originales web/PITO3-D.wav', 'Originales web/PITO4-.wav', 'Originales web/Platillo.wav',
+  'Originales web/Ponte Ready.wav', 'Originales web/PS 555 ORIGINAL.wav', 'Originales web/Rudeboy_AyAy.wav', 'Originales web/Sampler Yeah.mp3',
+  'Originales web/sk5 -dog 1.wav', 'Originales web/sk5 -dog 17.wav', 'Originales web/SN DD14.wav', 'Originales web/snare (100).wav',
+  'Originales web/SNARE 7.wav', 'Originales web/SNARE8.wav', 'Originales web/T10  Samples.wav', 'Originales web/T9  Samples.wav',
+  'Originales web/TAMOS fUECTE COMO RAMBO .wav', 'Originales web/TE LO REPITO.mp3', 'Originales web/Todo el mundo espelucao.wav', 'Originales web/Treyban1.wav',
+  'Originales web/TUS.wav', 'Originales web/VACILE RAPIDO (3).wav', 'Originales web/Vesatile_Sound_Phrase_PL.wav', 'Originales web/VIIP.wav',
+  'Originales web/Wuaaa.wav'
 ];
 
 export const tomAudioMap = (function init() {
@@ -218,9 +218,15 @@ function isKnownSamplerPath(path) {
 }
 
 /** Resolve stored path; flat basename fallback when only root copy exists. */
+function normalizeStoredSamplerPath(stored) {
+  if (!stored) return stored;
+  return stored.replace(/^Legado sitio\//, 'Originales web/').replace(/\\/g, '/');
+}
+
 function preferDeployableSampler(stored) {
   if (!stored) return null;
-  const resolved = resolveStoredSampler(stored) || stored;
+  const normalized = normalizeStoredSamplerPath(stored);
+  const resolved = resolveStoredSampler(normalized) || normalized;
   if (isKnownSamplerPath(resolved)) return resolved;
   const flat = samplerBasename(resolved);
   const match = samplerList.find(

@@ -10,7 +10,7 @@ import sys
 from pathlib import Path
 
 AUDIO = {".wav", ".mp3", ".wma"}
-LEGACY_DIR = "Legado sitio"
+LEGACY_DIR = "Originales web"
 
 
 def digest(path: Path) -> str:
