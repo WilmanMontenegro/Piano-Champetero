@@ -1185,8 +1185,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     getMasterGain,
     recordBtn: document.getElementById('session-record-btn'),
     recordLabel: document.getElementById('session-record-label'),
-    musicBtn: document.getElementById('session-record-music-btn'),
-    musicLabel: document.getElementById('session-record-music-label'),
     panel: document.getElementById('session-recordings-panel'),
     listEl: document.getElementById('session-recordings-list'),
     statusEl: document.getElementById('session-record-status'),
