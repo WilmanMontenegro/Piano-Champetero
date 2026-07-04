@@ -38,8 +38,14 @@ export const AUDIO_UI = {
 /** @type {TickerContributor[]} */
 export const TICKER_CONTRIBUTORS = [
   {
+    id: 'alekey-grabacion',
+    name: 'Alekey',
+    thanksFor: 'por la idea de grabar lo que tocás en la batería',
+    emoji: '🎙️',
+  },
+  {
     id: 'cesar-mobile-iphone',
-    name: 'César',
+    name: 'Cesar Garay',
     thanksFor: 'por sugerir arreglar la vista móvil para usarla mejor en iPhone',
     emoji: '📱',
   },

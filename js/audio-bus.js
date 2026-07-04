@@ -36,3 +36,7 @@ export function connectHitToOutput(gainNode) {
 export function getAnalyser() {
   return analyser;
 }
+
+export function getMasterGain() {
+  return masterGain;
+}

@@ -140,7 +140,7 @@
   <main>
     <div class="drum-kit-container">
       <div class="controls-bar">
-        <div class="control-group">
+        <div class="control-group control-group--kit">
           <button id="edit-btn" type="button" class="ctrl-btn" aria-pressed="false" title="Cambiar sonidos y teclas de los pads"><i class="fa-solid fa-pencil" aria-hidden="true"></i> Editar</button>
           <button id="reset-settings-btn" class="ctrl-btn reset-btn" title="⚠️ Restablecer sonidos y teclas por defecto"><i class="fa-solid fa-rotate-left"></i> Restablecer</button>
           <button id="help-btn" class="ctrl-btn" title="¿Cómo editar samplers?"><i class="fa-solid fa-question"></i> Ayuda</button>
@@ -149,14 +149,28 @@
             <i class="fa-solid fa-expand" aria-hidden="true"></i>
             <span class="immersion-btn-label">Inmersión</span>
           </button>
+        </div>
+        <div class="control-group control-group--record">
           <span class="group-label note-repeat-label" id="note-repeat-label" title="Redoble: el sonido se repite en ráfaga mientras mantienes la tecla o el pad. Es lo mismo que el botón Note Repeat del MPC — para redobles en placas, timbales y batería. Apagado = un golpe por pulsación (one-shot).">Redoble:</span>
           <button id="note-repeat-btn" type="button" class="ctrl-btn" aria-pressed="false" aria-labelledby="note-repeat-label note-repeat-btn-label" title="Activa el redoble (Note Repeat del MPC). Apagado: un solo golpe al pulsar, estilo batería pro.">
             <i class="fa-solid fa-repeat" aria-hidden="true"></i>
             <span id="note-repeat-btn-label">Apagado</span>
           </button>
+          <button id="session-record-btn" type="button" class="ctrl-btn session-record-btn" aria-pressed="false" title="Graba el audio de lo que tocas y guárdalo en este navegador">
+            <i class="fa-solid fa-circle session-record-icon" aria-hidden="true"></i>
+            <span id="session-record-label">Grabar audio</span>
+          </button>
+          <button id="session-record-music-btn" type="button" class="ctrl-btn session-record-music-btn" aria-pressed="false" title="Graba la batería mezclada con la salida de audio del PC. Elige Pantalla completa y activa Compartir audio del sistema (Chrome/Edge en PC).">
+            <i class="fa-solid fa-desktop session-record-music-icon" aria-hidden="true"></i>
+            <span id="session-record-music-label">Grabar + PC</span>
+          </button>
+          <button id="pattern-loop-btn" type="button" class="ctrl-btn pattern-loop-btn" aria-pressed="false" title="Graba la secuencia de golpes y repítela en loop">
+            <i class="fa-solid fa-infinity" aria-hidden="true"></i>
+            <span id="pattern-loop-label">Grabar loop</span>
+          </button>
         </div>
-        <div class="divider"></div>
-        <div class="control-group">
+        <div class="divider" aria-hidden="true"></div>
+        <div class="control-group control-group--view">
           <span class="group-label">Vista:</span>
           <button id="view-bateria" class="ctrl-btn view-btn active" title="Vista Batería">
             <i class="fa-solid fa-drum"></i> Batería
@@ -184,6 +198,25 @@
         <canvas id="audio-viz-canvas" class="audio-viz-canvas" aria-hidden="true"></canvas>
       </section>
       <div class="kit-play">
+        <aside class="kit-play-sidebar" id="kit-play-sidebar" aria-label="Panel de grabaciones">
+      <section class="session-recordings-panel" id="session-recordings-panel" hidden aria-label="Grabaciones de audio guardadas">
+        <div class="session-recordings-header">
+          <span class="session-recordings-title"><i class="fa-solid fa-compact-disc" aria-hidden="true"></i> Audio</span>
+        </div>
+        <p id="session-record-status" class="session-record-status" hidden role="status"></p>
+        <ul id="session-recordings-list" class="session-recordings-list"></ul>
+        <p class="session-recordings-hint">Pistas de audio en localStorage. Descargá antes de limpiar datos.</p>
+      </section>
+      <section class="pattern-loops-panel" id="pattern-loops-panel" hidden aria-label="Loops de golpes guardados">
+        <div class="pattern-loops-header">
+          <span class="pattern-loops-title"><i class="fa-solid fa-infinity" aria-hidden="true"></i> Loops</span>
+        </div>
+        <p id="pattern-loop-status" class="pattern-loop-status" hidden role="status"></p>
+        <ul id="pattern-loops-list" class="pattern-loops-list"></ul>
+        <p class="pattern-loops-hint">Secuencia de golpes en loop. Guardado en este navegador.</p>
+      </section>
+        </aside>
+        <div class="kit-play-stage">
         <div class="battery-view" id="battery-view">
         <div class="battery">
           <button class="battery-tom battery-tom--small" id="tom-1">
@@ -282,6 +315,7 @@
           <span id="volume-percent">50%</span>
         </div>
       </div>
+        </div>
       </div>
     </div>
 

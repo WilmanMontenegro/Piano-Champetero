@@ -96,4 +96,7 @@
   --z-modal-overlay: 9999;
   --z-ticker: 9999;
   --z-whatsapp-fab: 9500;
+
+  /* virtual.html: espacio reservado sobre footer (sidebar fijo) */
+  --virtual-footer-block: 2.85rem;
 }

@@ -5,7 +5,7 @@ import { AUDIO_UI, NAV_MOBILE_MAX_PX } from './site-config.js';
 import { PAD_GRID_CONFIGS as gridConfigs, PAD_GRID_SIZE_ORDER } from './pad-grid-config.js';
 import { initModal, isModalOpen } from './modal-utils.js';
 import { DEFAULT_PAD_KEY_CHAR_ORDER, BATTERY_DEFAULT_PAD_CHARS, buildPadKeyIndexMap, resolvePadIndexFromKeyboard } from './pad-keyboard.js';
-import { initAudioBus, connectHitToOutput } from './audio-bus.js';
+import { initAudioBus, connectHitToOutput, getMasterGain } from './audio-bus.js';
 import { initAudioVisualizer, pulseAudioVisualizer } from './audio-visualizer.js';
 import { resolveSamplerPath, samplerUrl, samplerBasename } from './sampler-path.js';
 import { mountSamplerBrowser, loadSamplerCatalog } from './sampler-browser.js';
@@ -21,6 +21,15 @@ import {
   persistKitSnapshot,
   kitTokenFromPageUrl,
 } from './kit-config-share.js';
+import { initSessionRecorder, listSessionRecordings } from './session-recorder.js';
+import {
+  initPatternLoops,
+  notifyPatternHit,
+  stopPatternLoop,
+  stopPatternCapture,
+  isPatternCapturing,
+  listPatternLoops,
+} from './pattern-loop.js';
 
 // AudioContext con latencia mínima
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)({
@@ -626,6 +635,7 @@ function flashTomButton(tomId) {
 }
 
 function activateTomSampler(tomId, { flash = true } = {}) {
+  if (isPatternCapturing()) notifyPatternHit({ kind: 'tom', id: tomId });
   if (flash) flashTomButton(tomId);
   if (audioCtx.state === 'running') {
     playTomSampler(tomId);
@@ -724,6 +734,7 @@ function flashPadButton(index) {
 }
 
 function activatePadSound(index, { flash = true } = {}) {
+  if (isPatternCapturing()) notifyPatternHit({ kind: 'pad', id: index });
   if (flash) flashPadButton(index);
   if (audioCtx.state === 'running') {
     playPadSound(index);
@@ -1145,6 +1156,78 @@ document.addEventListener('DOMContentLoaded', async () => {
   const applyNoteRepeat = initNoteRepeatToggle();
   initKitConfigShare(applyNoteRepeat);
 
+  /** @type {'audio' | 'loop' | null} */
+  let sidebarMode = null;
+  const sidebarEl = document.getElementById('kit-play-sidebar');
+  let refreshAudioSidebar = () => {};
+  let refreshLoopSidebar = () => {};
+  const setSidebarMode = (mode) => {
+    sidebarMode = mode;
+    if (sidebarEl) {
+      if (mode) sidebarEl.dataset.sidebarMode = mode;
+      else delete sidebarEl.dataset.sidebarMode;
+    }
+    refreshAudioSidebar();
+    refreshLoopSidebar();
+  };
+  const getSidebarMode = () => sidebarMode;
+  const sidebarOpts = {
+    getSidebarMode,
+    registerRefresh: (fn) => { refreshAudioSidebar = fn; },
+  };
+  const loopSidebarOpts = {
+    getSidebarMode,
+    registerRefresh: (fn) => { refreshLoopSidebar = fn; },
+  };
+
+  const sessionRecorder = initSessionRecorder({
+    audioCtx,
+    getMasterGain,
+    recordBtn: document.getElementById('session-record-btn'),
+    recordLabel: document.getElementById('session-record-label'),
+    musicBtn: document.getElementById('session-record-music-btn'),
+    musicLabel: document.getElementById('session-record-music-label'),
+    panel: document.getElementById('session-recordings-panel'),
+    listEl: document.getElementById('session-recordings-list'),
+    statusEl: document.getElementById('session-record-status'),
+    onBeforeRecord: stopPatternLoop,
+    onActivate: () => setSidebarMode('audio'),
+    ...sidebarOpts,
+  });
+
+  initPatternLoops({
+    recordBtn: document.getElementById('pattern-loop-btn'),
+    recordLabel: document.getElementById('pattern-loop-label'),
+    panel: document.getElementById('pattern-loops-panel'),
+    listEl: document.getElementById('pattern-loops-list'),
+    statusEl: document.getElementById('pattern-loop-status'),
+    onBeforeCapture: () => sessionRecorder?.stopIfRecording?.(),
+    onActivate: () => setSidebarMode('loop'),
+    ...loopSidebarOpts,
+    getContext: () => ({
+      view: currentViewMode === 'pads' ? 'pads' : 'bateria',
+      gridType: currentGridType,
+    }),
+    ensureContext: async (pattern) => {
+      if (pattern.view === 'pads') {
+        if (currentViewMode !== 'pads') switchView('pads');
+        if (pattern.gridType && pattern.gridType !== currentGridType) changeGrid(pattern.gridType);
+      } else if (currentViewMode !== 'bateria') {
+        switchView('bateria');
+      }
+    },
+    playHit: (hit) => {
+      if (hit.kind === 'tom') activateTomSampler(hit.id, { flash: true });
+      else activatePadSound(hit.id, { flash: true });
+    },
+  });
+
+  const hasAudio = listSessionRecordings().length > 0;
+  const hasLoops = listPatternLoops().length > 0;
+  if (hasLoops && !hasAudio) setSidebarMode('loop');
+  else if (hasAudio && !hasLoops) setSidebarMode('audio');
+  else if (hasLoops && hasAudio) setSidebarMode('loop');
+
   const savedKeys = loadKeyMapping();
   if (savedKeys) keyToTomId = normalizeKeyMap(savedKeys);
   else keyToTomId = normalizeKeyMap(keyToTomIdDefaults);
@@ -1278,6 +1361,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (modoEdicion) {
       keysHeldForRepeat.clear();
       stopAllNoteRepeat();
+      stopPatternLoop();
+      if (isPatternCapturing()) stopPatternCapture();
     }
     if (!modoEdicion) cerrarModal();
   });
