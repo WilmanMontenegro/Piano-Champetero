@@ -38,16 +38,10 @@ export const AUDIO_UI = {
 /** @type {TickerContributor[]} */
 export const TICKER_CONTRIBUTORS = [
   {
-    id: 'dominick-sounds',
-    name: 'Dominick',
-    thanksFor: 'por ayudar con los sonidos de la batería',
-    emoji: '🥁',
-  },
-  {
-    id: 'brando-blanco',
-    name: 'Brando Blanco',
-    thanksFor: 'por proponer el visualizador de ondas de audio',
-    emoji: '〰️',
+    id: 'cesar-mobile-iphone',
+    name: 'César',
+    thanksFor: 'por sugerir arreglar la vista móvil para usarla mejor en iPhone',
+    emoji: '📱',
   },
 ];
 
@@ -57,22 +51,17 @@ export const TICKER_CONTRIBUTORS = [
  */
 export const TICKER_STATIC_LINES = [
   {
-    id: 'pads-promo',
-    html: '¡Nueva vista de Pads disponible! Prueba rejillas de 9, 12, 16 o hasta 24 pads <a href="virtual.html">aquí</a>',
-  },
-  {
-    id: 'contact-cta',
-    html: '¿Tienes ideas o mejoras? <a href="contactanos.html">Repórtalas aquí</a> y te mencionaremos',
+    id: 'mobile-iphone-update',
+    html: 'Mejoramos la vista móvil: pads más grandes, controles completos y exportar/importar kits por WhatsApp <a href="virtual.html">aquí</a>',
   },
 ];
 
 /** virtual.html uses the same copy without the “aquí” link on pads line */
 export const TICKER_STATIC_LINES_VIRTUAL = [
   {
-    id: 'pads-promo',
-    html: '¡Nueva vista de Pads disponible! Prueba rejillas de 9, 12, 16 o hasta 24 pads',
+    id: 'mobile-iphone-update',
+    html: 'Mejoramos la vista móvil: pads más grandes, controles completos y exportar/importar kits por WhatsApp',
   },
-  TICKER_STATIC_LINES[1],
 ];
 
 /**

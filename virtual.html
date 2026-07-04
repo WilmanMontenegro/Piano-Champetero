@@ -133,64 +133,6 @@
   <!-- Cinta: mensajes en js/site-config.js -->
   <div class="contributor-ticker" id="contributor-ticker" aria-live="polite"></div>
 
-  <!-- Modal de Tutorial -->
-  <div id="modal-tutorial" class="modal-edit" style="display:none;">
-    <div class="modal-content tutorial-content">
-      <h3>🎉 ¡Nueva función disponible!</h3>
-      <div class="tutorial-steps">
-        <div class="step active" data-step="1">
-          <div class="step-number">1</div>
-          <div class="step-text">
-            <strong>Activa el modo edición</strong>
-            <p>Haz clic en el botón "✏️ Editar" para comenzar a personalizar tu batería.</p>
-          </div>
-        </div>
-        <div class="step" data-step="2">
-          <div class="step-number">2</div>
-          <div class="step-text">
-            <strong>Selecciona un pad</strong>
-            <p>Los pads comenzarán a pulsar. Haz clic en cualquiera para cambiar su sonido o tecla.</p>
-          </div>
-        </div>
-        <div class="step" data-step="3">
-          <div class="step-number">3</div>
-          <div class="step-text">
-            <strong>Cambia el sonido</strong>
-            <p>En la pestaña "🎵 Sonido" elige de la lista. Usa las flechas ↑↓ para navegar.</p>
-          </div>
-        </div>
-        <div class="step" data-step="4">
-          <div class="step-number">4</div>
-          <div class="step-text">
-            <strong>Cambia la tecla</strong>
-            <p>En "⌨️ Tecla" presiona la tecla del teclado que quieras asignar.</p>
-          </div>
-        </div>
-        <div class="step" data-step="5">
-          <div class="step-number">5</div>
-          <div class="step-text">
-            <strong>¡Listo!</strong>
-            <p>Guarda y empieza a tocar con tus sonidos personalizados. 🥁</p>
-          </div>
-        </div>
-      </div>
-      <div class="tutorial-progress">
-        <span class="progress-dot active"></span>
-        <span class="progress-dot"></span>
-        <span class="progress-dot"></span>
-        <span class="progress-dot"></span>
-        <span class="progress-dot"></span>
-      </div>
-      <div class="modal-actions">
-        <button id="tutorial-prev" class="btn-cancel" style="display:none;">← Anterior</button>
-        <button id="tutorial-next" class="btn-primary">Siguiente →</button>
-        <button id="tutorial-finish" class="btn-primary" style="display:none;">¡Empezar!</button>
-      </div>
-      <label class="dont-show-again">
-        <input type="checkbox" id="hide-tutorial"> No mostrar de nuevo
-      </label>
-    </div>
-  </div>
 
   <header>
     <div id="header-container"></div>
@@ -202,6 +144,7 @@
           <button id="edit-btn" type="button" class="ctrl-btn" aria-pressed="false" title="Cambiar sonidos y teclas de los pads"><i class="fa-solid fa-pencil" aria-hidden="true"></i> Editar</button>
           <button id="reset-settings-btn" class="ctrl-btn reset-btn" title="⚠️ Restablecer sonidos y teclas por defecto"><i class="fa-solid fa-rotate-left"></i> Restablecer</button>
           <button id="help-btn" class="ctrl-btn" title="¿Cómo editar samplers?"><i class="fa-solid fa-question"></i> Ayuda</button>
+          <button id="share-kit-btn" type="button" class="ctrl-btn" title="Exporta tu configuración para que la compartas con amigos y conocidos."><i class="fa-solid fa-file-export" aria-hidden="true"></i> Exportar</button>
           <button id="immersion-btn" type="button" class="ctrl-btn immersion-btn" title="Ocultar menú y cinta para más espacio" aria-pressed="false">
             <i class="fa-solid fa-expand" aria-hidden="true"></i>
             <span class="immersion-btn-label">Inmersión</span>
@@ -233,9 +176,6 @@
         Modo edición: tocá un pad para cambiarlo.
         <strong>Pulsa «Listo» arriba</strong> para volver a tocar.
       </p>
-      <div class="pads-hint" id="pads-hint" style="display:none;">
-        <i class="fa-solid fa-keyboard"></i> Presiona una tecla o haz clic para tocar
-      </div>
       <section class="audio-viz-panel" id="audio-viz-panel" aria-label="Visualizador de audio">
         <div class="audio-viz-header">
           <span class="audio-viz-title"><i class="fa-solid fa-wave-square" aria-hidden="true"></i> Visualizador</span>
@@ -243,95 +183,10 @@
         </div>
         <canvas id="audio-viz-canvas" class="audio-viz-canvas" aria-hidden="true"></canvas>
       </section>
-    <!-- Modal unificado de edición -->
-    <div id="modal-edit" class="modal-edit" style="display:none;">
-      <div class="modal-content">
-        <div class="modal-tabs">
-          <button class="modal-tab active" data-tab="sampler">🎵 Sonido</button>
-          <button class="modal-tab" data-tab="key">⌨️ Tecla</button>
-        </div>
-        <div id="tab-sampler" class="tab-panel">
-          <div id="sampler-browser" class="sampler-browser">
-            <input id="sampler-search" class="sampler-search" type="search" placeholder="Buscar sonido…" autocomplete="off" aria-label="Buscar sonido">
-            <div class="sampler-nav-row">
-              <button type="button" id="sampler-back-btn" class="sampler-back-btn" hidden aria-label="Volver a la carpeta anterior">
-                <i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Atrás
-              </button>
-              <nav id="sampler-breadcrumb" class="sampler-breadcrumb" aria-label="Carpeta de sonidos"></nav>
-            </div>
-            <ul id="sampler-list" class="sampler-list"></ul>
-          </div>
-        </div>
-        <div id="tab-key" class="tab-panel" style="display:none;">
-          <p class="tab-hint">Presiona una tecla del teclado para asignarla a este pad (vista Batería o vista Pads).</p>
-          <input type="text" id="new-key-input" maxlength="1" placeholder="Toca una tecla..." readonly>
-        </div>
-        <div class="modal-actions">
-          <button id="save-edit-btn" class="btn-primary">Guardar</button>
-          <button id="cancel-edit-btn" class="btn-cancel">Cancelar</button>
-        </div>
-      </div>
-    </div>
-    <!-- Modal de confirmación para restablecer ajustes -->
-    <div id="modal-confirm-reset" class="modal-edit" style="display:none;">
-      <div class="modal-content">
-        <p style="margin-bottom:1em;">¿Estás seguro que quieres restablecer los ajustes por defecto?</p>
-        <div class="modal-actions">
-          <button id="confirm-reset-btn" class="btn-danger btn-reset">Sí</button>
-          <button id="cancel-reset-btn" class="btn-cancel">No</button>
-        </div>
-      </div>
-    </div>
-    <!-- Modal de ayuda - Cómo editar samplers -->
-    <div id="modal-help" class="modal-edit" style="display:none;">
-      <div class="modal-content help-content">
-        <h3>🎓 ¿Cómo editar los samplers?</h3>
-        <div class="help-steps">
-          <div class="help-step">
-            <div class="help-step-icon"><i class="fa-solid fa-pencil"></i></div>
-            <div class="help-step-text">
-              <strong>Paso 1: Activa el modo edición</strong>
-              <p>Haz clic en el botón <span class="btn-example"><i class="fa-solid fa-pencil"></i> Editar</span>. Los pads empezarán a parpadear.</p>
-            </div>
-          </div>
-          <div class="help-step">
-            <div class="help-step-icon"><i class="fa-solid fa-hand-pointer"></i></div>
-            <div class="help-step-text">
-              <strong>Paso 2: Selecciona un pad</strong>
-              <p>Haz clic en el pad que quieras cambiar: en la <b>vista Batería</b> o en la <b>vista Pads</b> (grilla con más sonidos).</p>
-            </div>
-          </div>
-          <div class="help-step">
-            <div class="help-step-icon"><i class="fa-solid fa-music"></i></div>
-            <div class="help-step-text">
-              <strong>Paso 3: Cambia el sonido</strong>
-              <p>En la pestaña <b>🎵 Sonido</b>, elige de la lista. Haz clic para escuchar. Usa las flechas ↑↓ para navegar.</p>
-            </div>
-          </div>
-          <div class="help-step">
-            <div class="help-step-icon"><i class="fa-solid fa-keyboard"></i></div>
-            <div class="help-step-text">
-              <strong>Paso 4: Cambia la tecla (opcional)</strong>
-              <p>Cambia a la pestaña <b>⌨️ Tecla</b> y presiona la tecla que quieras usar (igual en vista Batería o vista Pads).</p>
-            </div>
-          </div>
-          <div class="help-step">
-            <div class="help-step-icon"><i class="fa-solid fa-check"></i></div>
-            <div class="help-step-text">
-              <strong>Paso 5: Guarda los cambios</strong>
-              <p>Haz clic en <span class="btn-example btn-example-primary">Guardar</span>. ¡Listo! Tu pad queda con el sonido y la tecla que elegiste.</p>
-            </div>
-          </div>
-        </div>
-
-        <div class="modal-actions">
-          <button id="close-help-btn" class="btn-primary">¡Entendido!</button>
-        </div>
-      </div>
-    </div>
-    <div class="battery-view" id="battery-view">
-    <div class="battery">
-      <button class="battery-tom battery-tom--small" id="tom-1">
+      <div class="kit-play">
+        <div class="battery-view" id="battery-view">
+        <div class="battery">
+          <button class="battery-tom battery-tom--small" id="tom-1">
         <span class="battery-tom-key"></span>
         <span class="battery-tom-info">
           <span class="battery-tom-info-label">Tecla:</span>
@@ -411,12 +266,12 @@
           <span class="battery-tom-info-label">Sonido:</span>
           <span class="battery-tom-info-value battery-tom-info-sound"></span>
         </span>
-      </button>
-    </div>
-    </div>
-    <div class="pads-view hidden" id="pads-view">
-      <div class="pads-grid" id="pads-grid"></div>
-    </div>
+          </button>
+        </div>
+      </div>
+      <div class="pads-view hidden" id="pads-view">
+        <div class="pads-grid" id="pads-grid"></div>
+      </div>
       <div class="battery-volume-container">
         <div class="volume-label-row">
           <i class="fa-solid fa-volume-high volume-icon"></i>
@@ -425,6 +280,123 @@
         <input class="battery-volume" type="range" id="volume-slider" min="0" max="1" step="0.01" value="0.5">
         <div class="battery-volume-label">
           <span id="volume-percent">50%</span>
+        </div>
+      </div>
+      </div>
+    </div>
+
+    <!-- Modal unificado de edición -->
+    <div id="modal-edit" class="modal-edit" style="display:none;">
+      <div class="modal-content">
+        <div class="modal-tabs">
+          <button class="modal-tab active" data-tab="sampler">🎵 Sonido</button>
+          <button class="modal-tab" data-tab="key">⌨️ Tecla</button>
+        </div>
+        <div id="tab-sampler" class="tab-panel">
+          <div id="sampler-browser" class="sampler-browser">
+            <input id="sampler-search" class="sampler-search" type="search" placeholder="Buscar sonido…" autocomplete="off" aria-label="Buscar sonido">
+            <div class="sampler-nav-row">
+              <button type="button" id="sampler-back-btn" class="sampler-back-btn" hidden aria-label="Volver a la carpeta anterior">
+                <i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Atrás
+              </button>
+              <nav id="sampler-breadcrumb" class="sampler-breadcrumb" aria-label="Carpeta de sonidos"></nav>
+            </div>
+            <ul id="sampler-list" class="sampler-list"></ul>
+          </div>
+        </div>
+        <div id="tab-key" class="tab-panel" style="display:none;">
+          <p class="tab-hint">Presiona una tecla del teclado para asignarla a este pad (vista Batería o vista Pads).</p>
+          <input type="text" id="new-key-input" placeholder="Toca una tecla..." readonly>
+        </div>
+        <div class="modal-actions">
+          <button id="save-edit-btn" class="btn-primary">Guardar</button>
+          <button id="cancel-edit-btn" class="btn-cancel">Cancelar</button>
+        </div>
+      </div>
+    </div>
+    <!-- Modal compartir / importar configuración -->
+    <div id="modal-kit-share" class="modal-edit" style="display:none;">
+      <div class="modal-content kit-share-content">
+        <h3>Compartir configuración</h3>
+        <p class="tab-hint">Exportá sonidos y teclas de tu batería y compartilos por WhatsApp. Quien reciba puede importarlos aquí.</p>
+
+        <label class="kit-share-label" for="kit-share-name">Nombre del kit (opcional)</label>
+        <input id="kit-share-name" class="kit-share-name" type="text" maxlength="40" placeholder="Ej. Kit perreo de Jair" autocomplete="off">
+
+        <label class="kit-share-label" for="kit-share-payload">Tu código</label>
+        <textarea id="kit-share-payload" class="kit-share-payload" rows="3" readonly aria-label="Código para compartir"></textarea>
+
+        <div class="modal-actions kit-share-actions">
+          <button id="kit-share-copy-btn" type="button" class="btn-primary"><i class="fa-solid fa-copy" aria-hidden="true"></i> Copiar código</button>
+          <button id="kit-share-whatsapp-btn" type="button" class="btn-primary kit-share-whatsapp-btn"><i class="fa-brands fa-whatsapp" aria-hidden="true"></i> Enviar por WhatsApp</button>
+        </div>
+
+        <hr class="kit-share-divider">
+
+        <label class="kit-share-label" for="kit-import-payload">Importar kit de otro</label>
+        <textarea id="kit-import-payload" class="kit-share-payload kit-import-payload" rows="4" placeholder="Pegá el código BC1… o el enlace que te enviaron" aria-label="Código o enlace para importar"></textarea>
+        <p id="kit-import-status" class="kit-import-status" hidden role="status"></p>
+
+        <div class="modal-actions">
+          <button id="kit-import-btn" type="button" class="btn-primary">Importar</button>
+          <button id="kit-share-close-btn" type="button" class="btn-cancel">Cerrar</button>
+        </div>
+      </div>
+    </div>
+    <!-- Modal de confirmación para restablecer ajustes -->
+    <div id="modal-confirm-reset" class="modal-edit" style="display:none;">
+      <div class="modal-content">
+        <p style="margin-bottom:1em;">¿Estás seguro que quieres restablecer los ajustes por defecto?</p>
+        <div class="modal-actions">
+          <button id="confirm-reset-btn" class="btn-danger btn-reset">Sí</button>
+          <button id="cancel-reset-btn" class="btn-cancel">No</button>
+        </div>
+      </div>
+    </div>
+    <!-- Modal de ayuda - Cómo editar samplers -->
+    <div id="modal-help" class="modal-edit" style="display:none;">
+      <div class="modal-content help-content">
+        <h3>🎓 ¿Cómo editar los samplers?</h3>
+        <div class="help-steps">
+          <div class="help-step">
+            <div class="help-step-icon"><i class="fa-solid fa-pencil"></i></div>
+            <div class="help-step-text">
+              <strong>Paso 1: Activa el modo edición</strong>
+              <p>Haz clic en el botón <span class="btn-example"><i class="fa-solid fa-pencil"></i> Editar</span>. Los pads empezarán a parpadear.</p>
+            </div>
+          </div>
+          <div class="help-step">
+            <div class="help-step-icon"><i class="fa-solid fa-hand-pointer"></i></div>
+            <div class="help-step-text">
+              <strong>Paso 2: Selecciona un pad</strong>
+              <p>Haz clic en el pad que quieras cambiar: en la <b>vista Batería</b> o en la <b>vista Pads</b> (grilla con más sonidos).</p>
+            </div>
+          </div>
+          <div class="help-step">
+            <div class="help-step-icon"><i class="fa-solid fa-music"></i></div>
+            <div class="help-step-text">
+              <strong>Paso 3: Cambia el sonido</strong>
+              <p>En la pestaña <b>🎵 Sonido</b>, elige de la lista. Haz clic para escuchar. Usa las flechas ↑↓ para navegar.</p>
+            </div>
+          </div>
+          <div class="help-step">
+            <div class="help-step-icon"><i class="fa-solid fa-keyboard"></i></div>
+            <div class="help-step-text">
+              <strong>Paso 4: Cambia la tecla (opcional)</strong>
+              <p>Cambia a la pestaña <b>⌨️ Tecla</b> y presiona la tecla que quieras usar (igual en vista Batería o vista Pads).</p>
+            </div>
+          </div>
+          <div class="help-step">
+            <div class="help-step-icon"><i class="fa-solid fa-check"></i></div>
+            <div class="help-step-text">
+              <strong>Paso 5: Guarda los cambios</strong>
+              <p>Haz clic en <span class="btn-example btn-example-primary">Guardar</span>. ¡Listo! Tu pad queda con el sonido y la tecla que elegiste.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button id="close-help-btn" class="btn-primary">¡Entendido!</button>
         </div>
       </div>
     </div>

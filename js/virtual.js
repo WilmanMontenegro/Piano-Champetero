@@ -1,8 +1,9 @@
 // js/virtual.js — lógica de la batería para virtual.html
 // OPTIMIZADO: Latencia mínima, preload agresivo, sin requestAnimationFrame en play
 import { initSiteChrome, setYearFooter, resumeOnUserGesture } from './common.js';
-import { AUDIO_UI } from './site-config.js';
-import { initModal } from './modal-utils.js';
+import { AUDIO_UI, NAV_MOBILE_MAX_PX } from './site-config.js';
+import { PAD_GRID_CONFIGS as gridConfigs, PAD_GRID_SIZE_ORDER } from './pad-grid-config.js';
+import { initModal, isModalOpen } from './modal-utils.js';
 import { DEFAULT_PAD_KEY_CHAR_ORDER, BATTERY_DEFAULT_PAD_CHARS, buildPadKeyIndexMap, resolvePadIndexFromKeyboard } from './pad-keyboard.js';
 import { initAudioBus, connectHitToOutput } from './audio-bus.js';
 import { initAudioVisualizer, pulseAudioVisualizer } from './audio-visualizer.js';
@@ -10,9 +11,19 @@ import { resolveSamplerPath, samplerUrl, samplerBasename } from './sampler-path.
 import { mountSamplerBrowser, loadSamplerCatalog } from './sampler-browser.js';
 import { isNoteRepeatEnabled, setNoteRepeatEnabled, startNoteRepeat, stopNoteRepeat, stopAllNoteRepeat } from './note-repeat.js';
 import { stopSamplerPreview, previewSamplerPath } from './sampler-preview.js';
+import {
+  collectKitSnapshot,
+  encodeKitSnapshot,
+  decodeKitToken,
+  buildKitShareUrl,
+  buildWhatsAppSendUrl,
+  buildShareMessage,
+  persistKitSnapshot,
+  kitTokenFromPageUrl,
+} from './kit-config-share.js';
 
 // AudioContext con latencia mínima
-export const audioCtx = new (window.AudioContext || window.webkitAudioContext)({
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)({
   latencyHint: 'interactive',
   sampleRate: 48000
 });
@@ -37,7 +48,7 @@ function padVoiceKey(index) {
   return `pad:${index}`;
 }
 
-export const tomSamplersDefaults = {
+const tomSamplersDefaults = {
   'tom-1': 'FABIAN LOOP EFECT/D (2).wav',
   'tom-2': 'piano creciente/F4.wav',
   'tom-3': 'SK5/Pitico.wav',
@@ -50,7 +61,7 @@ export const tomSamplersDefaults = {
 };
 
 /** Site-original samples (not in gallery folders); synced from Originales web/. */
-export const samplerList = [
+const samplerList = [
   'Originales web/COMO DD14.wav', 'Originales web/ctm6.wav', 'Originales web/DEEJAY.mp3', 'Originales web/EFECTO SANTOYA-TRA.wav',
   'Originales web/EXELENT.wav', 'Originales web/FOUR-1.wav', 'Originales web/piii Samples.wav', 'Originales web/Yeut01 Sk.wav',
   'Originales web/11-BALETA (1).wav', 'Originales web/142.wav', 'Originales web/159.wav', 'Originales web/16.wav',
@@ -70,7 +81,7 @@ export const samplerList = [
   'Originales web/Wuaaa.wav'
 ];
 
-export const tomAudioMap = (function init() {
+const tomAudioMap = (function init() {
   const map = { ...tomSamplersDefaults };
   const dataSamplers = localStorage.getItem('pianoChampeteroSamplers');
   if (dataSamplers) {
@@ -82,11 +93,11 @@ export const tomAudioMap = (function init() {
   return map;
 })();
 
-export const keyToTomIdDefaults = Object.fromEntries(
+const keyToTomIdDefaults = Object.fromEntries(
   BATTERY_DEFAULT_PAD_CHARS.map((ch, i) => [ch, `tom-${i + 1}`])
 );
 
-export const tomSamplerBuffers = {};
+const tomSamplerBuffers = {};
 const VOLUME_STORAGE_KEY = 'pianoChampeteroVolume';
 const DEFAULT_VOLUME = 0.5;
 
@@ -105,21 +116,9 @@ function saveStoredVolume(v) {
   try { localStorage.setItem(VOLUME_STORAGE_KEY, String(v)); } catch { /* ignore */ }
 }
 
-export let currentVolume = readStoredVolume();
-export let samplersDisponibles = [];
+let currentVolume = readStoredVolume();
 
 let keyToTomId = {};
-let _currentVolume = currentVolume;
-
-// View mode and grid configuration
-export const gridConfigs = {
-  '3x3': { rows: 3, cols: 3, total: 9 },
-  '3x4': { rows: 3, cols: 4, total: 12 },
-  '4x4': { rows: 4, cols: 4, total: 16 },
-  '4x6': { rows: 4, cols: 6, total: 24 }
-};
-
-const PAD_GRID_SIZE_ORDER = ['3x3', '3x4', '4x4', '4x6'];
 
 function predecessorGridType(gridType) {
   const i = PAD_GRID_SIZE_ORDER.indexOf(gridType);
@@ -177,8 +176,8 @@ let currentGridType = localStorage.getItem('pianoChampeteroGridType') || '3x4';
 // Validar que el grid type exista, si no usar default
 if (!gridConfigs[currentGridType]) currentGridType = '3x4';
 
-export let padsViewState = loadPadsViewSounds(currentGridType);
-export let padsViewBuffers = {};
+let padsViewState = loadPadsViewSounds(currentGridType);
+let padsViewBuffers = {};
 
 // Cache global de TODOS los samplers cargados (evita re-fetch)
 const globalSamplerCache = {};
@@ -457,8 +456,8 @@ function rebuildPadKeyIndexMap() {
   keyToPadIndex = computePadKeysForGrid(currentGridType);
 }
 
-export function saveKeyMapping(map) { try { const normalized = normalizeKeyMap(map); localStorage.setItem('pianoChampeteroKeyMap', JSON.stringify(normalized)); } catch (e) {} }
-export function loadKeyMapping() {
+function saveKeyMapping(map) { try { const normalized = normalizeKeyMap(map); localStorage.setItem('pianoChampeteroKeyMap', JSON.stringify(normalized)); } catch (e) {} }
+function loadKeyMapping() {
   const data = localStorage.getItem('pianoChampeteroKeyMap');
   if (!data) return null;
   try {
@@ -508,7 +507,7 @@ function padKeyDisplayLabel(padIndex, total) {
   return ch ? ch.toUpperCase() : '';
 }
 
-export function prettyName(fileName) {
+function prettyName(fileName) {
   if (!fileName) return '';
   let name = fileName.replace(/\.[^.]+$/, '').replace(/[-_]/g, ' ');
   // Strip leading zeros/digits only if followed by text (e.g. "00COMO DD14" -> "COMO DD14")
@@ -517,7 +516,7 @@ export function prettyName(fileName) {
   return name.trim();
 }
 
-export function saveSamplers() {
+function saveSamplers() {
   const payload = {};
   Object.keys(tomAudioMap).forEach(k => {
     payload[k] = tomAudioMap[k] ? tomAudioMap[k].replace(/\\/g, '/') : '';
@@ -525,7 +524,7 @@ export function saveSamplers() {
   try { localStorage.setItem('pianoChampeteroSamplers', JSON.stringify(payload)); } catch {}
 }
 
-export function resetSettings() {
+function resetSettings() {
   localStorage.removeItem('pianoChampeteroSamplers');
   localStorage.removeItem('pianoChampeteroKeyMap');
   Object.keys(gridConfigs).forEach(g => {
@@ -537,22 +536,19 @@ export function resetSettings() {
   padsViewState = loadPadsViewSounds(currentGridType);
 }
 
-export async function loadAvailableSamplers() {
+async function loadAvailableSamplers() {
   rebuildSamplerIndexes([...samplerList]);
 
   const cat = await loadSamplerCatalog().catch(() => null);
   if (cat?.files?.length) {
     rebuildSamplerIndexes([...samplerList, ...cat.files.map((f) => f.path)]);
-    samplersDisponibles = [...new Set([...samplerList, ...cat.files.map((f) => f.path)])];
-  } else {
-    samplersDisponibles = [...samplerList];
   }
 
   reconcileSamplerAssignments();
 }
 
 // Carga un sampler con cache global (evita re-fetch)
-export async function loadSamplerBuffer(url) {
+async function loadSamplerBuffer(url) {
   if (globalSamplerCache[url]) return globalSamplerCache[url];
   const response = await fetch(url);
   if (!response.ok) throw new Error(`Sampler HTTP ${response.status}`);
@@ -563,14 +559,11 @@ export async function loadSamplerBuffer(url) {
 }
 
 // Preload: solo sonidos asignados (batería + pads actuales). Catálogo = bajo demanda en Editar.
-export async function preloadAllSamplers() {
+async function preloadAllSamplers() {
   await loadAvailableSamplers();
   await Promise.all([...assignedSamplerPaths()].map((fileName) => preloadSamplerFile(fileName)));
 }
 
-async function preloadSamplerByName(fileName) {
-  return preloadSamplerFile(fileName);
-}
 
 function playSamplerVoice(buffer, voiceKey) {
   const now = audioCtx.currentTime;
@@ -587,7 +580,7 @@ function playSamplerVoice(buffer, voiceKey) {
 
   const source = audioCtx.createBufferSource();
   const gainNode = audioCtx.createGain();
-  gainNode.gain.value = _currentVolume;
+  gainNode.gain.value = currentVolume;
   source.buffer = buffer;
   source.connect(gainNode);
   connectHitToOutput(gainNode);
@@ -603,7 +596,7 @@ function playSamplerVoice(buffer, voiceKey) {
 }
 
 // PLAY: buffer ya en RAM, start(0), sin await
-export function playTomSampler(tomId) {
+function playTomSampler(tomId) {
   const fileName = tomAudioMap[tomId];
   if (!fileName) return;
   const url = samplerUrl(fileName);
@@ -632,7 +625,7 @@ function flashTomButton(tomId) {
   flashHitElement(document.getElementById(tomId));
 }
 
-export function activateTomSampler(tomId, { flash = true } = {}) {
+function activateTomSampler(tomId, { flash = true } = {}) {
   if (flash) flashTomButton(tomId);
   if (audioCtx.state === 'running') {
     playTomSampler(tomId);
@@ -670,7 +663,7 @@ function generateGridOptions() {
   });
 }
 
-export function switchView(view) {
+function switchView(view) {
   currentViewMode = view;
   localStorage.setItem('pianoChampeteroViewMode', view);
 
@@ -688,6 +681,7 @@ export function switchView(view) {
     viewPadsBtn.classList.add('active');
     generateGridOptions();
     generatePadsView();
+    scheduleResponsivePadsLayout();
   } else {
     batteryView.classList.remove('hidden');
     padsView.classList.add('hidden');
@@ -697,7 +691,7 @@ export function switchView(view) {
   }
 }
 
-export function changeGrid(gridType) {
+function changeGrid(gridType) {
   currentGridType = gridType;
   localStorage.setItem('pianoChampeteroGridType', gridType);
   padsViewState = loadPadsViewSounds(gridType);
@@ -705,15 +699,16 @@ export function changeGrid(gridType) {
   const padsGrid = document.getElementById('pads-grid');
   padsGrid.className = 'pads-grid grid-' + gridType;
   generatePadsView();
+  scheduleResponsivePadsLayout();
 }
 
-export async function preloadPadsViewBuffer(index) {
+async function preloadPadsViewBuffer(index) {
   const fileName = padsViewState[index];
   if (!fileName) return null;
-  return await preloadSamplerByName(fileName);
+  return await preloadSamplerFile(fileName);
 }
 
-export function playPadSound(index) {
+function playPadSound(index) {
   const fileName = padsViewState[index];
   const url = fileName ? samplerUrl(fileName) : '';
   const buffer = padsViewBuffers[index] || (url ? globalSamplerCache[url] : null);
@@ -728,7 +723,7 @@ function flashPadButton(index) {
   flashHitElement(document.getElementById('pads-grid')?.children[index]);
 }
 
-export function activatePadSound(index, { flash = true } = {}) {
+function activatePadSound(index, { flash = true } = {}) {
   if (flash) flashPadButton(index);
   if (audioCtx.state === 'running') {
     playPadSound(index);
@@ -750,7 +745,7 @@ function endPadNoteRepeat(index) {
   stopNoteRepeat(padVoiceKey(index));
 }
 
-export function generatePadsView() {
+function generatePadsView() {
   const padsGrid = document.getElementById('pads-grid');
   if (!padsGrid) return;
 
@@ -783,6 +778,7 @@ export function generatePadsView() {
         if (openPadEditModalRef) openPadEditModalRef(i);
         return;
       }
+      e.preventDefault();
       activatePadSound(i);
       beginPadNoteRepeat(i);
       try { pad.setPointerCapture(e.pointerId); } catch { /* ignore */ }
@@ -855,6 +851,7 @@ function setImmersionMode(on) {
     if (label) label.textContent = on ? 'Salir' : 'Inmersión';
   }
   try { localStorage.setItem(IMMERSION_STORAGE_KEY, on ? '1' : '0'); } catch (e) { /* ignore */ }
+  setTimeout(scheduleResponsivePadsLayout, 450);
 }
 
 function initImmersionMode() {
@@ -866,10 +863,132 @@ function initImmersionMode() {
   });
 }
 
+/** Sin scroll en virtual.html; excepción listas en modales/nav. */
+const SCROLL_ALLOW_SELECTOR = '.sampler-list, .nav-menu.active, .help-content, .kit-share-content textarea';
+
+function initPageScrollLock() {
+  const allowScroll = (target) => target instanceof Element && target.closest(SCROLL_ALLOW_SELECTOR);
+
+  document.addEventListener('touchmove', (e) => {
+    if (allowScroll(e.target)) return;
+    e.preventDefault();
+  }, { passive: false });
+
+  document.addEventListener('wheel', (e) => {
+    if (allowScroll(e.target)) return;
+    e.preventDefault();
+  }, { passive: false });
+}
+
+/** Rejilla pads: columnas y tamaño según espacio (volumen siempre abajo). */
+let padsLayoutFrame = 0;
+const MOBILE_PADS_MQ = window.matchMedia(`(max-width: ${NAV_MOBILE_MAX_PX}px)`);
+
+function factorPadGridPairs(total) {
+  const pairs = [];
+  for (let cols = 1; cols <= total; cols++) {
+    if (total % cols !== 0) continue;
+    pairs.push({ cols, rows: total / cols });
+  }
+  return pairs;
+}
+
+function padSizeForGrid(cols, rows, availW, availH, gap, gridPad, maxCap) {
+  const sizeW = (availW - (cols - 1) * gap - 2 * gridPad) / cols;
+  const sizeH = (availH - (rows - 1) * gap - 2 * gridPad) / rows;
+  return Math.min(sizeW, sizeH, maxCap);
+}
+
+/** Móvil: elige cols×rows que maximice tamaño táctil (sin huecos). */
+function pickResponsivePadLayout(total, availW, availH, gap, gridPad, cfg, isMobile) {
+  if (!isMobile) {
+    return { cols: cfg.cols, rows: cfg.rows };
+  }
+
+  const maxCap = 120;
+  const minPad = 52;
+  let best = null;
+
+  for (const { cols, rows } of factorPadGridPairs(total)) {
+    if (cols > 6 || rows > 8) continue;
+    const size = padSizeForGrid(cols, rows, availW, availH, gap, gridPad, maxCap);
+    if (size < minPad) continue;
+
+    let score = size;
+    if (cols <= 4) score += 3;
+    if (cols <= 3) score += 1;
+    const aspect = cols / rows;
+    if (aspect >= 0.45 && aspect <= 1.6) score += 2;
+
+    if (!best || score > best.score) {
+      best = { cols, rows, size, score };
+    }
+  }
+
+  if (best) return { cols: best.cols, rows: best.rows };
+  return { cols: cfg.cols, rows: cfg.rows };
+}
+
+function layoutResponsivePads() {
+  const view = document.getElementById('pads-view');
+  const kitPlay = document.querySelector('.virtual-page .kit-play');
+  if (!view || view.classList.contains('hidden') || !kitPlay) return;
+
+  const cfg = gridConfigs[currentGridType] || gridConfigs['3x4'];
+  view.style.removeProperty('--pad-cols');
+  view.style.removeProperty('--pad-size');
+  view.style.removeProperty('--pad-rows');
+
+  const isMobile = MOBILE_PADS_MQ.matches;
+  const gap = isMobile ? 6 : 8;
+  const gridPad = isMobile ? 6 : 10;
+  const maxCap = isMobile ? 120 : 132;
+  const minPad = isMobile ? 48 : 48;
+
+  const vol = kitPlay.querySelector('.battery-volume-container');
+  const playRect = kitPlay.getBoundingClientRect();
+  const volH = (vol ? vol.offsetHeight : 48) + (isMobile ? 8 : 16);
+  const availW = playRect.width - (isMobile ? 12 : 20);
+  const viewH = view.clientHeight;
+  const availH = viewH > 80 ? viewH - gridPad * 2 : playRect.height - volH;
+  if (availW < 60 || availH < 60) return;
+
+  if (cfg.cols * cfg.rows !== cfg.total) return;
+
+  const { cols: layoutCols, rows: layoutRows } = pickResponsivePadLayout(
+    cfg.total, availW, availH, gap, gridPad, cfg, isMobile
+  );
+  if (layoutCols * layoutRows !== cfg.total) return;
+
+  const size = padSizeForGrid(layoutCols, layoutRows, availW, availH, gap, gridPad, maxCap);
+  if (size < minPad) return;
+
+  view.style.setProperty('--pad-cols', String(layoutCols));
+  view.style.setProperty('--pad-rows', String(layoutRows));
+  view.style.setProperty('--pad-size', `${Math.floor(size * (isMobile ? 0.98 : 0.95))}px`);
+}
+
+function scheduleResponsivePadsLayout() {
+  cancelAnimationFrame(padsLayoutFrame);
+  padsLayoutFrame = requestAnimationFrame(() => {
+    padsLayoutFrame = requestAnimationFrame(layoutResponsivePads);
+  });
+}
+
+function initResponsivePadsLayout() {
+  scheduleResponsivePadsLayout();
+  const kitPlay = document.querySelector('.virtual-page .kit-play');
+  if (kitPlay && typeof ResizeObserver !== 'undefined') {
+    const ro = new ResizeObserver(() => scheduleResponsivePadsLayout());
+    ro.observe(kitPlay);
+  }
+  window.addEventListener('resize', scheduleResponsivePadsLayout);
+}
+
 function initNoteRepeatToggle() {
   const btn = document.getElementById('note-repeat-btn');
   const label = document.getElementById('note-repeat-btn-label');
-  if (!btn) return;
+  if (!btn) return undefined;
   const apply = (on) => {
     setNoteRepeatEnabled(on);
     btn.classList.toggle('active', on);
@@ -881,6 +1000,132 @@ function initNoteRepeatToggle() {
   };
   apply(isNoteRepeatEnabled());
   btn.addEventListener('click', () => apply(!isNoteRepeatEnabled()));
+  return apply;
+}
+
+async function applyImportedKit(snapshot) {
+  persistKitSnapshot(snapshot);
+
+  if (snapshot.s && typeof snapshot.s === 'object') {
+    Object.keys(tomAudioMap).forEach((tomId) => {
+      tomAudioMap[tomId] = snapshot.s[tomId] ?? tomSamplersDefaults[tomId];
+    });
+    saveSamplers();
+  }
+
+  const savedKeys = loadKeyMapping();
+  keyToTomId = savedKeys ? normalizeKeyMap(savedKeys) : normalizeKeyMap(keyToTomIdDefaults);
+
+  currentGridType = localStorage.getItem('pianoChampeteroGridType') || '3x4';
+  if (!gridConfigs[currentGridType]) currentGridType = '3x4';
+
+  padsViewState = loadPadsViewSounds(currentGridType);
+  rebuildPadKeyIndexMap();
+
+  currentVolume = readStoredVolume();
+
+  const sliderVolumen = document.getElementById('volume-slider');
+  const labelPorcentaje = document.getElementById('volume-percent');
+  if (sliderVolumen) sliderVolumen.value = String(currentVolume);
+  if (labelPorcentaje) labelPorcentaje.textContent = Math.round(currentVolume * 100) + '%';
+
+  await preloadAllSamplers();
+  actualizarEtiquetasTeclas(keyToTomId);
+  actualizarNombresPads();
+
+  const view = localStorage.getItem('pianoChampeteroViewMode') || 'bateria';
+  switchView(view === 'pads' ? 'pads' : 'bateria');
+
+  const noteRepeatBtn = document.getElementById('note-repeat-btn');
+  const noteRepeatLabel = document.getElementById('note-repeat-btn-label');
+  const nrOn = isNoteRepeatEnabled();
+  if (noteRepeatBtn) {
+    noteRepeatBtn.classList.toggle('active', nrOn);
+    noteRepeatBtn.setAttribute('aria-pressed', nrOn ? 'true' : 'false');
+  }
+  if (noteRepeatLabel) noteRepeatLabel.textContent = nrOn ? 'Activo' : 'Apagado';
+}
+
+function initKitConfigShare(noteRepeatApply) {
+  const nameInput = document.getElementById('kit-share-name');
+  const exportField = document.getElementById('kit-share-payload');
+  const importField = document.getElementById('kit-import-payload');
+  const statusEl = document.getElementById('kit-import-status');
+  const copyBtn = document.getElementById('kit-share-copy-btn');
+  const whatsappBtn = document.getElementById('kit-share-whatsapp-btn');
+  const importBtn = document.getElementById('kit-import-btn');
+
+  if (!exportField || !importField) return;
+
+  const setStatus = (text, isError = false) => {
+    if (!statusEl) return;
+    statusEl.hidden = !text;
+    statusEl.textContent = text;
+    statusEl.classList.toggle('kit-import-status--error', isError);
+  };
+
+  const refreshExportPayload = () => {
+    const snapshot = collectKitSnapshot(nameInput?.value || '');
+    const code = encodeKitSnapshot(snapshot);
+    exportField.value = code;
+    exportField.dataset.shareUrl = buildKitShareUrl(code);
+  };
+
+  if (nameInput) nameInput.addEventListener('input', refreshExportPayload);
+
+  initModal('modal-kit-share', {
+    openBtnId: 'share-kit-btn',
+    closeBtnId: 'kit-share-close-btn',
+    focusOnOpen: false,
+    onOpen: () => {
+      setStatus('');
+      refreshExportPayload();
+    },
+  });
+
+  copyBtn?.addEventListener('click', async () => {
+    refreshExportPayload();
+    const text = exportField.value;
+    try {
+      await navigator.clipboard.writeText(text);
+      setStatus('Código copiado. Pegalo en WhatsApp o en Importar.');
+    } catch {
+      exportField.focus();
+      exportField.select();
+      setStatus('Seleccioná el código y copialo manualmente (Ctrl+C).');
+    }
+  });
+
+  whatsappBtn?.addEventListener('click', () => {
+    refreshExportPayload();
+    const snapshot = collectKitSnapshot(nameInput?.value || '');
+    const code = exportField.value;
+    const msg = buildShareMessage(snapshot, code);
+    window.open(buildWhatsAppSendUrl(msg), '_blank', 'noopener,noreferrer');
+  });
+
+  importBtn?.addEventListener('click', async () => {
+    setStatus('');
+    try {
+      const snapshot = decodeKitToken(importField.value);
+      await applyImportedKit(snapshot);
+      if (noteRepeatApply) noteRepeatApply(isNoteRepeatEnabled());
+      const label = snapshot.n ? `"${snapshot.n}"` : 'Kit importado';
+      setStatus(`${label} listo. ¡A tocar!`);
+      importField.value = '';
+    } catch (err) {
+      setStatus(err instanceof Error ? err.message : 'No se pudo importar.', true);
+    }
+  });
+
+  const urlToken = kitTokenFromPageUrl();
+  if (urlToken) {
+    importField.value = urlToken;
+    setStatus('Enlace con kit detectado — pulsa Importar para cargarlo.');
+    const modal = document.getElementById('modal-kit-share');
+    if (modal) modal.style.display = 'flex';
+    history.replaceState({}, '', location.pathname);
+  }
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -895,7 +1140,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   initAudioVisualizer({ analyser });
   initAudioWarmup();
-  initNoteRepeatToggle();
+  initPageScrollLock();
+  initResponsivePadsLayout();
+  const applyNoteRepeat = initNoteRepeatToggle();
+  initKitConfigShare(applyNoteRepeat);
 
   const savedKeys = loadKeyMapping();
   if (savedKeys) keyToTomId = normalizeKeyMap(savedKeys);
@@ -910,13 +1158,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   const labelPorcentaje = document.getElementById('volume-percent');
   if (sliderVolumen) {
     const actualizarLabel = v => labelPorcentaje && (labelPorcentaje.textContent = Math.round(v * 100) + '%');
-    sliderVolumen.value = String(_currentVolume);
-    if (labelPorcentaje) actualizarLabel(_currentVolume);
+    sliderVolumen.value = String(currentVolume);
+    if (labelPorcentaje) actualizarLabel(currentVolume);
     sliderVolumen.addEventListener('input', e => {
-      _currentVolume = +e.target.value;
-      currentVolume = _currentVolume;
-      saveStoredVolume(_currentVolume);
-      if (labelPorcentaje) actualizarLabel(_currentVolume);
+      currentVolume = +e.target.value;
+      saveStoredVolume(currentVolume);
+      if (labelPorcentaje) actualizarLabel(currentVolume);
     });
     sliderVolumen.addEventListener('wheel', e => {
       e.preventDefault();
@@ -940,7 +1187,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const tabs = modal ? modal.querySelectorAll('.modal-tab') : [];
 
   const previewDeps = {
-    getVolume: () => _currentVolume,
+    getVolume: () => currentVolume,
     loadBuffer: loadSamplerBuffer,
     connectHit: connectHitToOutput,
     pulseViz: pulseAudioVisualizer,
@@ -1112,6 +1359,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           abrirModal(boton);
           return;
         }
+        e.preventDefault();
         activateTomSampler(tomId);
         beginTomNoteRepeat(tomId);
         try { boton.setPointerCapture(e.pointerId); } catch { /* ignore */ }
@@ -1120,6 +1368,25 @@ document.addEventListener('DOMContentLoaded', async () => {
       boton.addEventListener('pointercancel', () => endTomNoteRepeat(tomId));
     }
   });
+
+  function isEditableKeyboardTarget(target) {
+    if (!(target instanceof Element)) return false;
+    const field = target.closest('input, textarea, select, [contenteditable="true"]');
+    if (!field) return false;
+    if (field instanceof HTMLInputElement) {
+      const type = (field.type || 'text').toLowerCase();
+      return !['button', 'submit', 'reset', 'checkbox', 'radio', 'range', 'file'].includes(type);
+    }
+    return true;
+  }
+
+  const PLAY_KEYBOARD_BLOCK_MODALS = ['modal-edit', 'modal-kit-share', 'modal-help', 'modal-confirm-reset'];
+
+  function shouldBlockPlayKeyboard(e) {
+    if (modoEdicion) return true;
+    if (isEditableKeyboardTarget(e.target)) return true;
+    return PLAY_KEYBOARD_BLOCK_MODALS.some(isModalOpen);
+  }
 
   function keyboardHoldId(e) {
     return e.code || e.key || '';
@@ -1143,8 +1410,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   document.addEventListener('keydown', e => {
-    if (modal && modal.style.display === 'flex') return;
-    if (modoEdicion) return;
+    if (shouldBlockPlayKeyboard(e)) return;
     if (e.repeat) return;
     const code = e.code || '';
     if (!e.key && !code) return;
@@ -1171,7 +1437,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }, true);
 
   document.addEventListener('keyup', e => {
-    if (modoEdicion) return;
+    if (shouldBlockPlayKeyboard(e)) return;
     releaseKeyboardHold(e);
   }, true);
 
