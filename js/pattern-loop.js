@@ -280,7 +280,7 @@ export function initPatternLoops(opts) {
   const setCaptureUi = (on) => {
     recordBtn.classList.toggle('active', on);
     recordBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
-    if (recordLabel) recordLabel.textContent = on ? 'Detener loop' : 'Grabar loop';
+    if (recordLabel) recordLabel.textContent = on ? 'Detener loop' : 'Crear loop';
   };
 
   const renderList = () => {

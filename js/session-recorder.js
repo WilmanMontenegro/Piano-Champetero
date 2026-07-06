@@ -3,6 +3,8 @@
  * ponytail: localStorage ~5MB cap; max ~8 clips, ~3.5MB audio total, 2 min each.
  */
 
+import { initModal } from './modal-utils.js';
+
 const INDEX_KEY = 'pianoChampeteroRecordingsIndex';
 const DATA_PREFIX = 'pianoChampeteroRecording_';
 const MAX_CLIPS = 8;
@@ -205,13 +207,36 @@ export function initSessionRecorder(opts) {
   if (!recordBtn || !listEl) return null;
 
   const canCapturePcAudio = typeof navigator?.mediaDevices?.getDisplayMedia === 'function';
-  const defaultRecordLabel = canCapturePcAudio ? 'Grabar batería + PC' : 'Grabar audio';
+  const defaultRecordLabel = 'Grabar audio';
 
   if (typeof MediaRecorder === 'undefined') {
     recordBtn.disabled = true;
     recordBtn.title = 'Grabación no disponible en este navegador';
     return;
   }
+
+  let pcGuideResolve = null;
+  let pcGuideAccepted = false;
+  const pcGuideModal = initModal('modal-pc-audio-guide', {
+    focusOnOpen: true,
+    confirmBtnId: 'pc-audio-guide-continue-btn',
+    closeBtnId: 'pc-audio-guide-cancel-btn',
+    onOpen: () => { pcGuideAccepted = false; },
+    onConfirm: () => { pcGuideAccepted = true; },
+    onClose: () => {
+      pcGuideResolve?.(pcGuideAccepted);
+      pcGuideResolve = null;
+    },
+  });
+
+  const confirmPcAudioGuide = () => new Promise((resolve) => {
+    if (!pcGuideModal) {
+      resolve(true);
+      return;
+    }
+    pcGuideResolve = resolve;
+    pcGuideModal.open();
+  });
 
   let mediaRecorder = null;
   let streamDest = null;
@@ -400,8 +425,8 @@ export function initSessionRecorder(opts) {
       renderList();
       revealSavedRecording(entry.id);
       const mixNote = hadPcAudio
-        ? ' (batería + audio compartido del PC)'
-        : ' (solo batería — en el diálogo marcá «Compartir audio» o «Audio del sistema»)';
+        ? ' (batería + audio del PC)'
+        : ' (solo batería. Activá «Compartir audio» en el cuadro del navegador)';
       setStatus(`"${entry.name}" lista.${mixNote}`, false, { downloadId: entry.id });
     } catch (err) {
       renderList();
@@ -421,8 +446,13 @@ export function initSessionRecorder(opts) {
       return;
     }
 
-    if (canCapturePcAudio) {
-      setStatus('Elegí pantalla o pestaña y activá «Compartir audio» / «Audio del sistema» para incluir música del PC.');
+    const wantPcAudio = canCapturePcAudio;
+
+    if (wantPcAudio) {
+      const proceed = await confirmPcAudioGuide();
+      if (!proceed) return;
+
+      setStatus('Elegí pantalla o pestaña y activá «Compartir audio» / «Audio del sistema».');
       displayStream = await capturePcAudioStream();
       if (displayStream?.getAudioTracks().length) {
         mixingPcAudio = true;
@@ -430,9 +460,9 @@ export function initSessionRecorder(opts) {
       } else if (displayStream) {
         for (const track of displayStream.getTracks()) track.stop();
         displayStream = null;
-        setStatus('Sin audio del PC: grabando solo la batería. La próxima activá «Compartir audio» en el diálogo.');
+        setStatus('Falta activar «Compartir audio» en el cuadro del navegador. Grabando solo la batería.', true);
       } else {
-        setStatus('Sin audio del PC: grabando solo la batería.');
+        setStatus('Cancelaste el permiso. Grabando solo la batería.', true);
       }
     }
 
@@ -465,7 +495,11 @@ export function initSessionRecorder(opts) {
     setRecordingUi(true, 0);
     renderList();
     if (mixingPcAudio) {
-      setStatus('Grabando batería + audio compartido. Tocá cuando quieras.');
+      setStatus('Grabando batería + audio del PC.');
+    } else {
+      setStatus(wantPcAudio
+        ? 'Grabando batería. Activá «Compartir audio» si querés mezclar el PC.'
+        : 'Grabando batería. Este navegador no permite capturar audio del PC.');
     }
 
     tickTimer = window.setInterval(() => {

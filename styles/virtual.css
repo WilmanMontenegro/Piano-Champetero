@@ -523,6 +523,65 @@ main {
   animation: record-pulse 1.1s ease-in-out infinite;
 }
 
+.pc-audio-guide-steps {
+  margin: 0.75rem 0 0.5rem;
+  padding-left: 1.35rem;
+  color: var(--color-gris-oscuro);
+  font-size: 0.9em;
+  line-height: 1.45;
+  list-style: decimal;
+  list-style-position: outside;
+}
+
+.pc-audio-guide-steps li + li {
+  margin-top: 0.45rem;
+}
+
+.pc-audio-guide-steps strong {
+  color: var(--color-marron);
+}
+
+.pc-audio-guide-note {
+  margin-top: 0.35rem;
+  font-size: 0.82rem;
+  opacity: 0.85;
+}
+
+#modal-pc-audio-guide .modal-content {
+  width: min(480px, 94vw);
+  text-align: left;
+}
+
+#modal-pc-audio-guide h3 {
+  text-align: left;
+  margin: 0 0 0.75em;
+  font-size: 1.35em;
+}
+
+#modal-pc-audio-guide .tab-hint {
+  text-align: justify;
+  text-wrap: pretty;
+}
+
+#modal-pc-audio-guide .pc-audio-guide-steps {
+  margin: 0.85em 0 0.85em;
+  padding-left: 1.4em;
+  text-align: left;
+}
+
+#modal-pc-audio-guide .pc-audio-guide-steps li {
+  padding-left: 0.35em;
+}
+
+#modal-pc-audio-guide .pc-audio-guide-note {
+  text-align: justify;
+}
+
+#modal-pc-audio-guide .modal-actions {
+  justify-content: center;
+  margin-top: 1.25em;
+}
+
 @keyframes record-pulse {
   0%, 100% { opacity: 1; transform: scale(1); }
   50% { opacity: 0.55; transform: scale(0.92); }

@@ -1762,7 +1762,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     return true;
   }
 
-  const PLAY_KEYBOARD_BLOCK_MODALS = ['modal-edit', 'modal-kit-share', 'modal-help', 'modal-confirm-reset'];
+  const PLAY_KEYBOARD_BLOCK_MODALS = ['modal-edit', 'modal-kit-share', 'modal-help', 'modal-confirm-reset', 'modal-pc-audio-guide'];
 
   function shouldBlockPlayKeyboard(e) {
     if (modoEdicion) return true;

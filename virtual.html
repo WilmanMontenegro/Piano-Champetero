@@ -166,13 +166,13 @@
             <i class="fa-solid fa-repeat" aria-hidden="true"></i>
             <span id="note-repeat-btn-label">Apagado</span>
           </button>
-          <button id="session-record-btn" type="button" class="ctrl-btn session-record-btn" aria-pressed="false" title="Graba la batería. Para incluir música del PC (Spotify, YouTube, etc.), en el diálogo del navegador activá «Compartir audio» o «Audio del sistema». Sin eso, solo la batería.">
+          <button id="session-record-btn" type="button" class="ctrl-btn session-record-btn" aria-pressed="false" title="Graba la batería y el audio del PC (Spotify, YouTube, etc.). Un clic para empezar, otro para parar.">
             <i class="fa-solid fa-circle session-record-icon" aria-hidden="true"></i>
-            <span id="session-record-label">Grabar batería + PC</span>
+            <span id="session-record-label">Grabar audio</span>
           </button>
-          <button id="pattern-loop-btn" type="button" class="ctrl-btn pattern-loop-btn" aria-pressed="false" title="Graba la secuencia de golpes y repítela en loop">
+          <button id="pattern-loop-btn" type="button" class="ctrl-btn pattern-loop-btn" aria-pressed="false" title="Crea la secuencia de golpes y repítela en loop">
             <i class="fa-solid fa-infinity" aria-hidden="true"></i>
-            <span id="pattern-loop-label">Grabar loop</span>
+            <span id="pattern-loop-label">Crear loop</span>
           </button>
         </div>
         <div class="divider" aria-hidden="true"></div>
@@ -382,6 +382,23 @@
         <div class="modal-actions">
           <button id="confirm-reset-btn" class="btn-danger btn-reset">Sí</button>
           <button id="cancel-reset-btn" class="btn-cancel">No</button>
+        </div>
+      </div>
+    </div>
+    <!-- Aviso antes de capturar audio del PC (getDisplayMedia) -->
+    <div id="modal-pc-audio-guide" class="modal-edit" style="display:none;">
+      <div class="modal-content help-content">
+        <h3>Antes de grabar</h3>
+        <p class="tab-hint">Vamos a grabar <strong>la batería y todo lo que suene en el PC</strong>. El navegador va a pedir <strong>compartir pantalla</strong>. No es para video, solo para capturar el audio.</p>
+        <ol class="pc-audio-guide-steps">
+          <li>En el cuadro del navegador, elegí <strong>Pantalla completa</strong> o la <strong>pestaña</strong> donde suena la música.</li>
+          <li>Activá <strong>«Compartir audio»</strong> o <strong>«Audio del sistema»</strong> (abajo o al lado).</li>
+          <li>Tocá <strong>Compartir</strong> o <strong>Permitir</strong>.</li>
+        </ol>
+        <p class="tab-hint pc-audio-guide-note">Si no ves ese cuadro, probá en <strong>Chrome</strong> o <strong>Edge</strong> en computador.</p>
+        <div class="modal-actions">
+          <button id="pc-audio-guide-continue-btn" type="button" class="btn-primary">Continuar</button>
+          <button id="pc-audio-guide-cancel-btn" type="button" class="btn-cancel">Cancelar</button>
         </div>
       </div>
     </div>
