@@ -22,6 +22,7 @@ import {
   kitTokenFromPageUrl,
 } from './kit-config-share.js';
 import { initSessionRecorder, listSessionRecordings } from './session-recorder.js';
+import { getActiveKitId, getBatteryKit, initBatteryPresets, isActiveKitBlank, isDefaultKit, syncActiveKit, updateBatteryKit } from './battery-presets.js';
 import {
   initPatternLoops,
   notifyPatternHit,
@@ -134,9 +135,9 @@ function predecessorGridType(gridType) {
   return i > 0 ? PAD_GRID_SIZE_ORDER[i - 1] : null;
 }
 
-function getDefaultPadsSounds(total) {
+function getDefaultPadsSounds(total, sourceMap = tomAudioMap) {
   // Hereda los sonidos configurados en la vista batería
-  const bateriaSounds = Object.values(tomAudioMap).filter(Boolean);
+  const bateriaSounds = Object.values(sourceMap).filter(Boolean);
   const sounds = [...bateriaSounds];
   // Rellena los restantes con samplers disponibles sin repetir
   const usedFiles = new Set(sounds.map(f => f.toLowerCase()));
@@ -247,9 +248,11 @@ function preferDeployableSampler(stored) {
 }
 
 function reconcileSamplerAssignments() {
+  const preserveBlank = shouldPreserveBlankAssignments();
   let changed = false;
   Object.keys(tomAudioMap).forEach((tomId) => {
     const stored = tomAudioMap[tomId];
+    if (stored === '' && preserveBlank) return;
     const preferred = preferDeployableSampler(stored);
     const next = preferred ?? tomSamplersDefaults[tomId];
     if (next !== stored) {
@@ -260,7 +263,7 @@ function reconcileSamplerAssignments() {
   const padTotal = gridConfigs[currentGridType]?.total ?? 12;
   const padDefaults = getDefaultPadsSounds(padTotal);
   padsViewState = padsViewState.map((p, i) => {
-    if (!p) return p;
+    if (p === '' && preserveBlank) return p;
     const preferred = preferDeployableSampler(p);
     if (preferred) {
       if (preferred !== p) changed = true;
@@ -318,6 +321,13 @@ async function preloadSamplerFile(fileName) {
 
 let keyToPadIndex = Object.create(null);
 
+/** While applying a blank preset before activeKitId switches (create «Desde 0»). */
+let applyingBlankPreset = false;
+
+function shouldPreserveBlankAssignments() {
+  return applyingBlankPreset || isActiveKitBlank();
+}
+
 /** Set from DOMContentLoaded: generatePadsView lives at module scope and cannot see nested functions. */
 let openPadEditModalRef = null;
 
@@ -328,7 +338,7 @@ function padKeysStorageKey(gridType) {
 function loadPadKeysSavedObject(gridType) {
   try {
     const raw = localStorage.getItem(padKeysStorageKey(gridType));
-    if (!raw) return null;
+    if (raw === null) return null;
     const o = JSON.parse(raw);
     return o && typeof o === 'object' ? o : null;
   } catch {
@@ -393,6 +403,13 @@ function normalizePlayablePadKeyMap(out, total) {
 
 function persistPadKeysForCurrentGrid() {
   const total = gridConfigs[currentGridType]?.total || 0;
+  const hasAny = Object.values(keyToPadIndex).some((v) => typeof v === 'number');
+  if (!hasAny) {
+    try {
+      localStorage.setItem(padKeysStorageKey(currentGridType), JSON.stringify({}));
+    } catch { /* ignore */ }
+    return;
+  }
   normalizePlayablePadKeyMap(keyToPadIndex, total);
   const canon = Object.create(null);
   for (let p = 0; p < total; p++) {
@@ -434,8 +451,11 @@ function computePadKeysForGrid(gridType) {
   const total = config ? config.total : 0;
   if (!total) return buildPadKeyIndexMap(gridConfigs['3x4'].total);
   const saved = loadPadKeysSavedObject(gridType);
-  if (saved && Object.keys(saved).length > 0) {
+  if (saved !== null && Object.keys(saved).length > 0) {
     return buildPadKeyMapFromSaved(total, saved);
+  }
+  if (saved !== null && Object.keys(saved).length === 0 && shouldPreserveBlankAssignments()) {
+    return {};
   }
   const pred = predecessorGridType(gridType);
   if (!pred) {
@@ -512,8 +532,10 @@ function padKeyDisplayLabel(padIndex, total) {
   if (padIndex < 0 || padIndex >= total) return '';
   const code = findCanonicalCodeForPad(keyToPadIndex, padIndex);
   if (code) return prettyLabelFromId(code);
-  const ch = DEFAULT_PAD_KEY_CHAR_ORDER[padIndex];
-  return ch ? ch.toUpperCase() : '';
+  if (!shouldPreserveBlankAssignments() && padIndex < DEFAULT_PAD_KEY_CHAR_ORDER.length) {
+    return DEFAULT_PAD_KEY_CHAR_ORDER[padIndex].toUpperCase();
+  }
+  return '';
 }
 
 function prettyName(fileName) {
@@ -699,6 +721,7 @@ function switchView(view) {
     viewBateriaBtn.classList.add('active');
     viewPadsBtn.classList.remove('active');
   }
+  refreshBatteryPresets();
 }
 
 function changeGrid(gridType) {
@@ -776,7 +799,7 @@ function generatePadsView() {
 
     const soundLabel = document.createElement('span');
     soundLabel.className = 'pad-sound';
-    soundLabel.textContent = prettyName(padsViewState[i]) || '';
+    soundLabel.textContent = prettyName(padsViewState[i]) || '—';
 
     pad.appendChild(keyLabel);
     pad.appendChild(soundLabel);
@@ -808,6 +831,9 @@ function generatePadsView() {
 }
 
 let modoEdicion = false;
+let refreshBatteryPresets = () => {};
+/** @type {{ refresh?: () => void, onEditEnter?: () => void, onEditExit?: () => void } | null} */
+let batteryPresetsCtl = null;
 let tomSeleccionado = null;
 let samplerSeleccionado = null;
 let activeTab = 'sampler';
@@ -821,16 +847,11 @@ function actualizarNombresPads() {
   Object.keys(tomAudioMap).forEach(tomId => {
     const boton = document.getElementById(tomId);
     if (!boton) return;
-    const keySpan = boton.querySelector('.battery-tom-info-key');
     const soundSpan = boton.querySelector('.battery-tom-info-sound');
-    if (keySpan) {
-      const keys = (tomToKeys[tomId] || []).map(k => prettyLabelFromId(k)).join(' / ');
-      keySpan.textContent = keys || '—';
-    }
     if (soundSpan) {
       const fullName = prettyName(tomAudioMap[tomId]);
-      soundSpan.textContent = fullName;
-      soundSpan.title = fullName;
+      soundSpan.textContent = fullName || '—';
+      soundSpan.title = fullName || 'Sin sonido';
     }
   });
 }
@@ -1014,6 +1035,267 @@ function initNoteRepeatToggle() {
   return apply;
 }
 
+function readPadsSoundsFromStorage(gridType) {
+  try {
+    const raw = localStorage.getItem(`pianoChampeteroPads_${gridType}`);
+    if (raw === null) return null;
+    const arr = JSON.parse(raw);
+    return Array.isArray(arr) ? arr : null;
+  } catch {
+    return null;
+  }
+}
+
+function emptyPadsByGrid() {
+  const out = {};
+  for (const gt of PAD_GRID_SIZE_ORDER) {
+    out[gt] = Array(gridConfigs[gt].total).fill('');
+  }
+  return out;
+}
+
+function emptyPadKeysByGrid() {
+  const out = {};
+  for (const gt of PAD_GRID_SIZE_ORDER) out[gt] = {};
+  return out;
+}
+
+function defaultPadKeysCanonical(gridType) {
+  const total = gridConfigs[gridType]?.total || 0;
+  const map = buildPadKeyIndexMap(total);
+  normalizePlayablePadKeyMap(map, total);
+  const canon = Object.create(null);
+  for (let p = 0; p < total; p++) {
+    const c = findCanonicalCodeForPad(map, p);
+    if (c) canon[c] = p;
+  }
+  return canon;
+}
+
+/** Kit 1 factory keys — same for default kit and «Aleatorio» (only sounds differ). */
+function factoryDefaultKeysPayload() {
+  return {
+    keyMap: normalizeKeyMap(keyToTomIdDefaults),
+    padKeys: Object.fromEntries(
+      PAD_GRID_SIZE_ORDER.map((gt) => [gt, defaultPadKeysCanonical(gt)]),
+    ),
+  };
+}
+
+function capturePadKeysForGrid(gridType) {
+  const total = gridConfigs[gridType]?.total || 0;
+  if (gridType === currentGridType) {
+    const canon = Object.create(null);
+    for (let p = 0; p < total; p++) {
+      const c = findCanonicalCodeForPad(keyToPadIndex, p);
+      if (c) canon[c] = p;
+    }
+    return canon;
+  }
+  const saved = loadPadKeysSavedObject(gridType);
+  if (saved !== null) return { ...saved };
+  return defaultPadKeysCanonical(gridType);
+}
+
+function capturePadsForGrid(gridType) {
+  if (gridType === currentGridType) {
+    return padsViewState.map((s) => (s ? s.replace(/\\/g, '/') : ''));
+  }
+  const stored = readPadsSoundsFromStorage(gridType);
+  if (stored) return stored.map((s) => (s ? String(s).replace(/\\/g, '/') : ''));
+  return loadPadsViewSounds(gridType).map((s) => (s ? s.replace(/\\/g, '/') : ''));
+}
+
+function restoreDefaultPadsAndKeys() {
+  const { padKeys } = factoryDefaultKeysPayload();
+  for (const gt of PAD_GRID_SIZE_ORDER) {
+    savePadsViewSounds(gt, getDefaultPadsSounds(gridConfigs[gt].total));
+  }
+  applyKitPadsAndKeys({ padKeys });
+}
+
+function applyKitPadsAndKeys(preset) {
+  if (preset.gridType && gridConfigs[preset.gridType]) {
+    currentGridType = preset.gridType;
+    localStorage.setItem('pianoChampeteroGridType', currentGridType);
+  }
+
+  if (preset.pads) {
+    for (const gt of PAD_GRID_SIZE_ORDER) {
+      if (!Object.prototype.hasOwnProperty.call(preset.pads, gt)) continue;
+      const total = gridConfigs[gt].total;
+      const sounds = preset.pads[gt].slice(0, total);
+      while (sounds.length < total) sounds.push('');
+      savePadsViewSounds(gt, sounds);
+    }
+  }
+
+  if (preset.padKeys) {
+    for (const gt of PAD_GRID_SIZE_ORDER) {
+      if (!Object.prototype.hasOwnProperty.call(preset.padKeys, gt)) continue;
+      try {
+        localStorage.setItem(padKeysStorageKey(gt), JSON.stringify(preset.padKeys[gt] || {}));
+      } catch { /* ignore */ }
+    }
+  }
+
+  padsViewState = loadPadsViewSounds(currentGridType);
+  rebuildPadKeyIndexMap();
+  Object.keys(padsViewBuffers).forEach((k) => delete padsViewBuffers[k]);
+}
+
+function captureBatteryState() {
+  const pads = {};
+  const padKeys = {};
+  for (const gt of PAD_GRID_SIZE_ORDER) {
+    pads[gt] = capturePadsForGrid(gt);
+    padKeys[gt] = capturePadKeysForGrid(gt);
+  }
+
+  const samplers = {};
+  Object.keys(tomAudioMap).forEach((k) => {
+    samplers[k] = tomAudioMap[k] ? tomAudioMap[k].replace(/\\/g, '/') : '';
+  });
+  return {
+    samplers,
+    keyMap: { ...keyToTomId },
+    volume: currentVolume,
+    gridType: currentGridType,
+    pads,
+    padKeys,
+  };
+}
+
+function syncActiveKitIfAny() {
+  syncActiveKit(captureBatteryState);
+}
+
+function getBatteryTemplate(kind) {
+  const tomIds = Object.keys(tomSamplersDefaults);
+  const factoryKeys = factoryDefaultKeysPayload();
+  if (kind === 'empty') {
+    return {
+      blank: true,
+      samplers: Object.fromEntries(tomIds.map((k) => [k, ''])),
+      keyMap: {},
+      volume: DEFAULT_VOLUME,
+      gridType: currentGridType,
+      pads: emptyPadsByGrid(),
+      padKeys: emptyPadKeysByGrid(),
+    };
+  }
+  if (kind === 'random') {
+    const pool = [...samplerList];
+    for (let i = pool.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [pool[i], pool[j]] = [pool[j], pool[i]];
+    }
+    const samplers = {};
+    tomIds.forEach((id, i) => {
+      samplers[id] = pool[i % pool.length] || '';
+    });
+    const pads = {};
+    let poolIdx = 0;
+    for (const gt of PAD_GRID_SIZE_ORDER) {
+      const total = gridConfigs[gt].total;
+      pads[gt] = Array.from({ length: total }, () => {
+        const file = pool[poolIdx % pool.length] || '';
+        poolIdx += 1;
+        return file;
+      });
+    }
+    return {
+      samplers,
+      ...factoryKeys,
+      volume: DEFAULT_VOLUME,
+      gridType: currentGridType,
+      pads,
+    };
+  }
+  return {
+    samplers: { ...tomSamplersDefaults },
+    ...factoryKeys,
+    volume: DEFAULT_VOLUME,
+    gridType: currentGridType,
+    pads: Object.fromEntries(PAD_GRID_SIZE_ORDER.map((gt) => {
+      const total = gridConfigs[gt].total;
+      return [gt, getDefaultPadsSounds(total, tomSamplersDefaults)];
+    })),
+  };
+}
+
+function kitNeedsFactoryRestore(kit) {
+  if (!isDefaultKit(kit)) return false;
+  if (kit.blank) return true;
+  const tomIds = Object.keys(tomSamplersDefaults);
+  if (tomIds.every((id) => !kit.samplers?.[id])) return true;
+  if (!kit.keyMap || Object.keys(kit.keyMap).length === 0) return true;
+  return false;
+}
+
+function normalizeKitForApply(kit) {
+  if (!kitNeedsFactoryRestore(kit)) return kit;
+  const factory = getBatteryTemplate();
+  const { blank, ...rest } = kit;
+  return { ...rest, ...factory };
+}
+
+async function applyStoredActiveKit() {
+  const id = getActiveKitId();
+  if (!id) return;
+  const raw = getBatteryKit(id);
+  if (!raw) return;
+  const kit = normalizeKitForApply(raw);
+  if (kitNeedsFactoryRestore(raw)) {
+    const { blank, ...toSave } = kit;
+    updateBatteryKit(id, toSave);
+  }
+  await applyBatteryPreset(kit);
+}
+
+async function applyBatteryPreset(preset) {
+  applyingBlankPreset = preset.blank === true;
+  try {
+    if (preset.samplers) {
+      Object.keys(tomAudioMap).forEach((k) => {
+        tomAudioMap[k] = Object.prototype.hasOwnProperty.call(preset.samplers, k)
+          ? (preset.samplers[k] || '')
+          : '';
+      });
+      saveSamplers();
+    }
+    if (preset.blank || preset.keyMap) {
+      keyToTomId = normalizeKeyMap(preset.keyMap || {});
+      saveKeyMapping(keyToTomId);
+    } else {
+      keyToTomId = normalizeKeyMap(keyToTomIdDefaults);
+      saveKeyMapping(keyToTomId);
+    }
+    if (typeof preset.volume === 'number' && Number.isFinite(preset.volume)) {
+      currentVolume = Math.min(1, Math.max(0, preset.volume));
+      saveStoredVolume(currentVolume);
+      const sliderVolumen = document.getElementById('volume-slider');
+      const labelPorcentaje = document.getElementById('volume-percent');
+      if (sliderVolumen) sliderVolumen.value = String(currentVolume);
+      if (labelPorcentaje) labelPorcentaje.textContent = `${Math.round(currentVolume * 100)}%`;
+    }
+    if (preset.pads || preset.padKeys || preset.gridType) {
+      applyKitPadsAndKeys(preset);
+    } else if (!preset.blank) {
+      restoreDefaultPadsAndKeys();
+    }
+    await preloadAllSamplers();
+    actualizarEtiquetasTeclas(keyToTomId);
+    actualizarNombresPads();
+    if (currentViewMode === 'pads') {
+      generateGridOptions();
+      generatePadsView();
+    }
+  } finally {
+    applyingBlankPreset = false;
+  }
+}
+
 async function applyImportedKit(snapshot) {
   persistKitSnapshot(snapshot);
 
@@ -1155,6 +1437,18 @@ document.addEventListener('DOMContentLoaded', async () => {
   initResponsivePadsLayout();
   const applyNoteRepeat = initNoteRepeatToggle();
   initKitConfigShare(applyNoteRepeat);
+  const batteryPresets = initBatteryPresets({
+    captureState: captureBatteryState,
+    applyPreset: applyBatteryPreset,
+    getTemplate: getBatteryTemplate,
+    getFactoryKeys: factoryDefaultKeysPayload,
+    enterEditMode: () => {
+      if (!modoEdicion) document.getElementById('edit-btn')?.click();
+    },
+  });
+  batteryPresetsCtl = batteryPresets;
+  refreshBatteryPresets = batteryPresets?.refresh ?? (() => {});
+  await applyStoredActiveKit();
 
   /** @type {'audio' | 'loop' | null} */
   let sidebarMode = null;
@@ -1189,7 +1483,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     sidebarEl,
     listEl: document.getElementById('session-recordings-list'),
     statusEl: document.getElementById('session-record-status'),
-    inlineStatusEl: document.getElementById('session-record-inline-status'),
     onBeforeRecord: stopPatternLoop,
     onActivate: () => setSidebarMode('audio'),
     ...sidebarOpts,
@@ -1228,11 +1521,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   else if (hasAudio && !hasLoops) setSidebarMode('audio');
   else if (hasLoops && hasAudio) setSidebarMode('loop');
 
-  const savedKeys = loadKeyMapping();
-  if (savedKeys) keyToTomId = normalizeKeyMap(savedKeys);
-  else keyToTomId = normalizeKeyMap(keyToTomIdDefaults);
-
-  // Preload agresivo de samplers
+  // Preload agresivo de samplers (applyStoredActiveKit ya aplicó kit activo + teclas)
   await preloadAllSamplers();
   actualizarEtiquetasTeclas(keyToTomId);
   actualizarNombresPads();
@@ -1247,6 +1536,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       currentVolume = +e.target.value;
       saveStoredVolume(currentVolume);
       if (labelPorcentaje) actualizarLabel(currentVolume);
+      syncActiveKitIfAny();
     });
     sliderVolumen.addEventListener('wheel', e => {
       e.preventDefault();
@@ -1346,7 +1636,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   let editModal = null;
 
   if (editBtn) editBtn.addEventListener('click', () => {
+    const wasEditing = modoEdicion;
     modoEdicion = !modoEdicion;
+    if (wasEditing) {
+      persistPadKeysForCurrentGrid();
+      batteryPresetsCtl?.onEditExit?.();
+    } else batteryPresetsCtl?.onEditEnter?.();
     editBtn.innerHTML = modoEdicion
       ? '<i class="fa-solid fa-check" aria-hidden="true"></i> Listo'
       : '<i class="fa-solid fa-pencil" aria-hidden="true"></i> Editar';
@@ -1359,12 +1654,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     const editHint = document.getElementById('edit-mode-hint');
     if (editHint) editHint.hidden = !modoEdicion;
     if (modoEdicion) {
+      actualizarNombresPads();
       keysHeldForRepeat.clear();
       stopAllNoteRepeat();
       stopPatternLoop();
       if (isPatternCapturing()) stopPatternCapture();
     }
     if (!modoEdicion) cerrarModal();
+    refreshBatteryPresets();
   });
 
   // View toggle buttons
@@ -1574,6 +1871,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           padModalDidChange = true;
         }
         if (padModalDidChange) generatePadsView();
+        syncActiveKitIfAny();
       } else if (tomSeleccionado) {
         const tomId = tomSeleccionado.id;
         if (samplerSeleccionado) {
@@ -1591,6 +1889,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           actualizarEtiquetasTeclas(keyToTomId);
           actualizarNombresPads();
         }
+        syncActiveKitIfAny();
       }
     },
     onClose: () => {

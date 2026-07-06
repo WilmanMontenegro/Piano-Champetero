@@ -20,11 +20,19 @@ main {
   animation: pulse-edit 1.5s ease-in-out infinite;
   cursor: pointer;
 }
-.edit-mode .battery-tom-key { display: none; }
-.edit-mode .battery-tom-info { display: flex; flex-direction: column; align-items: center; justify-content: center; }
 @keyframes pulse-edit {
-  0%, 100% { border-color: rgba(255, 224, 102, 0.8); }
-  50% { border-color: rgba(255, 107, 107, 0.9); }
+  0%, 100% {
+    box-shadow:
+      0 4px 15px rgba(0, 0, 0, 0.3),
+      0 0 20px rgba(255, 224, 102, 0.35),
+      0 0 0 2px rgba(255, 224, 102, 0.55);
+  }
+  50% {
+    box-shadow:
+      0 4px 15px rgba(0, 0, 0, 0.3),
+      0 0 22px rgba(255, 107, 107, 0.45),
+      0 0 0 2px rgba(255, 107, 107, 0.7);
+  }
 }
 
 /* ===================== VOLUMEN ===================== */
@@ -68,6 +76,15 @@ main {
   max-width: 800px;
   margin: 0 auto;
   overflow: visible;
+  /* Alas izq/der — mismos tokens = misma altura espejada */
+  --wing-top-overlap: 31%;
+  --wing-outer-nudge: 6%;
+  --wing-mid-nudge: 20%;
+  --wing-mid-drop: 4%;
+  --wing-small-span: 62%;
+  /* Par central R/T + fila inferior U/O alineados al centro del tom de arriba */
+  --center-pair-pull: 38%;
+  --bottom-wing-half: 48%;
 }
 
 /* ===================== TOMS ===================== */
@@ -76,18 +93,27 @@ main {
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  border: 3px solid rgba(255, 255, 255, 0.8);
+  border: none;
   border-radius: 50%;
   outline: none;
-  overflow: visible;
+  overflow: hidden;
   position: relative;
+  z-index: 1;
   box-sizing: border-box;
   margin: 0;
-  padding: 0;
+  padding: 0.12em 0.18em;
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3), 0 0 20px var(--tom-glow-idle);
-  transition: transform 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease, filter 0.12s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.22rem;
+  box-shadow:
+    0 4px 15px rgba(0, 0, 0, 0.3),
+    0 0 20px var(--tom-glow-idle),
+    0 0 0 2px rgba(255, 255, 255, 0.88);
+  transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;
   will-change: transform, box-shadow;
 }
 
@@ -107,13 +133,14 @@ main {
 }
 
 .battery-tom.active {
-  transform: scale(1.22);
-  border-color: var(--color-amarillo);
+  z-index: 2;
+  transform: scale(1.12);
   filter: brightness(1.1);
   box-shadow:
     0 6px 25px rgba(0, 0, 0, 0.4),
     0 0 28px rgba(255, 224, 102, 0.7),
-    0 0 44px rgba(255, 154, 86, 0.5);
+    0 0 44px rgba(255, 154, 86, 0.5),
+    0 0 0 2px rgba(255, 224, 102, 0.85);
 }
 
 .battery-tom.active::after {
@@ -123,10 +150,12 @@ main {
 /* Modo edición: desactivar animaciones de golpe */
 .edit-mode .battery-tom.active,
 .edit-mode .battery-tom:active {
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3), 0 0 20px rgba(255, 224, 102, 0.35) !important;
+  box-shadow:
+    0 4px 15px rgba(0, 0, 0, 0.3),
+    0 0 20px rgba(255, 224, 102, 0.35),
+    0 0 0 2px rgba(255, 255, 255, 0.88) !important;
   transform: none !important;
   filter: none !important;
-  border-color: rgba(255, 255, 255, 0.8) !important;
   transition: none !important;
 }
 
@@ -135,59 +164,78 @@ main {
   opacity: 0 !important;
 }
 
-/* Tamaños de toms */
+/* Tamaños de toms — small (alas arriba) / medium (alas) / large (par central + fila inferior) */
 .battery-tom--small  { width: clamp(50px, 12vw, 100px); height: clamp(50px, 12vw, 100px); }
-.battery-tom--medium { width: clamp(70px, 18vw, 150px); height: clamp(70px, 18vw, 150px); }
+.battery-tom--medium { width: clamp(68px, 16vw, 128px); height: clamp(68px, 16vw, 128px); }
+.battery-tom--large  { width: clamp(82px, 20vw, 158px); height: clamp(82px, 20vw, 158px); }
 
-/* Posicionamiento de cada tom en el grid (layout de batería real) */
-/* Fila 1: Tom alto izquierdo y derecho */
-.battery #tom-1 { grid-column: 1; grid-row: 1; justify-self: center; align-self: end; margin-bottom: -30%; }
-.battery #tom-2 { grid-column: 5; grid-row: 1; justify-self: center; align-self: end; margin-bottom: -30%; }
+/* Posicionamiento — grid 5×3 + overlap (ref. batería champeta) */
+/* Fila 1: alas superiores (Q/W) — espejo exacto */
+.battery #tom-1 { grid-column: 1; grid-row: 1; justify-self: center; align-self: end; margin-bottom: calc(-1 * var(--wing-top-overlap)); margin-right: calc(-1 * var(--wing-outer-nudge)); }
+.battery #tom-2 { grid-column: 5; grid-row: 1; justify-self: center; align-self: end; margin-bottom: calc(-1 * var(--wing-top-overlap)); margin-left: calc(-1 * var(--wing-outer-nudge)); }
 
-/* Fila 2: Toms laterales y centrales */
-.battery #tom-3 { grid-column: 1; grid-row: 2; justify-self: end; align-self: end; margin-right: -30%; }
-.battery #tom-4 { grid-column: 2; grid-row: 2; justify-self: end; margin-right: -40%; }
-.battery #tom-5 { grid-column: 4; grid-row: 2; justify-self: start; margin-left: -40%; }
-.battery #tom-6 { grid-column: 5; grid-row: 2; justify-self: start; align-self: end; margin-left: -30%; }
+/* Fila 2: alas (E/Y) + par central */
+.battery #tom-3 { grid-column: 1; grid-row: 2; justify-self: end; align-self: end; margin-right: calc(50% - var(--wing-outer-nudge) - var(--wing-small-span)); margin-top: var(--wing-mid-drop); transform-origin: 28% 72%; }
+.battery #tom-4 { grid-column: 2; grid-row: 2; justify-self: end; align-self: end; margin-right: calc(-1 * var(--center-pair-pull)); margin-bottom: 5%; transform-origin: 72% 42%; }
+.battery #tom-5 { grid-column: 4; grid-row: 2; justify-self: start; align-self: end; margin-left: calc(-1 * var(--center-pair-pull)); margin-bottom: 5%; transform-origin: 28% 42%; }
+.battery #tom-6 { grid-column: 5; grid-row: 2; justify-self: start; align-self: end; margin-left: calc(50% - var(--wing-outer-nudge) - var(--wing-small-span) - 8%); margin-top: var(--wing-mid-drop); transform-origin: 72% 72%; }
 
-/* Fila 3: Toms frontales */
-.battery #tom-7 { grid-column: 2; grid-row: 3; justify-self: end; align-self: start; margin-top: 5%; }
-.battery #tom-8 { grid-column: 3; grid-row: 3; justify-self: center; align-self: start; }
-.battery #tom-9 { grid-column: 4; grid-row: 3; margin-top: 5%; }
+/* Fila 3: más aire respecto a R/T y entre U — I — O */
+.battery #tom-7 { grid-column: 2; grid-row: 3; justify-self: end; align-self: start; margin-top: 10%; margin-right: calc(-1 * var(--center-pair-pull) + var(--bottom-wing-half)); }
+.battery #tom-8 { grid-column: 3; grid-row: 3; justify-self: center; align-self: start; margin-top: -7%; }
+.battery #tom-9 { grid-column: 4; grid-row: 3; justify-self: start; align-self: start; margin-top: 10%; margin-left: calc(-1 * var(--center-pair-pull) + var(--bottom-wing-half)); }
 
-/* Tecla/letra dentro de cada tom */
+/* Tecla + sonido — mismo aire en todos los tamaños */
 .battery-tom-key {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  position: static;
+  transform: none;
   color: var(--color-blanco);
-  font-size: clamp(1em, 3vw, 2em);
+  font-size: clamp(0.85rem, 2.4vw, 1.45rem);
   font-weight: bold;
   text-shadow: 2px 2px 8px var(--color-negro);
   pointer-events: none;
   z-index: 2;
+  line-height: 1;
+  flex: 0 0 auto;
 }
 
-/* Info del sampler en modo edición */
-.battery-tom-info {
-  display: none;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  color: var(--color-blanco);
+.battery-tom-info-sound {
+  position: static;
+  transform: none;
+  color: rgba(255, 255, 255, 0.96);
+  font-size: clamp(0.5rem, 1.2vw, 0.72rem);
+  font-weight: 600;
+  text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.85);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 92%;
   pointer-events: none;
   z-index: 2;
-  width: 88%;
   text-align: center;
-  line-height: 1.4;
+  line-height: 1.1;
+  flex: 0 1 auto;
 }
-.battery-tom-info span { display: block; }
-.battery-tom-info-label { font-size: 1.1em; font-weight: 800; text-shadow: 1px 1px 4px var(--color-negro); margin-top: 0.1em; }
-.battery-tom-info-value { font-size: 1.4em; font-weight: 400; text-shadow: 1px 1px 4px var(--color-negro); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
-.battery-tom--small .battery-tom-info-value { font-size: 1.1em; }
-.battery-tom--small .battery-tom-info-label { font-size: 0.9em; }
+
+.battery-tom--small .battery-tom-info-sound {
+  font-size: clamp(0.48rem, 1.05vw, 0.66rem);
+}
+
+.battery-tom--medium .battery-tom-key {
+  font-size: clamp(0.95rem, 2.6vw, 1.55rem);
+}
+
+.battery-tom--medium .battery-tom-info-sound {
+  font-size: clamp(0.54rem, 1.3vw, 0.76rem);
+}
+
+.battery-tom--large .battery-tom-key {
+  font-size: clamp(1rem, 2.8vw, 1.6rem);
+}
+
+.battery-tom--large .battery-tom-info-sound {
+  font-size: clamp(0.56rem, 1.35vw, 0.78rem);
+}
 
 /* ===================== MODALES ===================== */
 .modal-edit {
@@ -306,6 +354,164 @@ main {
   color: var(--color-error);
 }
 
+.battery-preset-bar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  overflow: visible;
+}
+
+.battery-preset-bar-label {
+  margin-right: 0;
+}
+
+.battery-kit-picker {
+  position: relative;
+  overflow: visible;
+}
+
+.virtual-page .control-group--kit {
+  overflow: visible;
+}
+
+.battery-kit-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+  min-width: 6rem;
+  max-width: 10rem;
+  padding: 0.26em 0.45em;
+  font-size: 0.72rem;
+  color: var(--color-blanco);
+  background: rgba(40, 24, 16, 0.92);
+  border: 2px solid rgba(255, 224, 102, 0.4);
+}
+
+.battery-kit-toggle:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.battery-kit-picker--open .battery-kit-chevron {
+  transform: rotate(180deg);
+}
+
+.battery-kit-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+  text-align: left;
+}
+
+.battery-kit-chevron {
+  font-size: 0.65em;
+  opacity: 0.85;
+  transition: transform 0.15s ease;
+}
+
+.battery-kit-menu {
+  position: fixed;
+  z-index: 500;
+  min-width: 140px;
+  width: max-content;
+  max-width: 14rem;
+  list-style: none;
+  margin: 0;
+  padding: 0.25rem;
+  background: #2a1810;
+  border: 2px solid rgba(255, 224, 102, 0.45);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+}
+
+.battery-kit-menu:not([hidden]) {
+  display: block;
+}
+
+.battery-kit-menu-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 0.4em 0.55em;
+  font-size: 0.72rem;
+  font-family: inherit;
+  font-weight: bold;
+  color: var(--color-blanco);
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.battery-kit-menu-item:hover,
+.battery-kit-menu-item:focus-visible {
+  background: rgba(255, 224, 102, 0.22);
+  outline: none;
+}
+
+.battery-kit-menu-item--active {
+  background: rgba(255, 224, 102, 0.15);
+  box-shadow: inset 0 0 0 1px rgba(255, 224, 102, 0.5);
+}
+
+.battery-kit-menu-item--new {
+  margin-top: 0.15rem;
+  padding-top: 0.5em;
+  border-top: 1px solid rgba(255, 224, 102, 0.28);
+  color: rgba(255, 224, 102, 0.95);
+}
+
+.battery-kit-menu-item--new i {
+  margin-right: 0.25em;
+}
+
+.battery-kit-menu-item--delete {
+  color: #ff8a8a;
+}
+
+.battery-kit-menu-item--delete:hover,
+.battery-kit-menu-item--delete:focus-visible {
+  background: rgba(220, 53, 69, 0.22);
+}
+
+.battery-kit-menu-item--delete i {
+  margin-right: 0.25em;
+}
+
+.battery-kit-menu-empty {
+  padding: 0.4em 0.55em;
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.battery-kit-new-btn {
+  font-size: 0.72rem;
+  padding: 0.26em 0.45em;
+}
+
+.new-kit-template-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  margin: 0.5rem 0 0.75rem;
+}
+
+.new-kit-template-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.15rem;
+  text-align: left;
+  width: 100%;
+}
+
+.new-kit-template-desc {
+  font-size: 0.78rem;
+  font-weight: normal;
+  opacity: 0.85;
+}
+
 /* ===================== SESSION RECORDING ===================== */
 .session-record-btn.active {
   background: rgba(220, 53, 69, 0.28);
@@ -368,29 +574,7 @@ main {
   background: rgba(255, 224, 102, 0.35);
 }
 
-.session-record-inline-status {
-  flex: 1 1 100%;
-  width: 100%;
-  margin: 0;
-  padding: 0.25rem 0.35rem;
-  font-size: 0.72rem;
-  color: var(--color-exito);
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  gap: 0.3rem;
-  border-radius: 8px;
-  background: rgba(20, 12, 8, 0.55);
-  border: 1px solid rgba(255, 224, 102, 0.25);
-  box-sizing: border-box;
-}
-
-.session-record-inline-status.session-record-status--error {
-  color: var(--color-error);
-  border-color: rgba(255, 120, 120, 0.35);
-}
-
-.session-recording-item--fresh {
+.session-record-status--error {
   box-shadow: 0 0 0 2px rgba(255, 224, 102, 0.75);
   animation: session-recording-fresh 1.2s ease-in-out 2;
 }
@@ -943,11 +1127,11 @@ ul.sampler-list {
   }
 
   .battery-tom {
-    border-width: 2px;
     background-image: url('../images/tombos-bg-mobile.webp');
   }
   .battery-tom--small  { width: 16vw; height: 16vw; }
-  .battery-tom--medium { width: 22vw; height: 22vw; }
+  .battery-tom--medium { width: 20vw; height: 20vw; }
+  .battery-tom--large  { width: 24vw; height: 24vw; }
   .battery-tom-key { font-size: clamp(0.8rem, 3vw, 1.1rem); }
 
   .battery-volume { width: 140px; }
@@ -1397,11 +1581,6 @@ ul.sampler-list {
   opacity: 0;
 }
 
-.edit-mode .pad-sound {
-  font-size: clamp(0.72em, 1.45vw, 1.02em);
-  text-align: center;
-}
-
 /* Hide battery view when pads view is active */
 .battery-view.hidden { display: none !important; }
 .pads-view.hidden { display: none !important; }
@@ -1641,6 +1820,10 @@ ul.sampler-list {
   width: 100%;
 }
 
+.virtual-page .kit-play-stage:has(#battery-view:not(.hidden)) .battery-volume-container {
+  margin-top: clamp(1.5rem, 4vh, 2.5rem);
+}
+
 .virtual-page .kit-play-stage:has(#pads-view:not(.hidden)) #pads-view {
   flex: 1 1 auto;
   min-height: 0;
@@ -1761,13 +1944,18 @@ ul.sampler-list {
 }
 
 .virtual-page .battery-tom--small {
-  width: clamp(42px, 9.5vw, 78px);
-  height: clamp(42px, 9.5vw, 78px);
+  width: clamp(48px, 10.5vw, 88px);
+  height: clamp(48px, 10.5vw, 88px);
 }
 
 .virtual-page .battery-tom--medium {
-  width: clamp(56px, 13.5vw, 115px);
-  height: clamp(56px, 13.5vw, 115px);
+  width: clamp(60px, 13.5vw, 118px);
+  height: clamp(60px, 13.5vw, 118px);
+}
+
+.virtual-page .battery-tom--large {
+  width: clamp(74px, 17.5vw, 142px);
+  height: clamp(74px, 17.5vw, 142px);
 }
 
 .virtual-page .battery-volume-container {
@@ -1813,6 +2001,11 @@ ul.sampler-list {
   .virtual-page .battery-tom--medium {
     width: clamp(50px, 12vw, 100px);
     height: clamp(50px, 12vw, 100px);
+  }
+
+  .virtual-page .battery-tom--large {
+    width: clamp(58px, 14vw, 112px);
+    height: clamp(58px, 14vw, 112px);
   }
 }
 
@@ -1922,6 +2115,10 @@ ul.sampler-list {
     margin-top: 0.15rem;
     margin-bottom: 0.3rem;
     gap: 0.25em 0.55em;
+  }
+
+  .virtual-page .kit-play-stage:has(#battery-view:not(.hidden)) .battery-volume-container {
+    margin-top: clamp(1rem, 3vh, 1.75rem);
   }
 
   .virtual-page .kit-play {

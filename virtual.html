@@ -142,6 +142,16 @@
       <div class="controls-bar">
         <div class="control-group control-group--kit">
           <button id="edit-btn" type="button" class="ctrl-btn" aria-pressed="false" title="Cambiar sonidos y teclas de los pads"><i class="fa-solid fa-pencil" aria-hidden="true"></i> Editar</button>
+          <div class="battery-preset-bar" id="battery-preset-bar">
+            <span class="group-label battery-preset-bar-label">Kit</span>
+            <div class="battery-kit-picker" id="battery-kit-picker">
+              <button type="button" id="battery-kit-toggle" class="ctrl-btn battery-kit-toggle" aria-haspopup="listbox" aria-expanded="false" aria-controls="battery-kit-menu" title="Elegir kit guardado">
+                <span id="battery-kit-label" class="battery-kit-label">Kit 1</span>
+                <i class="fa-solid fa-chevron-down battery-kit-chevron" aria-hidden="true"></i>
+              </button>
+              <ul id="battery-kit-menu" class="battery-kit-menu" role="listbox" hidden></ul>
+            </div>
+          </div>
           <button id="reset-settings-btn" class="ctrl-btn reset-btn" title="⚠️ Restablecer sonidos y teclas por defecto"><i class="fa-solid fa-rotate-left"></i> Restablecer</button>
           <button id="help-btn" class="ctrl-btn" title="¿Cómo editar samplers?"><i class="fa-solid fa-question"></i> Ayuda</button>
           <button id="share-kit-btn" type="button" class="ctrl-btn" title="Exporta tu configuración para que la compartas con amigos y conocidos."><i class="fa-solid fa-file-export" aria-hidden="true"></i> Exportar</button>
@@ -156,11 +166,10 @@
             <i class="fa-solid fa-repeat" aria-hidden="true"></i>
             <span id="note-repeat-btn-label">Apagado</span>
           </button>
-          <button id="session-record-btn" type="button" class="ctrl-btn session-record-btn" aria-pressed="false" title="En PC: elegí Pantalla completa y activá «Compartir audio del sistema» para grabar todo lo que suena (música + batería). Sin eso, solo la batería.">
+          <button id="session-record-btn" type="button" class="ctrl-btn session-record-btn" aria-pressed="false" title="Graba la batería. Para incluir música del PC (Spotify, YouTube, etc.), en el diálogo del navegador activá «Compartir audio» o «Audio del sistema». Sin eso, solo la batería.">
             <i class="fa-solid fa-circle session-record-icon" aria-hidden="true"></i>
-            <span id="session-record-label">Grabar todo</span>
+            <span id="session-record-label">Grabar batería + PC</span>
           </button>
-          <p id="session-record-inline-status" class="session-record-inline-status" hidden role="status" aria-live="polite"></p>
           <button id="pattern-loop-btn" type="button" class="ctrl-btn pattern-loop-btn" aria-pressed="false" title="Graba la secuencia de golpes y repítela en loop">
             <i class="fa-solid fa-infinity" aria-hidden="true"></i>
             <span id="pattern-loop-label">Grabar loop</span>
@@ -184,8 +193,8 @@
       </div>
       <p class="edit-mode-hint" id="edit-mode-hint" hidden>
         <i class="fa-solid fa-pencil" aria-hidden="true"></i>
-        Modo edición: tocá un pad para cambiarlo.
-        <strong>Pulsa «Listo» arriba</strong> para volver a tocar.
+        Tocá un pad para cambiarlo. Los cambios se guardan solos en el kit activo.
+        <strong>Listo</strong> arriba para volver a tocar.
       </p>
       <section class="audio-viz-panel" id="audio-viz-panel" aria-label="Visualizador de audio">
         <div class="audio-viz-header">
@@ -218,84 +227,39 @@
         <div class="battery">
           <button class="battery-tom battery-tom--small" id="tom-1">
         <span class="battery-tom-key"></span>
-        <span class="battery-tom-info">
-          <span class="battery-tom-info-label">Tecla:</span>
-          <span class="battery-tom-info-value battery-tom-info-key"></span>
-          <span class="battery-tom-info-label">Sonido:</span>
-          <span class="battery-tom-info-value battery-tom-info-sound"></span>
-        </span>
+        <span class="battery-tom-info-sound"></span>
       </button>
       <button class="battery-tom battery-tom--small" id="tom-2">
         <span class="battery-tom-key"></span>
-        <span class="battery-tom-info">
-          <span class="battery-tom-info-label">Tecla:</span>
-          <span class="battery-tom-info-value battery-tom-info-key"></span>
-          <span class="battery-tom-info-label">Sonido:</span>
-          <span class="battery-tom-info-value battery-tom-info-sound"></span>
-        </span>
+        <span class="battery-tom-info-sound"></span>
       </button>
       <button class="battery-tom battery-tom--small" id="tom-3">
         <span class="battery-tom-key"></span>
-        <span class="battery-tom-info">
-          <span class="battery-tom-info-label">Tecla:</span>
-          <span class="battery-tom-info-value battery-tom-info-key"></span>
-          <span class="battery-tom-info-label">Sonido:</span>
-          <span class="battery-tom-info-value battery-tom-info-sound"></span>
-        </span>
+        <span class="battery-tom-info-sound"></span>
       </button>
-      <button class="battery-tom battery-tom--medium" id="tom-4">
+      <button class="battery-tom battery-tom--large" id="tom-4">
         <span class="battery-tom-key"></span>
-        <span class="battery-tom-info">
-          <span class="battery-tom-info-label">Tecla:</span>
-          <span class="battery-tom-info-value battery-tom-info-key"></span>
-          <span class="battery-tom-info-label">Sonido:</span>
-          <span class="battery-tom-info-value battery-tom-info-sound"></span>
-        </span>
+        <span class="battery-tom-info-sound"></span>
       </button>
-      <button class="battery-tom battery-tom--medium" id="tom-5">
+      <button class="battery-tom battery-tom--large" id="tom-5">
         <span class="battery-tom-key"></span>
-        <span class="battery-tom-info">
-          <span class="battery-tom-info-label">Tecla:</span>
-          <span class="battery-tom-info-value battery-tom-info-key"></span>
-          <span class="battery-tom-info-label">Sonido:</span>
-          <span class="battery-tom-info-value battery-tom-info-sound"></span>
-        </span>
+        <span class="battery-tom-info-sound"></span>
       </button>
       <button class="battery-tom battery-tom--small" id="tom-6">
         <span class="battery-tom-key"></span>
-        <span class="battery-tom-info">
-          <span class="battery-tom-info-label">Tecla:</span>
-          <span class="battery-tom-info-value battery-tom-info-key"></span>
-          <span class="battery-tom-info-label">Sonido:</span>
-          <span class="battery-tom-info-value battery-tom-info-sound"></span>
-        </span>
+        <span class="battery-tom-info-sound"></span>
       </button>
-      <button class="battery-tom battery-tom--medium" id="tom-7">
+      <button class="battery-tom battery-tom--large" id="tom-7">
         <span class="battery-tom-key"></span>
-        <span class="battery-tom-info">
-          <span class="battery-tom-info-label">Tecla:</span>
-          <span class="battery-tom-info-value battery-tom-info-key"></span>
-          <span class="battery-tom-info-label">Sonido:</span>
-          <span class="battery-tom-info-value battery-tom-info-sound"></span>
-        </span>
+        <span class="battery-tom-info-sound"></span>
       </button>
-      <button class="battery-tom battery-tom--small" id="tom-8">
+      <button class="battery-tom battery-tom--medium" id="tom-8">
         <span class="battery-tom-key"></span>
-        <span class="battery-tom-info">
-          <span class="battery-tom-info-label">Tecla:</span>
-          <span class="battery-tom-info-value battery-tom-info-key"></span>
-          <span class="battery-tom-info-label">Sonido:</span>
-          <span class="battery-tom-info-value battery-tom-info-sound"></span>
-        </span>
+        <span class="battery-tom-info-sound"></span>
       </button>
-      <button class="battery-tom battery-tom--medium" id="tom-9">
+      <button class="battery-tom battery-tom--large" id="tom-9">
         <span class="battery-tom-key"></span>
-        <span class="battery-tom-info">
-          <span class="battery-tom-info-label">Tecla:</span>
-          <span class="battery-tom-info-value battery-tom-info-key"></span>
-          <span class="battery-tom-info-label">Sonido:</span>
-          <span class="battery-tom-info-value battery-tom-info-sound"></span>
-        </span>
+        <span class="battery-tom-info-sound"></span>
           </button>
         </div>
       </div>
@@ -371,6 +335,43 @@
         <div class="modal-actions">
           <button id="kit-import-btn" type="button" class="btn-primary">Importar</button>
           <button id="kit-share-close-btn" type="button" class="btn-cancel">Cerrar</button>
+        </div>
+      </div>
+    </div>
+    <!-- Modal nuevo kit -->
+    <div id="modal-new-kit" class="modal-edit" style="display:none;">
+      <div class="modal-content kit-share-content">
+        <h3>Nuevo kit</h3>
+        <p class="tab-hint">Dale nombre y elegí cómo empezar.</p>
+        <label class="kit-share-label" for="new-kit-name">Nombre</label>
+        <input id="new-kit-name" class="kit-share-name" type="text" maxlength="32" placeholder="Ej. Kit fiestas" autocomplete="off">
+        <p class="kit-share-label">Plantilla inicial</p>
+        <div class="new-kit-template-actions">
+          <button id="new-kit-empty-btn" type="button" class="btn-primary new-kit-template-btn">
+            <i class="fa-solid fa-border-none" aria-hidden="true"></i> Desde cero
+            <span class="new-kit-template-desc">Sin sonidos — armás todo vos</span>
+          </button>
+          <button id="new-kit-random-btn" type="button" class="btn-primary new-kit-template-btn">
+            <i class="fa-solid fa-shuffle" aria-hidden="true"></i> Base aleatoria
+            <span class="new-kit-template-desc">9 sonidos al azar, teclas por defecto</span>
+          </button>
+        </div>
+        <p id="new-kit-status" class="kit-import-status" hidden role="status"></p>
+        <div class="modal-actions">
+          <button id="new-kit-cancel-btn" type="button" class="btn-cancel">Cancelar</button>
+        </div>
+      </div>
+    </div>
+    <!-- Modal primer kit (tras editar la batería de fábrica) -->
+    <div id="modal-first-kit" class="modal-edit" style="display:none;">
+      <div class="modal-content kit-share-content">
+        <h3>¡Armaste tu batería!</h3>
+        <p class="tab-hint">Guardala con un nombre y cambiá entre kits cuando quieras.</p>
+        <label class="kit-share-label" for="first-kit-name">Nombre de tu kit</label>
+        <input id="first-kit-name" class="kit-share-name" type="text" maxlength="32" placeholder="Mi kit" autocomplete="off">
+        <div class="modal-actions">
+          <button id="first-kit-save-btn" type="button" class="btn-primary">Guardar kit</button>
+          <button id="first-kit-skip-btn" type="button" class="btn-cancel">Ahora no</button>
         </div>
       </div>
     </div>

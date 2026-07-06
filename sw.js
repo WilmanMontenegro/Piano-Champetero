@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bateria-champeta-v113';
+const CACHE_NAME = 'bateria-champeta-v166';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -29,6 +29,7 @@ const STATIC_ASSETS = [
   '/js/note-repeat.js',
   '/js/pad-grid-config.js',
   '/js/session-recorder.js',
+  '/js/battery-presets.js',
   '/js/pattern-loop.js',
   '/js/kit-config-share.js',
   '/js/virtual.js',
