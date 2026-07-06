@@ -156,10 +156,11 @@
             <i class="fa-solid fa-repeat" aria-hidden="true"></i>
             <span id="note-repeat-btn-label">Apagado</span>
           </button>
-          <button id="session-record-btn" type="button" class="ctrl-btn session-record-btn" aria-pressed="false" title="Graba la batería y, en PC (Chrome/Edge), también el audio del sistema si compartís pantalla con «Compartir audio del sistema»">
+          <button id="session-record-btn" type="button" class="ctrl-btn session-record-btn" aria-pressed="false" title="En PC: elegí Pantalla completa y activá «Compartir audio del sistema» para grabar todo lo que suena (música + batería). Sin eso, solo la batería.">
             <i class="fa-solid fa-circle session-record-icon" aria-hidden="true"></i>
-            <span id="session-record-label">Grabar audio</span>
+            <span id="session-record-label">Grabar todo</span>
           </button>
+          <p id="session-record-inline-status" class="session-record-inline-status" hidden role="status" aria-live="polite"></p>
           <button id="pattern-loop-btn" type="button" class="ctrl-btn pattern-loop-btn" aria-pressed="false" title="Graba la secuencia de golpes y repítela en loop">
             <i class="fa-solid fa-infinity" aria-hidden="true"></i>
             <span id="pattern-loop-label">Grabar loop</span>
@@ -201,7 +202,7 @@
         </div>
         <p id="session-record-status" class="session-record-status" hidden role="status"></p>
         <ul id="session-recordings-list" class="session-recordings-list"></ul>
-        <p class="session-recordings-hint">Pistas de audio en localStorage. Descargá antes de limpiar datos.</p>
+        <p class="session-recordings-hint">Tocá <i class="fa-solid fa-download" aria-hidden="true"></i> para bajar el archivo. Guardado en este navegador.</p>
       </section>
       <section class="pattern-loops-panel" id="pattern-loops-panel" hidden aria-label="Loops de golpes guardados">
         <div class="pattern-loops-header">

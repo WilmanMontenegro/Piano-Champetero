@@ -346,6 +346,58 @@ main {
   margin: 0.25rem 0 0.35rem;
   font-size: 0.78rem;
   color: var(--color-exito);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.35rem;
+}
+
+.session-record-status-text {
+  line-height: 1.35;
+}
+
+.session-record-download-now {
+  align-self: stretch;
+  font-size: 0.72rem;
+  padding: 0.35em 0.55em;
+  background: rgba(255, 224, 102, 0.22);
+  border-color: rgba(255, 224, 102, 0.55);
+}
+
+.session-record-download-now:hover {
+  background: rgba(255, 224, 102, 0.35);
+}
+
+.session-record-inline-status {
+  flex: 1 1 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0.25rem 0.35rem;
+  font-size: 0.72rem;
+  color: var(--color-exito);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.3rem;
+  border-radius: 8px;
+  background: rgba(20, 12, 8, 0.55);
+  border: 1px solid rgba(255, 224, 102, 0.25);
+  box-sizing: border-box;
+}
+
+.session-record-inline-status.session-record-status--error {
+  color: var(--color-error);
+  border-color: rgba(255, 120, 120, 0.35);
+}
+
+.session-recording-item--fresh {
+  box-shadow: 0 0 0 2px rgba(255, 224, 102, 0.75);
+  animation: session-recording-fresh 1.2s ease-in-out 2;
+}
+
+@keyframes session-recording-fresh {
+  0%, 100% { background: rgba(255, 255, 255, 0.08); }
+  50% { background: rgba(255, 224, 102, 0.22); }
 }
 
 .session-record-status--error {
@@ -949,6 +1001,11 @@ ul.sampler-list {
   display: flex;
   align-items: center;
   gap: 4px;
+}
+
+.control-group--record {
+  flex-wrap: wrap;
+  row-gap: 4px;
 }
 
 .group-label {
@@ -1637,7 +1694,6 @@ ul.sampler-list {
   }
 
   .virtual-page .control-group--record {
-    flex-wrap: wrap;
     row-gap: 4px;
   }
 

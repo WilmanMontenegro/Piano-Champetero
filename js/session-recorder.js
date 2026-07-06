@@ -180,8 +180,10 @@ export function initSessionRecorder(opts) {
     recordBtn,
     recordLabel,
     panel,
+    sidebarEl,
     listEl,
     statusEl,
+    inlineStatusEl,
     onBeforeRecord,
     getSidebarMode,
     onActivate,
@@ -190,6 +192,7 @@ export function initSessionRecorder(opts) {
   if (!recordBtn || !listEl) return null;
 
   const canCapturePcAudio = typeof navigator?.mediaDevices?.getDisplayMedia === 'function';
+  const defaultRecordLabel = canCapturePcAudio ? 'Grabar todo' : 'Grabar audio';
 
   if (typeof MediaRecorder === 'undefined') {
     recordBtn.disabled = true;
@@ -206,6 +209,8 @@ export function initSessionRecorder(opts) {
   let previewAudio = null;
   let recording = false;
   let mixingPcAudio = false;
+  /** @type {boolean} Full system output (monitor share) — kit already in loopback */
+  let systemMixOnly = false;
   /** @type {MediaStream | null} */
   let displayStream = null;
   /** @type {MediaStreamAudioSourceNode | null} */
@@ -213,17 +218,55 @@ export function initSessionRecorder(opts) {
 
   const isSidebarActive = () => !getSidebarMode || getSidebarMode() === 'audio';
 
-  const setStatus = (text, isError = false) => {
-    if (!statusEl) return;
-    statusEl.hidden = !text;
-    statusEl.textContent = text;
-    statusEl.classList.toggle('session-record-status--error', isError);
+  const paintStatusEl = (el, text, isError, downloadId) => {
+    if (!el) return;
+    el.replaceChildren();
+    if (!text && !downloadId) {
+      el.hidden = true;
+      return;
+    }
+    el.hidden = false;
+    el.classList.toggle('session-record-status--error', isError);
+    if (text) {
+      const msg = document.createElement('span');
+      msg.className = 'session-record-status-text';
+      msg.textContent = text;
+      el.appendChild(msg);
+    }
+    if (downloadId) {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'ctrl-btn session-record-download-now';
+      btn.innerHTML = '<i class="fa-solid fa-download" aria-hidden="true"></i> Descargar ahora';
+      btn.addEventListener('click', () => {
+        if (!downloadSessionRecording(downloadId)) setStatus('No se pudo descargar.', true);
+        else setStatus('Descarga iniciada. Revisá tu carpeta de descargas.');
+      });
+      el.appendChild(btn);
+    }
+  };
+
+  const setStatus = (text, isError = false, { downloadId } = {}) => {
+    paintStatusEl(statusEl, text, isError, downloadId);
+    paintStatusEl(inlineStatusEl, text, isError, downloadId);
   };
 
   const stopPreview = () => {
     if (!previewAudio) return;
     previewAudio.pause();
     previewAudio = null;
+  };
+
+  const revealSavedRecording = (entryId) => {
+    onActivate?.();
+    if (panel) panel.hidden = false;
+    sidebarEl?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    requestAnimationFrame(() => {
+      const li = listEl.querySelector(`[data-rec-id="${entryId}"]`);
+      li?.classList.add('session-recording-item--fresh');
+      li?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      window.setTimeout(() => li?.classList.remove('session-recording-item--fresh'), 5000);
+    });
   };
 
   const renderList = () => {
@@ -237,6 +280,7 @@ export function initSessionRecorder(opts) {
     for (const entry of entries) {
       const li = document.createElement('li');
       li.className = 'session-recording-item';
+      li.dataset.recId = entry.id;
 
       const meta = document.createElement('span');
       meta.className = 'session-recording-meta';
@@ -292,7 +336,7 @@ export function initSessionRecorder(opts) {
     recordBtn.classList.toggle('active', on);
     recordBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
     if (recordLabel) {
-      recordLabel.textContent = on ? `Detener ${formatDuration(elapsedMs)}` : 'Grabar audio';
+      recordLabel.textContent = on ? `Detener ${formatDuration(elapsedMs)}` : defaultRecordLabel;
     }
   };
 
@@ -311,6 +355,7 @@ export function initSessionRecorder(opts) {
     }
     streamDest = null;
     mixingPcAudio = false;
+    systemMixOnly = false;
   };
 
   const stopRecording = async () => {
@@ -325,6 +370,8 @@ export function initSessionRecorder(opts) {
 
     const durationMs = Date.now() - startedAt;
     const mime = mediaRecorder.mimeType || pickMimeType() || 'audio/webm';
+    const hadPcAudio = mixingPcAudio;
+    const wasSystemMix = systemMixOnly;
 
     await new Promise((resolve) => {
       mediaRecorder.onstop = () => resolve();
@@ -347,7 +394,11 @@ export function initSessionRecorder(opts) {
     try {
       const entry = await saveSessionRecording({ blob, mime, durationMs });
       renderList();
-      setStatus(`"${entry.name}" guardada en este navegador. Podés descargarla abajo.`);
+      revealSavedRecording(entry.id);
+      const mixNote = hadPcAudio
+        ? (wasSystemMix ? ' (salida completa del PC)' : ' (batería + audio compartido)')
+        : ' (solo batería — activá «Compartir audio del sistema» para grabar todo)';
+      setStatus(`"${entry.name}" lista.${mixNote}`, false, { downloadId: entry.id });
     } catch (err) {
       renderList();
       setStatus(err instanceof Error ? err.message : 'No se pudo guardar.', true);
@@ -367,10 +418,13 @@ export function initSessionRecorder(opts) {
     }
 
     if (canCapturePcAudio) {
-      setStatus('Elegí Pantalla completa y activá «Compartir audio del sistema» para grabar todo.');
+      setStatus('Elegí Pantalla completa y activá «Compartir audio del sistema» para grabar todo lo que escuchás.');
       displayStream = await capturePcAudioStream();
       if (displayStream?.getAudioTracks().length) {
         mixingPcAudio = true;
+        const videoTrack = displayStream.getVideoTracks()[0];
+        const surface = videoTrack?.getSettings?.()?.displaySurface;
+        systemMixOnly = surface === 'monitor';
         for (const track of displayStream.getVideoTracks()) track.stop();
       } else if (displayStream) {
         for (const track of displayStream.getTracks()) track.stop();
@@ -387,13 +441,15 @@ export function initSessionRecorder(opts) {
 
     const mimeType = pickMimeType();
     streamDest = audioCtx.createMediaStreamDestination();
-    master.connect(streamDest);
 
     if (mixingPcAudio && displayStream) {
       displaySource = audioCtx.createMediaStreamSource(displayStream);
       displaySource.connect(streamDest);
+      if (!systemMixOnly) master.connect(streamDest);
       const audioTrack = displayStream.getAudioTracks()[0];
       if (audioTrack) audioTrack.addEventListener('ended', () => void stopRecording());
+    } else {
+      master.connect(streamDest);
     }
 
     chunks = [];
@@ -410,7 +466,9 @@ export function initSessionRecorder(opts) {
     setRecordingUi(true, 0);
     renderList();
     if (mixingPcAudio) {
-      setStatus('Grabando batería + audio del PC. Tocá y reproduce tu canción.');
+      setStatus(systemMixOnly
+        ? 'Grabando salida completa del PC (música + batería). Tocá cuando quieras.'
+        : 'Grabando batería + audio compartido. Tocá cuando quieras.');
     }
 
     tickTimer = window.setInterval(() => {
