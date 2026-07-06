@@ -540,7 +540,7 @@ function padKeyDisplayLabel(padIndex, total) {
 
 function prettyName(fileName) {
   if (!fileName) return '';
-  let name = fileName.replace(/\.[^.]+$/, '').replace(/[-_]/g, ' ');
+  let name = samplerBasename(fileName).replace(/\.[^.]+$/, '').replace(/[-_]/g, ' ');
   // Strip leading zeros/digits only if followed by text (e.g. "00COMO DD14" -> "COMO DD14")
   // Keep pure numbers like "142" intact
   name = name.replace(/^[\d\s]+(?=[^\d\s])/, '');
