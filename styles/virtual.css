@@ -58,6 +58,12 @@ main {
   accent-color: var(--color-principal);
 }
 
+.battery-rate-container {
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
 .battery-rate {
   touch-action: none;
   /* Bigger finger target; we own horizontal drag via pointer events. */
