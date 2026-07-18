@@ -2395,3 +2395,115 @@ ul.sampler-list {
     padding: 0.25rem 0.2rem;
   }
 }
+/*
+ * Mobile landscape + vista Batería only.
+ * Same tom grid/margins — only size + chrome. No black bar, no reorder.
+ */
+@media (max-width: 767px) and (orientation: landscape) {
+  .virtual-page:has(#battery-view:not(.hidden)) {
+    padding-top: 0;
+  }
+
+  .virtual-page:has(#battery-view:not(.hidden)) .contributor-ticker {
+    display: none;
+  }
+
+  .virtual-page:has(#battery-view:not(.hidden)) header {
+    max-height: 0;
+    padding: 0;
+    margin: 0;
+    opacity: 0;
+    overflow: hidden;
+    pointer-events: none;
+    border: none;
+  }
+
+  .virtual-page:has(#battery-view:not(.hidden)) .controls-bar {
+    padding: 0.1rem 0.3rem;
+    gap: 4px;
+    row-gap: 4px;
+  }
+
+  .virtual-page:has(#battery-view:not(.hidden)) .control-group--secondary .group-label,
+  .virtual-page:has(#battery-view:not(.hidden)) .control-group--primary .group-label {
+    display: none;
+  }
+
+  .virtual-page:has(#battery-view:not(.hidden)) .control-group--secondary .ctrl-btn-text,
+  .virtual-page:has(#battery-view:not(.hidden)) #session-record-label,
+  .virtual-page:has(#battery-view:not(.hidden)) #pattern-loop-label,
+  .virtual-page:has(#battery-view:not(.hidden)) #note-repeat-btn-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .virtual-page:has(#battery-view:not(.hidden)) .control-group--secondary .ctrl-btn,
+  .virtual-page:has(#battery-view:not(.hidden)) .control-group--record .ctrl-btn {
+    position: relative;
+    min-width: 2.35rem;
+    padding-inline: 0.5em;
+    justify-content: center;
+  }
+
+  .virtual-page:has(#battery-view:not(.hidden)) .audio-viz-panel {
+    display: none;
+  }
+
+  .virtual-page:has(#battery-view:not(.hidden)) .edit-mode-hint {
+    display: none;
+  }
+
+  .virtual-page:has(#battery-view:not(.hidden)) main {
+    padding: 0;
+  }
+
+  .virtual-page:has(#battery-view:not(.hidden)) .kit-play-stage {
+    padding-bottom: max(0.25rem, env(safe-area-inset-bottom, 0px));
+    padding-left: env(safe-area-inset-left, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
+  }
+
+  .virtual-page:has(#battery-view:not(.hidden)) .battery {
+    margin: 0.1rem auto;
+    max-width: min(96vw, 720px);
+  }
+
+  /* Larger touch targets; distribution/grid unchanged */
+  .virtual-page:has(#battery-view:not(.hidden)) .battery-tom--small {
+    width: clamp(52px, 18vmin, 108px);
+    height: clamp(52px, 18vmin, 108px);
+  }
+
+  .virtual-page:has(#battery-view:not(.hidden)) .battery-tom--medium {
+    width: clamp(68px, 23vmin, 128px);
+    height: clamp(68px, 23vmin, 128px);
+  }
+
+  .virtual-page:has(#battery-view:not(.hidden)) .battery-tom--large {
+    width: clamp(82px, 28vmin, 148px);
+    height: clamp(82px, 28vmin, 148px);
+  }
+
+  .virtual-page:has(#battery-view:not(.hidden)) .kit-audio-controls {
+    margin-top: 0.2rem;
+    padding: 0.15rem 0.4rem max(0.2rem, env(safe-area-inset-bottom, 0px));
+    background: transparent;
+    border: none;
+  }
+
+  .virtual-page:has(#battery-view:not(.hidden)) .battery-rate-container {
+    flex-wrap: nowrap;
+  }
+
+  .virtual-page:has(#battery-view:not(.hidden)) .whatsapp-fab {
+    transform: scale(0.88);
+    transform-origin: bottom right;
+  }
+}
