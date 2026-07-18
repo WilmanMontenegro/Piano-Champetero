@@ -20,8 +20,8 @@ export const WHATSAPP_COMMUNITY_LABEL = 'Únete al grupo';
 
 export const AUDIO_UI = {
   hitFlashMs: 140,
-  /** Same pad: min ms between hits (Roland Mask Time 0–64 ms). */
-  retriggerMaskMs: 45,
+  /** Same pad: min ms between hits (ghost-tap shield). Lower = tighter rolls on mobile. */
+  retriggerMaskMs: 28,
   /**
    * Note repeat (MPC "Note Repeat") — off by default; user enables "Redoble" in UI.
    * One-shot: tap or hold = sample plays once (Akai SAMPLE PLAY = ONE SHOT).

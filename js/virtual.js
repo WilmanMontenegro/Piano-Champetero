@@ -1,11 +1,11 @@
-// js/virtual.js — lógica de la batería para virtual.html
-// OPTIMIZADO: Latencia mínima, preload agresivo, sin requestAnimationFrame en play
+// js/virtual.js — batería virtual.html
+// Hit path: buffer en RAM → start(0) sync; flash/DOM después; volumen en masterGain
 import { initSiteChrome, setYearFooter, resumeOnUserGesture } from './common.js';
 import { AUDIO_UI, NAV_MOBILE_MAX_PX } from './site-config.js';
 import { PAD_GRID_CONFIGS as gridConfigs, PAD_GRID_SIZE_ORDER } from './pad-grid-config.js';
 import { initModal, isModalOpen } from './modal-utils.js';
 import { DEFAULT_PAD_KEY_CHAR_ORDER, BATTERY_DEFAULT_PAD_CHARS, buildPadKeyIndexMap, resolvePadIndexFromKeyboard } from './pad-keyboard.js';
-import { initAudioBus, connectHitToOutput, getMasterGain } from './audio-bus.js';
+import { initAudioBus, connectHitToOutput, getMasterGain, setMasterVolume } from './audio-bus.js';
 import { initAudioVisualizer, pulseAudioVisualizer } from './audio-visualizer.js';
 import { resolveSamplerPath, samplerUrl, samplerBasename } from './sampler-path.js';
 import { mountSamplerBrowser, loadSamplerCatalog } from './sampler-browser.js';
@@ -32,10 +32,9 @@ import {
   listPatternLoops,
 } from './pattern-loop.js';
 
-// AudioContext con latencia mínima
+// Interactive + native device rate (forced 48k resampled on many phones → extra latency)
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)({
   latencyHint: 'interactive',
-  sampleRate: 48000
 });
 
 const { analyser } = initAudioBus(audioCtx);
@@ -45,7 +44,7 @@ const RETRIGGER_MASK_SEC = (AUDIO_UI.retriggerMaskMs ?? 45) / 1000;
 
 /** @type {Map<string, number>} voiceKey → audioContext.currentTime */
 const lastTriggerAt = new Map();
-/** @type {Map<string, { source: AudioBufferSourceNode, gain: GainNode }>} */
+/** @type {Map<string, { source: AudioBufferSourceNode }>} */
 const activeVoices = new Map();
 /** Keyboard codes currently held (our note repeat, not OS repeat). */
 const keysHeldForRepeat = new Set();
@@ -264,6 +263,7 @@ function saveStoredRateFixed(fixed) {
 }
 
 let currentVolume = readStoredVolume();
+setMasterVolume(currentVolume);
 let currentPlaybackRate = readStoredPlaybackRate();
 let playbackRateFixed = readStoredRateFixed();
 
@@ -420,10 +420,21 @@ function reconcileSamplerAssignments() {
   }
 }
 
-/** Audio listo antes del golpe — resume en captura, sin await en el play. */
+/** Unlock AudioContext early (capture) so hit path rarely waits on resume(). */
 function initAudioWarmup() {
+  let primed = false;
   const warm = () => {
     if (audioCtx.state === 'suspended') void audioCtx.resume();
+    // iOS: silent buffer on first gesture unlocks output before the real hit
+    if (primed) return;
+    primed = true;
+    try {
+      const buf = audioCtx.createBuffer(1, 1, audioCtx.sampleRate);
+      const src = audioCtx.createBufferSource();
+      src.buffer = buf;
+      src.connect(audioCtx.destination);
+      src.start(0);
+    } catch { /* ignore */ }
   };
   document.addEventListener('pointerdown', warm, { capture: true, passive: true });
   document.addEventListener('keydown', warm, { capture: true, passive: true });
@@ -758,15 +769,13 @@ function playSamplerVoice(buffer, voiceKey) {
 
   lastTriggerAt.set(voiceKey, now);
 
+  // No per-hit GainNode — volume on masterGain (audio-bus)
   const source = audioCtx.createBufferSource();
-  const gainNode = audioCtx.createGain();
-  gainNode.gain.value = currentVolume;
   source.buffer = buffer;
   source.playbackRate.value = currentPlaybackRate;
-  source.connect(gainNode);
-  connectHitToOutput(gainNode);
+  connectHitToOutput(source);
 
-  const voice = { source, gain: gainNode };
+  const voice = { source };
   activeVoices.set(voiceKey, voice);
   source.onended = () => {
     if (activeVoices.get(voiceKey) === voice) activeVoices.delete(voiceKey);
@@ -809,12 +818,14 @@ function flashHitElement(el) {
   if (!el) return;
   if (el._flashTimer) clearTimeout(el._flashTimer);
   el.classList.remove('active');
-  void el.offsetWidth;
-  el.classList.add('active');
-  el._flashTimer = setTimeout(() => {
-    el.classList.remove('active');
-    el._flashTimer = undefined;
-  }, HIT_FLASH_MS);
+  // Defer DOM/CSS — never force reflow before audio start(0)
+  requestAnimationFrame(() => {
+    el.classList.add('active');
+    el._flashTimer = setTimeout(() => {
+      el.classList.remove('active');
+      el._flashTimer = undefined;
+    }, HIT_FLASH_MS);
+  });
 }
 
 function flashTomButton(tomId) {
@@ -822,13 +833,11 @@ function flashTomButton(tomId) {
 }
 
 function activateTomSampler(tomId, { flash = true } = {}) {
+  // Audio first — flash/pattern after (ms matter on mobile)
+  if (audioCtx.state === 'running') playTomSampler(tomId);
+  else void audioCtx.resume().then(() => playTomSampler(tomId));
   if (isPatternCapturing()) notifyPatternHit({ kind: 'tom', id: tomId });
   if (flash) flashTomButton(tomId);
-  if (audioCtx.state === 'running') {
-    playTomSampler(tomId);
-    return;
-  }
-  void audioCtx.resume().then(() => playTomSampler(tomId));
 }
 
 function beginTomNoteRepeat(tomId) {
@@ -922,13 +931,10 @@ function flashPadButton(index) {
 }
 
 function activatePadSound(index, { flash = true } = {}) {
+  if (audioCtx.state === 'running') playPadSound(index);
+  else void audioCtx.resume().then(() => playPadSound(index));
   if (isPatternCapturing()) notifyPatternHit({ kind: 'pad', id: index });
   if (flash) flashPadButton(index);
-  if (audioCtx.state === 'running') {
-    playPadSound(index);
-    return;
-  }
-  void audioCtx.resume().then(() => playPadSound(index));
 }
 
 function beginPadNoteRepeat(index) {
@@ -1442,6 +1448,7 @@ async function applyBatteryPreset(preset) {
     }
     if (typeof preset.volume === 'number' && Number.isFinite(preset.volume)) {
       currentVolume = Math.min(1, Math.max(0, preset.volume));
+      setMasterVolume(currentVolume);
       saveStoredVolume(currentVolume);
       const sliderVolumen = document.getElementById('volume-slider');
       const labelPorcentaje = document.getElementById('volume-percent');
@@ -1485,11 +1492,7 @@ async function applyImportedKit(snapshot) {
   rebuildPadKeyIndexMap();
 
   currentVolume = readStoredVolume();
-
-  const sliderVolumen = document.getElementById('volume-slider');
-  const labelPorcentaje = document.getElementById('volume-percent');
-  if (sliderVolumen) sliderVolumen.value = String(currentVolume);
-  if (labelPorcentaje) labelPorcentaje.textContent = Math.round(currentVolume * 100) + '%';
+  setMasterVolume(currentVolume);
 
   await preloadAllSamplers();
   actualizarEtiquetasTeclas(keyToTomId);
@@ -1703,6 +1706,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (labelPorcentaje) actualizarLabel(currentVolume);
     sliderVolumen.addEventListener('input', e => {
       currentVolume = +e.target.value;
+      setMasterVolume(currentVolume);
       saveStoredVolume(currentVolume);
       if (labelPorcentaje) actualizarLabel(currentVolume);
       syncActiveKitIfAny();

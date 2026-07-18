@@ -31,7 +31,7 @@ export function stopSamplerPreview() {
  *   getVolume: () => number,
  *   getPlaybackRate?: () => number,
  *   loadBuffer: (url: string) => Promise<AudioBuffer>,
- *   connectHit: (gain: GainNode) => void,
+ *   connectHit: (node: AudioNode) => void,
  *   pulseViz?: () => void,
  * }} deps
  */
@@ -46,12 +46,10 @@ export async function previewSamplerPath(audioCtx, relativePath, deps) {
     if (epoch !== previewEpoch) return;
     stopPreviewSource();
     const source = audioCtx.createBufferSource();
-    const gainNode = audioCtx.createGain();
-    gainNode.gain.value = deps.getVolume();
     source.buffer = buffer;
     source.playbackRate.value = deps.getPlaybackRate?.() ?? 1;
-    source.connect(gainNode);
-    deps.connectHit(gainNode);
+    // Volume is on masterGain — no second GainNode (avoids double attenuation)
+    deps.connectHit(source);
     source.start(0);
     previewSource = source;
     source.onended = () => {

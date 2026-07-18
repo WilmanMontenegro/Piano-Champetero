@@ -1,5 +1,6 @@
 /**
  * Master output bus — all hits route through analyser for the visualizer.
+ * Volume lives on masterGain so each hit skips createGain (lower mobile latency).
  */
 
 /** @type {GainNode | null} */
@@ -27,10 +28,16 @@ export function initAudioBus(audioCtx) {
   return { masterGain, analyser };
 }
 
-/** @param {GainNode} gainNode */
-export function connectHitToOutput(gainNode) {
+/** @param {AudioNode} node */
+export function connectHitToOutput(node) {
   if (!masterGain) return;
-  gainNode.connect(masterGain);
+  node.connect(masterGain);
+}
+
+/** @param {number} value 0..1 */
+export function setMasterVolume(value) {
+  if (!masterGain) return;
+  masterGain.gain.value = Math.min(1, Math.max(0, value));
 }
 
 export function getAnalyser() {
