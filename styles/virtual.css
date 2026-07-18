@@ -451,17 +451,20 @@ main {
   padding: 0.26em 0.45em;
   font-size: 0.72rem;
   color: var(--chrome-btn-fg);
-  background: transparent;
-  border: none;
-  box-shadow: none;
+  background: var(--chrome-btn-bg);
+  border: 2px solid var(--chrome-btn-border);
+  border-radius: 8px;
+  box-shadow: var(--chrome-btn-shadow);
 }
 
 .battery-kit-toggle:hover {
   background: var(--chrome-btn-bg-hover);
+  border-color: var(--chrome-btn-border-hover);
 }
 
 .battery-kit-picker--open .battery-kit-toggle {
   background: var(--chrome-btn-bg-hover);
+  border-color: var(--chrome-btn-border-hover);
 }
 
 .battery-kit-toggle:disabled {
@@ -1337,13 +1340,13 @@ ul.sampler-list {
   padding: 0.15em 0.45em;
   border-radius: 8px;
   color: var(--chrome-btn-fg);
-  background: transparent;
-  border: none;
+  background: var(--chrome-btn-bg);
+  border: 2px solid var(--chrome-btn-border);
   font-size: 0.72rem;
   font-weight: 700;
   cursor: pointer;
   user-select: none;
-  box-shadow: none;
+  box-shadow: var(--chrome-btn-shadow);
 }
 
 .note-repeat-rate--on {
@@ -1427,21 +1430,21 @@ ul.sampler-list {
 }
 
 .ctrl-btn {
-  background: transparent;
+  background: var(--chrome-btn-bg);
   color: var(--chrome-btn-fg);
-  border: none;
+  border: 2px solid var(--chrome-btn-border);
   border-radius: 8px;
   font-family: inherit;
   font-weight: bold;
   font-size: 0.8rem;
   padding: 0.4em 0.8em;
   cursor: pointer;
-  transition: background 0.15s, color 0.15s;
+  transition: background 0.2s, border-color 0.2s, color 0.2s, box-shadow 0.2s;
   white-space: nowrap;
   display: flex;
   align-items: center;
   gap: 0.3em;
-  box-shadow: none;
+  box-shadow: var(--chrome-btn-shadow);
 }
 
 .ctrl-btn.reset-btn {
@@ -1450,35 +1453,40 @@ ul.sampler-list {
 
 .ctrl-btn:hover {
   background: var(--chrome-btn-bg-hover);
+  border-color: var(--chrome-btn-border-hover);
 }
 
 .ctrl-btn.reset-btn:hover {
-  background: color-mix(in srgb, var(--color-brand-red) 16%, transparent);
+  background: color-mix(in srgb, var(--color-brand-red) 18%, var(--chrome-btn-bg));
+  border-color: color-mix(in srgb, var(--color-brand-red) 55%, transparent);
 }
 
 .ctrl-btn.active {
   background: var(--color-principal);
+  border-color: var(--color-amarillo);
   color: var(--color-blanco);
 }
 
-/* Modo edición: mismo tamaño; solo color (sin cajas/bordes) */
+/* Modo edición: mismo tamaño; contorno + color */
 #edit-btn.edit-mode-active {
   background: var(--color-principal);
+  border-color: var(--color-amarillo);
   color: var(--color-blanco);
-  box-shadow: none;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-brand-yellow) 55%, transparent), 0 2px 8px color-mix(in srgb, var(--color-brand-green) 35%, transparent);
   animation: edit-done-pulse 2s ease-in-out infinite;
 }
 
 #edit-btn.edit-mode-active:hover {
   background: var(--color-principal-hover);
+  border-color: var(--color-amarillo);
 }
 
 @keyframes edit-done-pulse {
   0%, 100% {
-    filter: brightness(1);
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-brand-yellow) 45%, transparent), 0 2px 6px color-mix(in srgb, var(--color-brand-green) 28%, transparent);
   }
   50% {
-    filter: brightness(1.08);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-brand-yellow) 65%, transparent), 0 2px 10px color-mix(in srgb, var(--color-brand-green) 40%, transparent);
   }
 }
 
@@ -1565,27 +1573,29 @@ ul.sampler-list {
 }
 
 .grid-opt {
-  background: transparent;
+  background: var(--chrome-btn-bg);
   color: var(--chrome-btn-fg);
-  border: none;
+  border: 2px solid var(--chrome-btn-border);
   border-radius: 6px;
   font-family: inherit;
   font-weight: bold;
   font-size: 0.75rem;
   padding: 0.3em 0.6em;
   cursor: pointer;
-  transition: background 0.15s, color 0.15s;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
   min-width: 32px;
   text-align: center;
-  box-shadow: none;
+  box-shadow: var(--chrome-btn-shadow);
 }
 
 .grid-opt:hover {
   background: var(--chrome-btn-bg-hover);
+  border-color: var(--color-principal);
 }
 
 .grid-opt.active {
   background: var(--color-amarillo);
+  border-color: color-mix(in srgb, var(--color-brand-dark) 35%, transparent);
   color: var(--color-brand-dark);
 }
 
