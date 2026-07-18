@@ -29,6 +29,7 @@ import {
   buildShareMessage,
   persistKitSnapshot,
   kitTokenFromPageUrl,
+  copyTextToClipboard,
 } from './kit-config-share.js';
 import { initSessionRecorder, listSessionRecordings } from './session-recorder.js';
 import { getActiveKitId, getBatteryKit, initBatteryPresets, isActiveKitBlank, isDefaultKit, syncActiveKit, updateBatteryKit } from './battery-presets.js';
@@ -1877,14 +1878,20 @@ function initKitConfigShare(noteRepeatApply) {
   copyBtn?.addEventListener('click', async () => {
     refreshExportPayload();
     const text = exportField.value;
-    try {
-      await navigator.clipboard.writeText(text);
-      setStatus('Código copiado. Pegalo en WhatsApp o en Importar.');
-    } catch {
-      exportField.focus();
-      exportField.select();
-      setStatus('Seleccioná el código y copialo manualmente (Ctrl+C).');
+    if (!text) {
+      setStatus('No hay código para copiar.', true);
+      return;
     }
+    const ok = await copyTextToClipboard(text, exportField);
+    if (ok) {
+      setStatus('Código copiado. Pegalo en WhatsApp o en Importar.');
+      return;
+    }
+    try {
+      exportField.focus({ preventScroll: true });
+      exportField.select();
+    } catch { /* ignore */ }
+    setStatus('No se pudo copiar solo. El código quedó seleccionado — pulsá Ctrl+C (o ⌘+C).', true);
   });
 
   whatsappBtn?.addEventListener('click', () => {

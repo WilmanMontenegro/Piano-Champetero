@@ -306,6 +306,59 @@ export function kitTokenFromPageUrl(search = location.search, hash = location.ha
   return fromHash ? (normalizeKitToken(fromHash) || fromHash.trim()) : '';
 }
 
+/**
+ * Copy text — sync execCommand first (keeps click gesture; Safari/iOS friendly),
+ * then Clipboard API, then offscreen textarea.
+ * @param {string} text
+ * @param {HTMLTextAreaElement | HTMLInputElement | null} [field]
+ * @returns {Promise<boolean>}
+ */
+export async function copyTextToClipboard(text, field = null) {
+  const value = String(text || '');
+  if (!value) return false;
+
+  // 1) Visible field + execCommand in the same turn as the click
+  if (field && typeof field.select === 'function') {
+    try {
+      const wasReadonly = field.hasAttribute('readonly');
+      if (wasReadonly) field.removeAttribute('readonly');
+      field.focus({ preventScroll: true });
+      field.value = value;
+      field.select();
+      field.setSelectionRange(0, value.length);
+      const ok = document.execCommand('copy');
+      if (wasReadonly) field.setAttribute('readonly', '');
+      if (ok) return true;
+    } catch { /* continue */ }
+  }
+
+  // 2) Async Clipboard API
+  if (navigator.clipboard?.writeText) {
+    try {
+      await navigator.clipboard.writeText(value);
+      return true;
+    } catch { /* continue */ }
+  }
+
+  // 3) Offscreen textarea
+  try {
+    const ta = document.createElement('textarea');
+    ta.value = value;
+    ta.setAttribute('readonly', '');
+    ta.setAttribute('aria-hidden', 'true');
+    ta.style.cssText = 'position:fixed;left:-9999px;top:0;opacity:0;';
+    document.body.appendChild(ta);
+    ta.focus({ preventScroll: true });
+    ta.select();
+    ta.setSelectionRange(0, value.length);
+    const ok = document.execCommand('copy');
+    document.body.removeChild(ta);
+    return !!ok;
+  } catch {
+    return false;
+  }
+}
+
 // ponytail: smoke — WhatsApp line-wrap + trailing chat junk must still decode
 {
   const snap = { v: 1, n: 'test', vm: 'pads' };
