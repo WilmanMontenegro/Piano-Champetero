@@ -45,9 +45,9 @@ export function initAudioVisualizer({ analyser }) {
     const style = getComputedStyle(panel);
     return {
       wave: style.getPropertyValue('--viz-wave').trim() || '#FFE066',
-      barStart: style.getPropertyValue('--viz-bar-start').trim() || '#FF9A56',
-      barEnd: style.getPropertyValue('--viz-bar-end').trim() || '#FF6B6B',
-      glow: style.getPropertyValue('--viz-glow').trim() || 'rgba(255, 224, 102, 0.45)',
+      barStart: style.getPropertyValue('--viz-bar-start').trim() || '#00A859',
+      barEnd: style.getPropertyValue('--viz-bar-end').trim() || '#ED1C24',
+      glow: style.getPropertyValue('--viz-glow').trim() || 'rgba(255, 204, 0, 0.4)',
     };
   }
 

@@ -15,9 +15,9 @@ section h2 {
 .faq-item {
   margin-bottom: 1.5em;
   padding: 1em;
-  background: rgba(255, 224, 102, 0.1);
+  background: var(--color-surface-yellow);
   border-radius: 8px;
-  border: 1px solid rgba(255, 154, 86, 0.2);
+  border: 1px solid var(--color-tint-green);
 }
 
 .faq-item h3 {
