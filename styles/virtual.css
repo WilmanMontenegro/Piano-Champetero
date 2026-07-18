@@ -2452,7 +2452,7 @@ ul.sampler-list {
 }
 /*
  * Mobile landscape play — sync with --bp-mobile-landscape-max-height / MOBILE_PLAY_MQ.
- * Same tom grid/margins — only size + chrome. No black bar, no reorder.
+ * Chrome only (hide ticker/header/viz). Tom sizes stay 16/20/24vw — never rescale grid.
  */
 @media (orientation: landscape) and (max-height: 560px) and (pointer: coarse) {
   .virtual-page {
