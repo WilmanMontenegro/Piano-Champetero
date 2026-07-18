@@ -54,8 +54,13 @@ function readString(key) {
   }
 }
 
-/** @param {string} [displayName] */
-export function collectKitSnapshot(displayName = '') {
+/**
+ * @param {string} [displayName]
+ * @param {{ compact?: boolean, gridType?: string }} [opts]
+ * compact=true → only active grid (shorter WhatsApp/?kit= links)
+ */
+export function collectKitSnapshot(displayName = '', opts = {}) {
+  const { compact = false, gridType: gridOpt = null } = opts;
   const pads = {};
   const padKeys = {};
   for (const grid of PAD_GRID_SIZE_ORDER) {
@@ -67,8 +72,14 @@ export function collectKitSnapshot(displayName = '') {
 
   const volumeRaw = readString(STORAGE.volume);
   const volume = volumeRaw != null ? parseFloat(volumeRaw) : null;
+  const storedGt = readString(STORAGE.gridType);
+  const gt =
+    (gridOpt && PAD_GRID_SIZE_ORDER.includes(gridOpt) && gridOpt)
+    || (storedGt && PAD_GRID_SIZE_ORDER.includes(storedGt) && storedGt)
+    || '3x4';
 
-  return {
+  /** @type {Record<string, unknown>} */
+  const snap = {
     v: KIT_CONFIG_VERSION,
     n: displayName.trim().slice(0, 40) || undefined,
     s: readJson(STORAGE.samplers),
@@ -76,9 +87,25 @@ export function collectKitSnapshot(displayName = '') {
     p: Object.keys(pads).length ? pads : undefined,
     pk: Object.keys(padKeys).length ? padKeys : undefined,
     vm: readString(STORAGE.viewMode) || undefined,
-    gt: readString(STORAGE.gridType) || undefined,
+    gt: storedGt || undefined,
     vol: Number.isFinite(volume) ? volume : undefined,
     nr: readString(STORAGE.noteRepeat) === '1' ? true : readString(STORAGE.noteRepeat) === '0' ? false : undefined,
+  };
+
+  if (!compact) return snap;
+
+  // Share payload: one grid only — keeps ?kit= under WhatsApp URL limits
+  return {
+    v: snap.v,
+    n: snap.n,
+    s: snap.s,
+    k: snap.k,
+    p: pads[gt] ? { [gt]: pads[gt] } : undefined,
+    pk: padKeys[gt] ? { [gt]: padKeys[gt] } : undefined,
+    vm: snap.vm || 'pads',
+    gt,
+    vol: snap.vol,
+    nr: snap.nr,
   };
 }
 
@@ -234,8 +261,10 @@ export function buildWhatsAppSendUrl(message) {
   return `https://wa.me/?text=${encodeURIComponent(message)}`;
 }
 
+/** WhatsApp / iMessage often truncate links past ~2k chars. */
+export const KIT_SHARE_SAFE_URL_LEN = 1800;
+
 /**
- * Prefer the raw BC1 code in WhatsApp — long ?kit= URLs get truncated by the app.
  * @param {ReturnType<typeof collectKitSnapshot>} snapshot
  * @param {string} code
  * @param {string} [baseHref]
@@ -243,20 +272,21 @@ export function buildWhatsAppSendUrl(message) {
 export function buildShareMessage(snapshot, code, baseHref) {
   const name = snapshot.n || 'Batería champetera';
   const link = buildKitShareUrl(code, baseHref);
-  // Short kits: link is fine. Long kits: code-first so paste/import still works if URL truncates.
-  const preferCode = code.length > 1200;
-  if (preferCode) {
+  const site = 'https://bateriachampetera.com/virtual.html';
+
+  if (link.length <= KIT_SHARE_SAFE_URL_LEN) {
     return (
       `🥁 *Kit Batería Champetera* — ${name}\n\n` +
-      `En bateriachampetera.com → *Exportar* → pegá este código completo:\n\n` +
-      `${code}\n\n` +
-      `(Si el enlace no abre, usá el código de arriba.)\n${link}`
+      `Tocá el enlace y el kit se carga solo:\n${link}\n\n` +
+      `Si el link no abre, pegá este código en la web → Exportar → Importar:\n${code}`
     );
   }
+
+  // Link too long for chats — code is the reliable path
   return (
     `🥁 *Kit Batería Champetera* — ${name}\n\n` +
-    `Abrí este enlace para cargarlo:\n${link}\n\n` +
-    `O pegá este código en Exportar → Importar:\n${code}`
+    `El kit es grande: abrí ${site} → *Exportar* → pegá este código completo → *Importar*:\n\n` +
+    `${code}`
   );
 }
 

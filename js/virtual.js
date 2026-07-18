@@ -1847,7 +1847,9 @@ function initKitConfigShare(noteRepeatApply) {
   const whatsappBtn = document.getElementById('kit-share-whatsapp-btn');
   const importBtn = document.getElementById('kit-import-btn');
 
-  if (!exportField || !importField) return;
+  if (!exportField || !importField) {
+    return { consumeUrlKit: async () => false };
+  }
 
   const setStatus = (text, isError = false) => {
     if (!statusEl) return;
@@ -1856,8 +1858,17 @@ function initKitConfigShare(noteRepeatApply) {
     statusEl.classList.toggle('kit-import-status--error', isError);
   };
 
+  const openShareModal = () => {
+    const modal = document.getElementById('modal-kit-share');
+    if (modal) modal.style.display = 'flex';
+  };
+
   const refreshExportPayload = () => {
-    const snapshot = collectKitSnapshot(nameInput?.value || '');
+    // compact: one grid — WhatsApp truncates fat ?kit= links
+    const snapshot = collectKitSnapshot(nameInput?.value || '', {
+      compact: true,
+      gridType: currentGridType,
+    });
     const code = encodeKitSnapshot(snapshot);
     exportField.value = code;
     exportField.dataset.shareUrl = buildKitShareUrl(code);
@@ -1896,19 +1907,28 @@ function initKitConfigShare(noteRepeatApply) {
 
   whatsappBtn?.addEventListener('click', () => {
     refreshExportPayload();
-    const snapshot = collectKitSnapshot(nameInput?.value || '');
+    const snapshot = collectKitSnapshot(nameInput?.value || '', {
+      compact: true,
+      gridType: currentGridType,
+    });
     const code = exportField.value;
     const msg = buildShareMessage(snapshot, code);
     window.open(buildWhatsAppSendUrl(msg), '_blank', 'noopener,noreferrer');
   });
 
+  const runImport = async (raw) => {
+    const snapshot = decodeKitToken(raw);
+    await applyImportedKit(snapshot);
+    if (noteRepeatApply) noteRepeatApply(isNoteRepeatEnabled());
+    refreshBatteryPresets?.();
+    const label = snapshot.n ? `"${snapshot.n}"` : 'Kit importado';
+    return label;
+  };
+
   importBtn?.addEventListener('click', async () => {
     setStatus('');
     try {
-      const snapshot = decodeKitToken(importField.value);
-      await applyImportedKit(snapshot);
-      if (noteRepeatApply) noteRepeatApply(isNoteRepeatEnabled());
-      const label = snapshot.n ? `"${snapshot.n}"` : 'Kit importado';
+      const label = await runImport(importField.value);
       setStatus(`${label} listo. ¡A tocar!`);
       importField.value = '';
     } catch (err) {
@@ -1916,14 +1936,45 @@ function initKitConfigShare(noteRepeatApply) {
     }
   });
 
-  const urlToken = kitTokenFromPageUrl();
-  if (urlToken) {
-    importField.value = urlToken;
-    setStatus('Enlace con kit detectado — pulsa Importar para cargarlo.');
-    const modal = document.getElementById('modal-kit-share');
-    if (modal) modal.style.display = 'flex';
-    history.replaceState({}, '', location.pathname);
+  const pendingUrlKit = kitTokenFromPageUrl();
+  if (pendingUrlKit) {
+    try {
+      const clean = new URL(location.href);
+      clean.searchParams.delete('kit');
+      if (clean.hash) {
+        const hp = new URLSearchParams(clean.hash.replace(/^#/, ''));
+        if (hp.has('kit')) {
+          hp.delete('kit');
+          clean.hash = hp.toString() ? `#${hp.toString()}` : '';
+        }
+      }
+      history.replaceState({}, '', `${clean.pathname}${clean.search}${clean.hash}`);
+    } catch {
+      history.replaceState({}, '', location.pathname);
+    }
   }
+
+  return {
+    /** @returns {Promise<boolean>} true if a URL kit was handled */
+    async consumeUrlKit() {
+      if (!pendingUrlKit) return false;
+      openShareModal();
+      importField.value = pendingUrlKit;
+      try {
+        const label = await runImport(pendingUrlKit);
+        importField.value = '';
+        setStatus(`${label} cargado desde el enlace. ¡A tocar!`);
+        return true;
+      } catch (err) {
+        setStatus(
+          (err instanceof Error ? err.message : 'No se pudo leer el enlace.')
+            + ' Si WhatsApp cortó el link, pedí el código BC1 y pegalo abajo.',
+          true,
+        );
+        return false;
+      }
+    },
+  };
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -1941,7 +1992,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   initPageScrollLock();
   initResponsivePadsLayout();
   const applyNoteRepeat = initNoteRepeatToggle();
-  initKitConfigShare(applyNoteRepeat);
+  const kitShare = initKitConfigShare(applyNoteRepeat);
   const batteryPresets = initBatteryPresets({
     captureState: captureBatteryState,
     applyPreset: applyBatteryPreset,
@@ -1954,6 +2005,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   batteryPresetsCtl = batteryPresets;
   refreshBatteryPresets = batteryPresets?.refresh ?? (() => {});
   await applyStoredActiveKit();
+  // Link ?kit= → import automático (después del kit guardado, para que gane el enlace)
+  await kitShare?.consumeUrlKit?.();
 
   /** @type {'audio' | 'loop' | null} */
   let sidebarMode = null;
