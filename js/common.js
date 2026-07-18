@@ -183,6 +183,10 @@ export async function loadHeader() {
     console.error('loadHeader failed, injecting fallback header:', err);
     const fallback = `
       <h1 class="title">Batería Champetera Virtual</h1>
+      <button type="button" class="theme-toggle theme-toggle--header" data-theme-toggle aria-pressed="false" title="Cambiar a tema oscuro">
+        <i class="fa-solid fa-moon" data-theme-icon aria-hidden="true"></i>
+        <span data-theme-label>Oscuro</span>
+      </button>
       <nav class="main-nav">
         <button class="nav-hamburger" id="nav-hamburger" type="button" aria-label="Abrir menú" aria-expanded="false" aria-controls="nav-menu">
           <span></span>
@@ -196,10 +200,6 @@ export async function loadHeader() {
           <li><a href="politicas-privacidad.html" id="nav-privacy">Políticas de privacidad</a></li>
           <li><a href="contactanos.html" id="nav-contact">Contáctanos</a></li>
         </ul>
-        <button type="button" class="theme-toggle theme-toggle--nav" data-theme-toggle aria-pressed="false" title="Cambiar a tema oscuro">
-          <i class="fa-solid fa-moon" data-theme-icon aria-hidden="true"></i>
-          <span data-theme-label>Oscuro</span>
-        </button>
       </nav>
     `;
     headerContainer.innerHTML = fallback;

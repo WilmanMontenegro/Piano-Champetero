@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bateria-champeta-v271';
+const CACHE_NAME = 'bateria-champeta-v272';
 
 /**
  * Precache only real files (GitHub Pages returns 404 for bare directories).

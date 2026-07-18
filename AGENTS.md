@@ -51,7 +51,7 @@ Do **not** use or add `.claude/` or `.vscode/` config (legacy / local IDE). **Cu
 | Change | File |
 |--------|------|
 | Colors / palette | `styles/tokens.css` → bloque **PALETTE** (`--palette-*`); iconos `--icon-*`, sliders `--accent-*`, botones `--gradient-btn-primary` |
-| Theme Claro/Oscuro | `nav.html` `.theme-toggle--nav`; `js/common.js` → `initTheme()`; key `pianoChampeteroTheme` |
+| Theme Claro/Oscuro | `header.html` `.theme-toggle--header` (esquina derecha); `js/common.js` → `initTheme()`; key `pianoChampeteroTheme` |
 | Colors, spacing, shadows (detalle) | `styles/tokens.css` |
 | Header title size / padding | `styles/tokens.css` → `--header-title-size`, `--header-padding-top`, `--header-nav-margin-block` |
 | Nav layout, active link style | `styles/components/nav.css` |
