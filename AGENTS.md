@@ -57,7 +57,7 @@ Do **not** use or add `.claude/` or `.vscode/` config (legacy / local IDE). **Cu
 | Espacio bajo cinta fija | `styles/tokens.css` → `--ticker-block-height`; `body { padding-top }` en `common.css` |
 | WhatsApp community invite URL | `js/site-config.js` → `WHATSAPP_COMMUNITY_URL` (ticker, Contáctanos, botón flotante) |
 | Hit flash duration on pads/toms | `js/site-config.js` → `AUDIO_UI.hitFlashMs` |
-| Sampler playback rate (velocidad) | `js/site-config.js` → `AUDIO_UI.playbackRate` |
+| Sampler pitch (spring bend) | `js/site-config.js` → `AUDIO_UI.playbackRate`; slider Pitch en `virtual.html` (soltar → centro) |
 | Nav hamburger (móvil) | `js/common.js` → `initHamburgerMenu()` (delegación en `document`, clase `html.nav-open`); panel fijo en `nav.css` ≤767px |
 | Desktop/tablet/mobile breakpoints | `styles/tokens.css` → `--bp-desktop-min` 1024, `--bp-tablet-min` 768, `--bp-mobile-max` 767; `responsive.css` |
 | Battery / pads behavior | `js/virtual.js`, `styles/virtual.css` |

@@ -32,8 +32,8 @@ export const AUDIO_UI = {
     intervalMs: 125,
   },
   /**
-   * Global sampler playback rate (Web Audio playbackRate).
-   * UI slider center = default (1); left = min, right = max.
+   * Sampler pitch bend (Web Audio playbackRate).
+   * UI is a spring slider: hold + drag L/R; release returns to default (1).
    */
   playbackRate: {
     min: 0.5,

@@ -750,6 +750,21 @@ function playSamplerVoice(buffer, voiceKey) {
   pulseAudioVisualizer();
 }
 
+/** Live pitch bend: update voices already playing. */
+function applyPlaybackRateToActiveVoices(rate) {
+  for (const voice of activeVoices.values()) {
+    try {
+      voice.source.playbackRate.value = rate;
+    } catch { /* stopped */ }
+  }
+}
+
+function setPlaybackRate(rate, { persist = false } = {}) {
+  currentPlaybackRate = Math.min(PLAYBACK_RATE_MAX, Math.max(PLAYBACK_RATE_MIN, rate));
+  applyPlaybackRateToActiveVoices(currentPlaybackRate);
+  if (persist) saveStoredPlaybackRate(currentPlaybackRate);
+}
+
 // PLAY: buffer ya en RAM, start(0), sin await
 function playTomSampler(tomId) {
   const fileName = tomAudioMap[tomId];
@@ -1673,24 +1688,28 @@ document.addEventListener('DOMContentLoaded', async () => {
   const sliderRate = document.getElementById('rate-slider');
   const labelRate = document.getElementById('rate-percent');
   if (sliderRate) {
+    // Spring pitch bend: hold + drag L/R; release → center (1×).
     const syncRateUi = (rate) => {
       sliderRate.value = String(sliderFromPlaybackRate(rate));
       if (labelRate) labelRate.textContent = formatPlaybackRate(rate);
     };
-    syncRateUi(currentPlaybackRate);
+    const snapPitchToCenter = () => {
+      setPlaybackRate(DEFAULT_PLAYBACK_RATE, { persist: true });
+      syncRateUi(DEFAULT_PLAYBACK_RATE);
+    };
+    currentPlaybackRate = DEFAULT_PLAYBACK_RATE;
+    syncRateUi(DEFAULT_PLAYBACK_RATE);
+    saveStoredPlaybackRate(DEFAULT_PLAYBACK_RATE);
+
     sliderRate.addEventListener('input', e => {
-      currentPlaybackRate = playbackRateFromSlider(e.target.value);
-      saveStoredPlaybackRate(currentPlaybackRate);
+      setPlaybackRate(playbackRateFromSlider(e.target.value));
       if (labelRate) labelRate.textContent = formatPlaybackRate(currentPlaybackRate);
     });
-    sliderRate.addEventListener('wheel', e => {
-      e.preventDefault();
-      const step = parseFloat(sliderRate.step) || 1;
-      let next = parseFloat(sliderRate.value) + (e.deltaY < 0 ? step : -step);
-      next = Math.max(parseFloat(sliderRate.min), Math.min(parseFloat(sliderRate.max), next));
-      sliderRate.value = String(next);
-      sliderRate.dispatchEvent(new Event('input', { bubbles: true }));
-    });
+    const endPitchBend = () => snapPitchToCenter();
+    sliderRate.addEventListener('pointerup', endPitchBend);
+    sliderRate.addEventListener('pointercancel', endPitchBend);
+    sliderRate.addEventListener('change', endPitchBend);
+    window.addEventListener('blur', endPitchBend);
   }
 
   const editBtn = document.getElementById('edit-btn');
