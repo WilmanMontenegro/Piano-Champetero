@@ -2,7 +2,7 @@
    Design tokens — editar aquí colores, espaciado y escalas
    ===================================================== */
 :root {
-  /* Brand identity — rasta + ink */
+  /* Brand identity — rasta + ink (pads vivid; chrome calm) */
   --color-brand-green: #00A859;
   --color-brand-yellow: #FFCC00;
   --color-brand-red: #ED1C24;
@@ -10,11 +10,12 @@
 
   /* Alias legado UI → marca */
   --color-principal: var(--color-brand-green);
+  --color-principal-hover: color-mix(in srgb, var(--color-brand-green) 78%, black);
   --color-secundario: var(--color-brand-red);
   --color-amarillo: var(--color-brand-yellow);
   --color-marron: var(--color-brand-dark);
   --color-footer: #FFF8E7;
-  --color-rosa-claro: color-mix(in srgb, var(--color-brand-red) 22%, white);
+  --color-rosa-claro: color-mix(in srgb, var(--color-brand-red) 16%, white);
   --color-blanco: #ffffff;
   --color-gris-claro: #f8f9fa;
   --color-gris-medio: #e0e0e0;
@@ -24,22 +25,33 @@
   --color-error: var(--color-brand-red);
   --color-whatsapp: #25d366;
   --color-whatsapp-hover: #1ebe57;
-  /* Pads / icon — same brand rasta */
+  /* Soft chrome tints (never neon on body/chrome) */
+  --color-surface: #FFF8E7;
+  --color-surface-green: color-mix(in srgb, var(--color-brand-green) 12%, white);
+  --color-surface-yellow: color-mix(in srgb, var(--color-brand-yellow) 20%, white);
+  --color-tint-green: color-mix(in srgb, var(--color-brand-green) 14%, transparent);
+  --color-tint-yellow: color-mix(in srgb, var(--color-brand-yellow) 22%, transparent);
+  /* Pads / icon — same brand rasta (hero identity) */
   --color-rasta-green: var(--color-brand-green);
   --color-rasta-yellow: var(--color-brand-yellow);
   --color-rasta-red: var(--color-brand-red);
 
-  /* Gradientes reutilizables */
+  /* Gradientes — body pastel; ticker green (readable white); pads keep vivid fill */
   --gradient-body: linear-gradient(
-    135deg,
-    color-mix(in srgb, var(--color-brand-yellow) 55%, white) 0%,
-    color-mix(in srgb, var(--color-brand-green) 28%, white) 35%,
-    color-mix(in srgb, var(--color-brand-red) 22%, white) 70%,
-    #FFF8E7 100%
+    160deg,
+    color-mix(in srgb, var(--color-brand-yellow) 20%, white) 0%,
+    color-mix(in srgb, var(--color-brand-green) 12%, white) 42%,
+    color-mix(in srgb, var(--color-brand-red) 7%, white) 72%,
+    var(--color-surface) 100%
   );
   --gradient-footer: linear-gradient(135deg, var(--color-brand-dark) 0%, #1f1f1f 100%);
   --gradient-nav-dropdown: linear-gradient(135deg, var(--color-brand-dark) 0%, #222 100%);
-  --gradient-ticker: linear-gradient(90deg, var(--color-brand-green), var(--color-brand-yellow), var(--color-brand-red));
+  --gradient-ticker: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--color-brand-green) 82%, black),
+    var(--color-brand-green),
+    color-mix(in srgb, var(--color-brand-green) 70%, var(--color-brand-dark))
+  );
   --overlay-header: linear-gradient(rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.22));
 
   /* Layout */

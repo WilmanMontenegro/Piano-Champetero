@@ -24,8 +24,8 @@ main {
   0%, 100% {
     box-shadow:
       0 4px 15px rgba(0, 0, 0, 0.3),
-      0 0 20px rgba(255, 224, 102, 0.35),
-      0 0 0 2px rgba(255, 224, 102, 0.55);
+      0 0 20px color-mix(in srgb, var(--color-brand-yellow) 35%, transparent),
+      0 0 0 2px color-mix(in srgb, var(--color-brand-yellow) 55%, transparent);
   }
   50% {
     box-shadow:
@@ -183,7 +183,7 @@ main {
   background: radial-gradient(
     circle at 50% 42%,
     rgba(255, 255, 255, 0.75) 0%,
-    rgba(255, 224, 102, 0.85) 28%,
+    color-mix(in srgb, var(--color-brand-yellow) 85%, transparent) 28%,
     transparent 68%
   );
 }
@@ -194,9 +194,9 @@ main {
   filter: brightness(1.1);
   box-shadow:
     0 6px 25px rgba(0, 0, 0, 0.4),
-    0 0 28px rgba(255, 224, 102, 0.7),
-    0 0 44px rgba(255, 154, 86, 0.5),
-    0 0 0 2px rgba(255, 224, 102, 0.85);
+    0 0 28px color-mix(in srgb, var(--color-brand-yellow) 70%, transparent),
+    0 0 44px color-mix(in srgb, var(--color-brand-yellow) 45%, transparent),
+    0 0 0 2px color-mix(in srgb, var(--color-brand-yellow) 85%, transparent);
 }
 
 .battery-tom.active::after {
@@ -208,7 +208,7 @@ main {
 .edit-mode .battery-tom:active {
   box-shadow:
     0 4px 15px rgba(0, 0, 0, 0.3),
-    0 0 20px rgba(255, 224, 102, 0.35),
+    0 0 20px color-mix(in srgb, var(--color-brand-yellow) 35%, transparent),
     0 0 0 2px rgba(255, 255, 255, 0.88) !important;
   transform: none !important;
   filter: none !important;
@@ -329,13 +329,13 @@ main {
   font-family: inherit;
   font-size: 1em;
   font-weight: bold;
-  color: var(--color-gris-medio);
+  color: var(--color-gris-oscuro);
   cursor: pointer;
   border-bottom: 3px solid transparent;
   transition: color 0.2s, border-color 0.2s;
 }
 .modal-tab.active { color: var(--color-principal); border-bottom-color: var(--color-principal); }
-.modal-tab:hover { color: var(--color-secundario); }
+.modal-tab:hover { color: var(--color-principal); }
 .tab-hint { font-size: 0.9em; color: var(--color-gris-oscuro); margin: 0.5em 0 0; }
 
 .kit-share-content {
@@ -440,7 +440,7 @@ main {
   font-size: 0.72rem;
   color: var(--color-blanco);
   background: rgba(40, 24, 16, 0.92);
-  border: 2px solid rgba(255, 224, 102, 0.4);
+  border: 2px solid color-mix(in srgb, var(--color-brand-yellow) 40%, transparent);
 }
 
 .battery-kit-toggle:disabled {
@@ -475,8 +475,8 @@ main {
   list-style: none;
   margin: 0;
   padding: 0.25rem;
-  background: #2a1810;
-  border: 2px solid rgba(255, 224, 102, 0.45);
+  background: var(--color-brand-dark);
+  border: 2px solid color-mix(in srgb, var(--color-brand-yellow) 45%, transparent);
   border-radius: 8px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
 }
@@ -502,20 +502,20 @@ main {
 
 .battery-kit-menu-item:hover,
 .battery-kit-menu-item:focus-visible {
-  background: rgba(255, 224, 102, 0.22);
+  background: color-mix(in srgb, var(--color-brand-yellow) 22%, transparent);
   outline: none;
 }
 
 .battery-kit-menu-item--active {
-  background: rgba(255, 224, 102, 0.15);
-  box-shadow: inset 0 0 0 1px rgba(255, 224, 102, 0.5);
+  background: color-mix(in srgb, var(--color-brand-yellow) 15%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-brand-yellow) 50%, transparent);
 }
 
 .battery-kit-menu-item--new {
   margin-top: 0.15rem;
   padding-top: 0.5em;
-  border-top: 1px solid rgba(255, 224, 102, 0.28);
-  color: rgba(255, 224, 102, 0.95);
+  border-top: 1px solid color-mix(in srgb, var(--color-brand-yellow) 28%, transparent);
+  color: color-mix(in srgb, var(--color-brand-yellow) 95%, transparent);
 }
 
 .battery-kit-menu-item--new i {
@@ -523,12 +523,12 @@ main {
 }
 
 .battery-kit-menu-item--delete {
-  color: #ff8a8a;
+  color: color-mix(in srgb, var(--color-brand-red) 75%, white);
 }
 
 .battery-kit-menu-item--delete:hover,
 .battery-kit-menu-item--delete:focus-visible {
-  background: rgba(220, 53, 69, 0.22);
+  background: color-mix(in srgb, var(--color-brand-red) 22%, transparent);
 }
 
 .battery-kit-menu-item--delete i {
@@ -570,12 +570,12 @@ main {
 
 /* ===================== SESSION RECORDING ===================== */
 .session-record-btn.active {
-  background: rgba(220, 53, 69, 0.28);
-  border-color: #ff5555;
+  background: color-mix(in srgb, var(--color-brand-red) 22%, transparent);
+  border-color: var(--color-brand-red);
 }
 
 .session-record-btn.active .session-record-icon {
-  color: #ff4444;
+  color: var(--color-brand-red);
   animation: record-pulse 1.1s ease-in-out infinite;
 }
 
@@ -650,7 +650,7 @@ main {
   padding: 0.45rem 0.55rem 0.5rem;
   border-radius: var(--borde-radius);
   background: rgba(20, 12, 8, 0.45);
-  border: 1px solid rgba(255, 224, 102, 0.22);
+  border: 1px solid color-mix(in srgb, var(--color-brand-yellow) 22%, transparent);
 }
 
 .session-recordings-header {
@@ -681,22 +681,22 @@ main {
   align-self: stretch;
   font-size: 0.72rem;
   padding: 0.35em 0.55em;
-  background: rgba(255, 224, 102, 0.22);
-  border-color: rgba(255, 224, 102, 0.55);
+  background: color-mix(in srgb, var(--color-brand-yellow) 22%, transparent);
+  border-color: color-mix(in srgb, var(--color-brand-yellow) 55%, transparent);
 }
 
 .session-record-download-now:hover {
-  background: rgba(255, 224, 102, 0.35);
+  background: color-mix(in srgb, var(--color-brand-yellow) 35%, transparent);
 }
 
 .session-record-status--error {
-  box-shadow: 0 0 0 2px rgba(255, 224, 102, 0.75);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-brand-yellow) 75%, transparent);
   animation: session-recording-fresh 1.2s ease-in-out 2;
 }
 
 @keyframes session-recording-fresh {
   0%, 100% { background: rgba(255, 255, 255, 0.08); }
-  50% { background: rgba(255, 224, 102, 0.22); }
+  50% { background: color-mix(in srgb, var(--color-brand-yellow) 22%, transparent); }
 }
 
 .session-record-status--error {
@@ -743,8 +743,8 @@ main {
 }
 
 .session-recording-action--delete:hover {
-  background: rgba(220, 53, 69, 0.22);
-  border-color: rgba(220, 53, 69, 0.45);
+  background: color-mix(in srgb, var(--color-brand-red) 22%, transparent);
+  border-color: color-mix(in srgb, var(--color-brand-red), 0.45);
 }
 
 .session-recordings-hint {
@@ -755,7 +755,7 @@ main {
 }
 
 .pattern-loop-btn.active {
-  background: rgba(255, 224, 102, 0.22);
+  background: color-mix(in srgb, var(--color-brand-yellow) 22%, transparent);
   border-color: var(--color-amarillo);
 }
 
@@ -766,7 +766,7 @@ main {
   padding: 0.45rem 0.55rem 0.5rem;
   border-radius: var(--borde-radius);
   background: rgba(20, 12, 8, 0.45);
-  border: 1px solid rgba(255, 154, 86, 0.28);
+  border: 1px solid var(--color-tint-green);
 }
 
 .pattern-loops-title {
@@ -825,8 +825,8 @@ main {
 }
 
 .pattern-loop-action--delete:hover {
-  background: rgba(220, 53, 69, 0.22);
-  border-color: rgba(220, 53, 69, 0.45);
+  background: color-mix(in srgb, var(--color-brand-red) 22%, transparent);
+  border-color: color-mix(in srgb, var(--color-brand-red), 0.45);
 }
 
 .pattern-loops-hint {
@@ -883,7 +883,7 @@ ul.sampler-list {
   padding: 0.3em 0.65em;
   border: 2px solid var(--color-principal);
   border-radius: var(--borde-radius);
-  background: rgba(255, 154, 86, 0.15);
+  background: var(--color-tint-green);
   color: var(--color-marron);
   font-family: inherit;
   font-size: 0.78rem;
@@ -949,7 +949,7 @@ ul.sampler-list {
 
 .sampler-folder:hover,
 .sampler-folder:focus-visible {
-  background: rgba(255, 154, 86, 0.2);
+  background: var(--color-tint-green);
   outline: none;
 }
 
@@ -1041,9 +1041,8 @@ ul.sampler-list {
   transition: background 0.2s, box-shadow 0.2s;
 }
 
-.edit-keys-btn:hover,
-.edit-keys-btn.edit-mode-active {
-  background: var(--color-secundario);
+.edit-keys-btn:hover {
+  background: var(--color-principal-hover);
   box-shadow: var(--sombra-btn-hover);
 }
 
@@ -1083,7 +1082,7 @@ ul.sampler-list {
 }
 
 .modal-actions .btn-primary:hover {
-  background: var(--color-secundario);
+  background: var(--color-principal-hover);
   box-shadow: var(--sombra-btn-hover);
 }
 
@@ -1137,7 +1136,7 @@ ul.sampler-list {
 }
 
 .help-step:hover {
-  background: #f0f0f0;
+  background: var(--color-gris-medio);
   transform: translateY(-2px);
 }
 
@@ -1171,7 +1170,7 @@ ul.sampler-list {
 .btn-example {
   display: inline-block;
   background: var(--color-gris-medio);
-  color: var(--color-blanco);
+  color: var(--color-brand-dark);
   padding: 0.25em 0.7em;
   border-radius: var(--borde-radius);
   font-size: 0.9em;
@@ -1188,7 +1187,7 @@ ul.sampler-list {
   align-items: flex-start;
   gap: 1em;
   padding: 1em 1.2em;
-  background: linear-gradient(135deg, #fff9e6 0%, #fff3cd 100%);
+  background: var(--color-surface-yellow);
   border-radius: var(--borde-radius);
   border-left: 4px solid var(--color-principal);
   margin-bottom: 1.5em;
@@ -1214,7 +1213,7 @@ ul.sampler-list {
 /* Botón de ayuda */
 .btn-help {
   background: var(--color-gris-medio);
-  color: var(--color-blanco);
+  color: var(--color-brand-dark);
   border: none;
   border-radius: var(--borde-radius);
   font-family: inherit;
@@ -1228,6 +1227,7 @@ ul.sampler-list {
 
 .btn-help:hover {
   background: var(--color-gris-oscuro);
+  color: var(--color-blanco);
   box-shadow: var(--sombra-btn-hover);
 }
 
@@ -1311,13 +1311,17 @@ ul.sampler-list {
   align-items: center;
   gap: 0.3em;
   margin: 0;
-  padding: 0.15em 0.35em;
+  padding: 0.15em 0.45em;
   border-radius: 8px;
-  color: var(--color-amarillo);
+  /* Ink on light chrome — yellow-on-mint had no contrast */
+  color: var(--color-brand-dark);
+  background: color-mix(in srgb, var(--color-blanco) 88%, transparent);
+  border: 2px solid color-mix(in srgb, var(--color-brand-dark) 22%, transparent);
   font-size: 0.72rem;
   font-weight: 700;
   cursor: pointer;
   user-select: none;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 .note-repeat-rate--on {
@@ -1335,6 +1339,8 @@ ul.sampler-list {
   min-width: 2.4em;
   text-align: center;
   letter-spacing: 0.02em;
+  color: var(--color-brand-dark);
+  font-variant-numeric: tabular-nums;
 }
 
 /* Expanded (default): Más hidden; panel children flow in the bar */
@@ -1370,8 +1376,8 @@ ul.sampler-list {
   margin: 0;
   box-sizing: border-box;
   border-radius: 10px;
-  background: color-mix(in srgb, var(--color-marron) 22%, transparent);
-  border: 1px solid color-mix(in srgb, var(--color-blanco) 28%, transparent);
+  background: color-mix(in srgb, var(--color-blanco) 90%, var(--color-brand-dark));
+  border: 1px solid color-mix(in srgb, var(--color-brand-dark) 18%, transparent);
 }
 
 .controls-bar--overflow.controls-bar--more-open {
@@ -1446,24 +1452,24 @@ ul.sampler-list {
 
 /* Modo edición: mismo tamaño que los demás ctrl-btn, solo resalta color */
 #edit-btn.edit-mode-active {
-  background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+  background: var(--color-principal);
   border-color: var(--color-amarillo);
   color: var(--color-blanco);
-  box-shadow: 0 0 0 1px rgba(255, 224, 102, 0.6), 0 2px 8px rgba(46, 204, 113, 0.35);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-brand-yellow) 55%, transparent), 0 2px 8px color-mix(in srgb, var(--color-brand-green) 35%, transparent);
   animation: edit-done-pulse 2s ease-in-out infinite;
 }
 
 #edit-btn.edit-mode-active:hover {
-  background: linear-gradient(135deg, #58d68d 0%, #2ecc71 100%);
-  border-color: #fff5e6;
+  background: var(--color-principal-hover);
+  border-color: var(--color-amarillo);
 }
 
 @keyframes edit-done-pulse {
   0%, 100% {
-    box-shadow: 0 0 0 1px rgba(255, 224, 102, 0.5), 0 2px 6px rgba(46, 204, 113, 0.3);
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-brand-yellow) 45%, transparent), 0 2px 6px color-mix(in srgb, var(--color-brand-green) 28%, transparent);
   }
   50% {
-    box-shadow: 0 0 0 2px rgba(255, 224, 102, 0.7), 0 2px 10px rgba(46, 204, 113, 0.45);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-brand-yellow) 65%, transparent), 0 2px 10px color-mix(in srgb, var(--color-brand-green) 40%, transparent);
   }
 }
 
@@ -1480,8 +1486,8 @@ ul.sampler-list {
   font-size: 0.88rem;
   font-weight: 600;
   color: var(--color-marron);
-  background: linear-gradient(135deg, #fff9e6 0%, #fff3cd 100%);
-  border: 2px solid var(--color-amarillo);
+  background: var(--color-surface-yellow);
+  border: 2px solid color-mix(in srgb, var(--color-brand-yellow) 70%, transparent);
   border-radius: var(--borde-radius);
   box-shadow: 0 3px 12px rgba(0, 0, 0, 0.12);
   line-height: 1.35;
@@ -1492,7 +1498,7 @@ ul.sampler-list {
 }
 
 .edit-mode-hint strong {
-  color: #1e8449;
+  color: var(--color-principal);
   white-space: nowrap;
 }
 
@@ -1511,7 +1517,7 @@ ul.sampler-list {
 .divider {
   width: 1px;
   height: 24px;
-  background: rgba(255, 255, 255, 0.3);
+  background: color-mix(in srgb, var(--color-brand-dark) 22%, transparent);
   margin: 0 2px;
 }
 
@@ -1550,9 +1556,9 @@ ul.sampler-list {
 }
 
 .view-toggle-btn {
-  background: var(--color-gris-medio);
-  color: var(--color-blanco);
-  border: none;
+  background: color-mix(in srgb, var(--color-blanco) 88%, transparent);
+  color: var(--color-brand-dark);
+  border: 2px solid color-mix(in srgb, var(--color-brand-dark) 22%, transparent);
   border-radius: var(--borde-radius);
   font-family: inherit;
   font-weight: bold;
@@ -1560,7 +1566,7 @@ ul.sampler-list {
   padding: 0.5em 1.2em;
   cursor: pointer;
   box-shadow: var(--sombra-btn);
-  transition: background 0.2s, box-shadow 0.2s, transform 0.2s;
+  transition: background 0.2s, border-color 0.2s, color 0.2s, box-shadow 0.2s, transform 0.2s;
   display: flex;
   align-items: center;
   gap: 0.4em;
@@ -1573,6 +1579,8 @@ ul.sampler-list {
 
 .view-toggle-btn.active {
   background: var(--color-principal);
+  border-color: var(--color-principal);
+  color: var(--color-blanco);
 }
 
 .view-toggle-btn i {
@@ -1590,7 +1598,7 @@ ul.sampler-list {
   position: absolute;
   inset: -3px;
   border-radius: calc(var(--borde-radius) + 2px);
-  background: linear-gradient(45deg, var(--color-principal), var(--color-secundario), var(--color-amarillo), var(--color-principal));
+  background: linear-gradient(45deg, var(--color-principal), var(--color-amarillo), var(--color-principal));
   background-size: 300% 300%;
   z-index: -1;
   animation: gradient-border 3s ease infinite;
@@ -1599,10 +1607,10 @@ ul.sampler-list {
 
 @keyframes feature-glow {
   0%, 100% {
-    box-shadow: 0 2px 8px rgba(255, 154, 86, 0.3);
+    box-shadow: 0 2px 8px color-mix(in srgb, var(--color-brand-green) 28%, transparent);
   }
   50% {
-    box-shadow: 0 4px 20px rgba(255, 107, 107, 0.6), 0 0 30px rgba(255, 224, 102, 0.4);
+    box-shadow: 0 4px 16px color-mix(in srgb, var(--color-brand-green) 40%, transparent), 0 0 20px color-mix(in srgb, var(--color-brand-yellow) 35%, transparent);
   }
 }
 
@@ -1613,8 +1621,8 @@ ul.sampler-list {
 }
 
 .new-badge {
-  background: var(--color-secundario);
-  color: var(--color-blanco);
+  background: var(--color-amarillo);
+  color: var(--color-brand-dark);
   font-size: 0.65em;
   font-weight: bold;
   padding: 0.15em 0.5em;
@@ -1698,8 +1706,8 @@ ul.sampler-list {
   border-color: var(--color-amarillo);
   box-shadow:
     0 2px 10px rgba(0, 0, 0, 0.28),
-    0 0 28px rgba(255, 224, 102, 0.75),
-    0 0 44px rgba(255, 154, 86, 0.55);
+    0 0 28px color-mix(in srgb, var(--color-brand-yellow) 75%, transparent),
+    0 0 44px color-mix(in srgb, var(--color-brand-yellow) 50%, transparent);
   filter: brightness(1.15);
 }
 
@@ -1786,14 +1794,14 @@ ul.sampler-list {
   --viz-wave: var(--color-amarillo);
   --viz-bar-start: var(--color-principal);
   --viz-bar-end: var(--color-secundario);
-  --viz-glow: rgba(255, 224, 102, 0.45);
+  --viz-glow: color-mix(in srgb, var(--color-brand-yellow) 40%, transparent);
   width: min(720px, 100%);
   margin: 0.75em 0 1.1em;
   padding: 0.85em 1em 1em;
   border-radius: var(--borde-radius-grande);
   background: rgba(20, 12, 8, 0.55);
   backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 224, 102, 0.25);
+  border: 1px solid color-mix(in srgb, var(--color-brand-yellow) 25%, transparent);
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
