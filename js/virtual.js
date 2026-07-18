@@ -14,7 +14,7 @@ function setMasterVolume(value) {
 import { initAudioVisualizer, pulseAudioVisualizer } from './audio-visualizer.js';
 import { resolveSamplerPath, samplerUrl, samplerBasename } from './sampler-path.js';
 import { mountSamplerBrowser, loadSamplerCatalog } from './sampler-browser.js';
-import { isNoteRepeatEnabled, setNoteRepeatEnabled, startNoteRepeat, stopNoteRepeat, stopAllNoteRepeat } from './note-repeat.js';
+import { isNoteRepeatEnabled, setNoteRepeatEnabled, startNoteRepeat, stopNoteRepeat, stopAllNoteRepeat, noteRepeatIntervalMs, setNoteRepeatIntervalMs, noteRepeatSliderToMs, noteRepeatMsToSlider, noteRepeatRateLabel } from './note-repeat.js';
 import { stopSamplerPreview, previewSamplerPath } from './sampler-preview.js';
 import {
   collectKitSnapshot,
@@ -763,10 +763,11 @@ async function preloadAllSamplers() {
 }
 
 
-function playSamplerVoice(buffer, voiceKey) {
+function playSamplerVoice(buffer, voiceKey, { force = false } = {}) {
   const now = audioCtx.currentTime;
   const last = lastTriggerAt.get(voiceKey) ?? 0;
-  if (now - last < RETRIGGER_MASK_SEC) return;
+  // Ghost-tap shield; note-repeat ticks pass force so mask never skips a beat
+  if (!force && now - last < RETRIGGER_MASK_SEC) return;
 
   const prev = activeVoices.get(voiceKey);
   if (prev) {
@@ -808,7 +809,7 @@ function setPlaybackRate(rate, { persist = false } = {}) {
 }
 
 // PLAY: buffer ya en RAM, start(0), sin await
-function playTomSampler(tomId) {
+function playTomSampler(tomId, { force = false } = {}) {
   const fileName = tomAudioMap[tomId];
   if (!fileName) return;
   const url = samplerUrl(fileName);
@@ -817,7 +818,7 @@ function playTomSampler(tomId) {
     void preloadSamplerFile(fileName);
     return;
   }
-  playSamplerVoice(buffer, `tom:${tomId}`);
+  playSamplerVoice(buffer, `tom:${tomId}`, { force });
 }
 
 /** @param {HTMLElement | null | undefined} el */
@@ -852,7 +853,7 @@ function beginTomNoteRepeat(tomId) {
   const key = tomVoiceKey(tomId);
   startNoteRepeat(key, () => {
     flashTomButton(tomId);
-    playTomSampler(tomId);
+    playTomSampler(tomId, { force: true });
   });
 }
 
@@ -908,7 +909,7 @@ async function preloadPadsViewBuffer(index) {
   return await preloadSamplerFile(fileName);
 }
 
-function playPadSound(index) {
+function playPadSound(index, { force = false } = {}) {
   const fileName = padsViewState[index];
   const url = fileName ? samplerUrl(fileName) : '';
   const buffer = padsViewBuffers[index] || (url ? globalSamplerCache[url] : null);
@@ -916,7 +917,7 @@ function playPadSound(index) {
     if (fileName) void preloadPadsViewBuffer(index).then((buf) => { if (buf) padsViewBuffers[index] = buf; });
     return;
   }
-  playSamplerVoice(buffer, `pad:${index}`);
+  playSamplerVoice(buffer, `pad:${index}`, { force });
 }
 
 function flashPadButton(index) {
@@ -935,7 +936,7 @@ function beginPadNoteRepeat(index) {
   const key = padVoiceKey(index);
   startNoteRepeat(key, () => {
     flashPadButton(index);
-    playPadSound(index);
+    playPadSound(index, { force: true });
   });
 }
 
@@ -1140,29 +1141,37 @@ function padSizeForGrid(cols, rows, availW, availH, gap, gridPad, maxCap) {
   return Math.min(sizeW, sizeH, maxCap);
 }
 
-/** Móvil: elige cols×rows que maximice tamaño táctil (sin huecos). */
+function padBoxForGrid(cols, rows, availW, availH, gap, gridPad, maxCap) {
+  const sizeW = Math.min(maxCap, (availW - (cols - 1) * gap - 2 * gridPad) / cols);
+  const sizeH = Math.min(maxCap, (availH - (rows - 1) * gap - 2 * gridPad) / rows);
+  return { sizeW, sizeH, size: Math.min(sizeW, sizeH) };
+}
+
+/** Móvil: maximiza tamaño táctil y aprovecha ancho (menos gutters laterales). */
 function pickResponsivePadLayout(total, availW, availH, gap, gridPad, cfg, isMobile) {
   if (!isMobile) {
     return { cols: cfg.cols, rows: cfg.rows };
   }
 
-  const maxCap = 120;
-  const minPad = 52;
+  const maxCap = 128;
+  const minPad = 50;
   let best = null;
 
   for (const { cols, rows } of factorPadGridPairs(total)) {
-    if (cols > 6 || rows > 8) continue;
-    const size = padSizeForGrid(cols, rows, availW, availH, gap, gridPad, maxCap);
-    if (size < minPad) continue;
+    if (cols > 8 || rows > 8) continue;
+    const { sizeW, sizeH, size } = padBoxForGrid(cols, rows, availW, availH, gap, gridPad, maxCap);
+    if (sizeW < minPad || sizeH < minPad) continue;
 
-    let score = size;
-    if (cols <= 4) score += 3;
-    if (cols <= 3) score += 1;
-    const aspect = cols / rows;
-    if (aspect >= 0.45 && aspect <= 1.6) score += 2;
+    const widthUsed = cols * sizeW + (cols - 1) * gap + 2 * gridPad;
+    const heightUsed = rows * sizeH + (rows - 1) * gap + 2 * gridPad;
+    const fillW = widthUsed / Math.max(1, availW);
+    const fillH = heightUsed / Math.max(1, availH);
+    // Area ≈ touch target; fillW/H kill side/bottom gutters
+    let score = sizeW * sizeH + fillW * 800 + fillH * 400;
+    if (cols >= 3 && cols <= 6) score += 50;
 
     if (!best || score > best.score) {
-      best = { cols, rows, size, score };
+      best = { cols, rows, sizeW, sizeH, size, score };
     }
   }
 
@@ -1177,20 +1186,22 @@ function layoutResponsivePads() {
 
   const cfg = gridConfigs[currentGridType] || gridConfigs['3x4'];
   view.style.removeProperty('--pad-cols');
-  view.style.removeProperty('--pad-size');
   view.style.removeProperty('--pad-rows');
+  view.style.removeProperty('--pad-size');
+  view.style.removeProperty('--pad-size-w');
+  view.style.removeProperty('--pad-size-h');
 
   const isMobile = MOBILE_PADS_MQ.matches;
-  const gap = isMobile ? 6 : 8;
-  const gridPad = isMobile ? 6 : 10;
-  const maxCap = isMobile ? 120 : 132;
+  const gap = isMobile ? 5 : 8;
+  const gridPad = isMobile ? 2 : 10;
+  const maxCap = isMobile ? 128 : 132;
   const minPad = isMobile ? 48 : 48;
 
   const vol = kitPlay.querySelector('.kit-audio-controls') || kitPlay.querySelector('.battery-volume-container');
   const playRect = kitPlay.getBoundingClientRect();
   // Reserve audio controls height so pads never cover Volumen/Velocidad
-  const volH = Math.max(vol ? vol.offsetHeight : 0, isMobile ? 88 : 56) + (isMobile ? 12 : 16);
-  const availW = playRect.width - (isMobile ? 12 : 20);
+  const volH = Math.max(vol ? vol.offsetHeight : 0, isMobile ? 72 : 56) + (isMobile ? 4 : 16);
+  const availW = playRect.width - (isMobile ? 2 : 20);
   const viewH = view.clientHeight;
   const stageBudget = Math.max(0, playRect.height - volH);
   const availH = viewH > 80
@@ -1205,12 +1216,21 @@ function layoutResponsivePads() {
   );
   if (layoutCols * layoutRows !== cfg.total) return;
 
-  const size = padSizeForGrid(layoutCols, layoutRows, availW, availH, gap, gridPad, maxCap);
-  if (size < minPad) return;
+  const { sizeW, sizeH, size } = padBoxForGrid(
+    layoutCols, layoutRows, availW, availH, gap, gridPad, maxCap
+  );
+  if (sizeW < minPad || sizeH < minPad) return;
 
   view.style.setProperty('--pad-cols', String(layoutCols));
   view.style.setProperty('--pad-rows', String(layoutRows));
-  view.style.setProperty('--pad-size', `${Math.floor(size * (isMobile ? 0.98 : 0.95))}px`);
+  if (isMobile) {
+    // Slightly rectangular OK — fills width + height toward volume
+    view.style.setProperty('--pad-size-w', `${Math.floor(sizeW)}px`);
+    view.style.setProperty('--pad-size-h', `${Math.floor(sizeH)}px`);
+    view.style.setProperty('--pad-size', `${Math.floor(size)}px`);
+  } else {
+    view.style.setProperty('--pad-size', `${Math.floor(size * 0.95)}px`);
+  }
 }
 
 function scheduleResponsivePadsLayout() {
@@ -1233,16 +1253,39 @@ function initResponsivePadsLayout() {
 function initNoteRepeatToggle() {
   const btn = document.getElementById('note-repeat-btn');
   const label = document.getElementById('note-repeat-btn-label');
+  const rateSlider = document.getElementById('note-repeat-rate');
+  const rateLabel = document.getElementById('note-repeat-rate-label');
   if (!btn) return undefined;
+
+  const syncRateUi = () => {
+    const ms = noteRepeatIntervalMs();
+    if (rateSlider) {
+      rateSlider.value = String(noteRepeatMsToSlider(ms));
+      rateSlider.setAttribute('aria-valuetext', noteRepeatRateLabel(ms));
+    }
+    if (rateLabel) rateLabel.textContent = noteRepeatRateLabel(ms);
+  };
+
   const apply = (on) => {
     setNoteRepeatEnabled(on);
     btn.classList.toggle('active', on);
     btn.setAttribute('aria-pressed', on ? 'true' : 'false');
     if (label) label.textContent = on ? 'Activo' : 'Apagado';
+    document.querySelector('.note-repeat-rate')?.classList.toggle('note-repeat-rate--on', on);
     btn.title = on
       ? 'Redoble activo (Note Repeat): mantén tecla o pad para repetir el sonido. Pulsa otra vez para volver a one-shot.'
       : 'Activa el redoble: al sostener tecla o pad, el sonido repite en ráfaga — como Note Repeat en el MPC. Apagado = un golpe por pulsación.';
   };
+
+  if (rateSlider) {
+    rateSlider.addEventListener('input', () => {
+      const ms = noteRepeatSliderToMs(rateSlider.value);
+      setNoteRepeatIntervalMs(ms);
+      syncRateUi();
+    });
+  }
+
+  syncRateUi();
   apply(isNoteRepeatEnabled());
   btn.addEventListener('click', () => apply(!isNoteRepeatEnabled()));
   return apply;

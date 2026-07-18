@@ -31,12 +31,14 @@ export const AUDIO_UI = {
   retriggerMaskMs: 28,
   /**
    * Note repeat (MPC "Note Repeat") — off by default; user enables "Redoble" in UI.
-   * One-shot: tap or hold = sample plays once (Akai SAMPLE PLAY = ONE SHOT).
-   * Redoble on: retriggers at intervalMs while held (tempo ref: 1/16 @ 120 BPM ≈ 125 ms).
+   * Speed dial maps slider 0..100 → maxMs..minMs (0=lento, 100=rápido).
+   * Anchors @ 120 BPM: 1/32=62.5, 1/16=125, 1/8=250.
    */
   noteRepeat: {
     enabled: false,
     intervalMs: 125,
+    minMs: 62.5,
+    maxMs: 250,
   },
   /**
    * Sampler speed (Web Audio playbackRate).

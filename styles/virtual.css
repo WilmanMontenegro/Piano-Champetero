@@ -1305,6 +1305,37 @@ ul.sampler-list {
   row-gap: 4px;
 }
 
+.note-repeat-rate {
+  display: none;
+  align-items: center;
+  gap: 0.3em;
+  margin: 0;
+  padding: 0.15em 0.35em;
+  border-radius: 8px;
+  color: var(--color-amarillo);
+  font-size: 0.72rem;
+  font-weight: 700;
+  cursor: pointer;
+  user-select: none;
+}
+
+.note-repeat-rate--on {
+  display: inline-flex;
+}
+
+.note-repeat-rate input[type="range"] {
+  width: 4.5rem;
+  min-width: 3.5rem;
+  accent-color: var(--color-principal);
+  cursor: pointer;
+}
+
+.note-repeat-rate-label {
+  min-width: 2.4em;
+  text-align: center;
+  letter-spacing: 0.02em;
+}
+
 /* Desktop: Más hidden; panel children flow in controls-bar */
 .more-controls-btn {
   display: none;
@@ -1959,7 +1990,10 @@ ul.sampler-list {
   flex: 1 1 auto;
   min-height: 0;
   width: 100%;
-  display: block !important;
+  display: flex !important;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
   padding-top: 0;
 }
 
@@ -1968,15 +2002,21 @@ ul.sampler-list {
   flex-shrink: 0;
 }
 
-/* virtual.html: rejilla vía JS (--pad-cols, --pad-rows, --pad-size) */
+/* virtual.html: rejilla vía JS (--pad-cols, --pad-rows, --pad-size / -w / -h) */
 .virtual-page .pads-grid {
-  grid-template-columns: repeat(var(--pad-cols, 4), var(--pad-size, 72px)) !important;
-  grid-template-rows: repeat(var(--pad-rows, 4), var(--pad-size, 72px));
+  grid-template-columns: repeat(var(--pad-cols, 4), var(--pad-size-w, var(--pad-size, 72px))) !important;
+  grid-template-rows: repeat(var(--pad-rows, 4), var(--pad-size-h, var(--pad-size, 72px)));
   justify-content: center;
   width: fit-content;
   max-width: 100%;
   margin-inline: auto;
   box-sizing: border-box;
+}
+
+.virtual-page .pads-grid .pad-item {
+  aspect-ratio: auto;
+  width: 100%;
+  height: 100%;
 }
 
 .virtual-page .controls-bar {
@@ -2302,11 +2342,11 @@ ul.sampler-list {
 
   .virtual-page .audio-viz-panel {
     margin: 0.1em 0 0.15em;
-    padding: 0.18em 0.4em 0.2em;
+    padding: 0.22em 0.4em 0.28em;
   }
 
   .virtual-page .audio-viz-header {
-    margin-bottom: 0.1em;
+    margin-bottom: 0.15em;
   }
 
   .virtual-page .audio-viz-title {
@@ -2314,7 +2354,7 @@ ul.sampler-list {
   }
 
   .virtual-page .audio-viz-canvas {
-    height: 28px;
+    height: 36px;
   }
 
   .virtual-page .audio-viz-panel--off {
@@ -2343,8 +2383,8 @@ ul.sampler-list {
     transform: none;
     z-index: 5;
     width: 100%;
-    margin: 0.35rem 0 0;
-    padding: 0.25rem 0.5rem calc(0.35rem + env(safe-area-inset-bottom, 0px));
+    margin: 0.15rem 0 0;
+    padding: 0.2rem 0.4rem calc(0.25rem + env(safe-area-inset-bottom, 0px));
     gap: 0.45rem 0.85rem;
     flex-direction: row;
     flex-wrap: wrap;
@@ -2423,7 +2463,7 @@ ul.sampler-list {
   }
 
   .virtual-page .kit-play-stage:has(#pads-view:not(.hidden)) .pads-grid {
-    padding: 0.2rem 0.15rem;
+    padding: 0.05rem 0;
   }
 
   .virtual-page .audio-viz-panel {
@@ -2485,6 +2525,15 @@ ul.sampler-list {
     min-width: 2.35rem;
     padding-inline: 0.5em;
     justify-content: center;
+  }
+
+  .virtual-page .note-repeat-rate input[type="range"] {
+    width: 3.6rem;
+  }
+
+  .virtual-page .note-repeat-rate-label {
+    font-size: 0.68rem;
+    min-width: 2.2em;
   }
 
   .virtual-page .audio-viz-panel {

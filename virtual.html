@@ -175,6 +175,11 @@
             <i class="fa-solid fa-repeat" aria-hidden="true"></i>
             <span id="note-repeat-btn-label">Apagado</span>
           </button>
+          <label class="note-repeat-rate" for="note-repeat-rate" title="Velocidad del redoble: lento (1/8) ↔ rápido (1/32)">
+            <i class="fa-solid fa-gauge-high" aria-hidden="true"></i>
+            <input type="range" id="note-repeat-rate" min="0" max="100" step="1" value="50" aria-valuetext="1/16">
+            <span id="note-repeat-rate-label" class="note-repeat-rate-label">1/16</span>
+          </label>
           <button id="session-record-btn" type="button" class="ctrl-btn session-record-btn" aria-pressed="false" title="Graba la batería y el audio del PC (Spotify, YouTube, etc.). Un clic para empezar, otro para parar.">
             <i class="fa-solid fa-circle session-record-icon" aria-hidden="true"></i>
             <span id="session-record-label">Grabar audio</span>
