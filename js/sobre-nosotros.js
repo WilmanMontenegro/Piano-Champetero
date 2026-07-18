@@ -3,8 +3,13 @@ import { initSiteChrome, setYearFooter, resumeOnUserGesture } from './common.js'
 import { renderContributorsList } from './site-config.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
-  await initSiteChrome();
+  // Before chrome: list must not stay empty if header/nav fetch hangs.
   renderContributorsList();
-  setYearFooter();
-  resumeOnUserGesture();
+  try {
+    await initSiteChrome();
+  } finally {
+    renderContributorsList();
+    setYearFooter();
+    resumeOnUserGesture();
+  }
 });
