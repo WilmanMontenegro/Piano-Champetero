@@ -1648,7 +1648,7 @@ ul.sampler-list {
 .pad-item {
   --pad-glow: var(--pad-glow-idle);
   aspect-ratio: 1 / 1;
-  background: linear-gradient(145deg, var(--color-principal) 0%, var(--color-secundario) 100%);
+  background: var(--pad-fill);
   border: 1.5px solid rgba(255, 255, 255, 0.5);
   border-radius: var(--pad-item-radius);
   display: flex;
@@ -1736,7 +1736,7 @@ ul.sampler-list {
   font-size: var(--pad-key-size);
   font-weight: bold;
   color: var(--color-blanco);
-  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.55), 0 0 10px rgba(0, 0, 0, 0.25);
   line-height: 1;
 }
 
@@ -2190,7 +2190,7 @@ ul.sampler-list {
   font-size: 0.78rem;
 }
 
-/* Pantallas bajas — achicar el kit entero, no los ratios de toms */
+/* Pantallas bajas — solo batería/viz chrome; NO es tier de pads/play */
 @media (max-height: 860px) {
   .virtual-page .audio-viz-canvas {
     height: 44px;
@@ -2201,7 +2201,7 @@ ul.sampler-list {
   }
 }
 
-@media (max-width: 767px), (max-height: 860px) {
+@media (max-width: 767px) {
   .virtual-page {
     --virtual-footer-block: 0.65rem;
   }
@@ -2211,9 +2211,8 @@ ul.sampler-list {
   }
 }
 
-/* ===================== RESPONSIVE VIEWS (móvil + landscape phone) ===================== */
-/* Landscape phones often have width >767 — also match short height + coarse pointer */
-@media (max-width: 767px), (orientation: landscape) and (max-height: 560px) and (pointer: coarse) {
+/* ===================== RESPONSIVE VIEWS — mobile tier only (≤767) ===================== */
+@media (max-width: 767px) {
   .view-toggle-btn {
     font-size: 0.8rem;
     padding: 0.4em 0.9em;
@@ -2457,103 +2456,5 @@ ul.sampler-list {
 
   .virtual-page .audio-viz-panel {
     margin: 0.05em 0 0.1em;
-  }
-}
-/*
- * Mobile landscape play — sync with --bp-mobile-landscape-max-height / MOBILE_PLAY_MQ.
- * Chrome only (hide ticker/header/viz). Sacred tom ratios on .battery — never override here.
- */
-@media (orientation: landscape) and (max-height: 560px) and (pointer: coarse) {
-  .virtual-page {
-    padding-top: 0;
-  }
-
-  .virtual-page .contributor-ticker {
-    display: none;
-  }
-
-  .virtual-page header {
-    max-height: 0;
-    padding: 0;
-    margin: 0;
-    opacity: 0;
-    overflow: hidden;
-    pointer-events: none;
-    border: none;
-  }
-
-  .virtual-page .controls-bar {
-    padding: 0.1rem 0.3rem;
-    gap: 4px;
-    row-gap: 4px;
-  }
-
-  .virtual-page .control-group--secondary .group-label,
-  .virtual-page .control-group--primary .group-label {
-    display: none;
-  }
-
-  .virtual-page .control-group--secondary .ctrl-btn-text,
-  .virtual-page #session-record-label,
-  .virtual-page #pattern-loop-label,
-  .virtual-page #note-repeat-btn-label {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    border: 0;
-  }
-
-  .virtual-page .control-group--secondary .ctrl-btn,
-  .virtual-page .control-group--record .ctrl-btn {
-    position: relative;
-    min-width: 2.35rem;
-    padding-inline: 0.5em;
-    justify-content: center;
-  }
-
-  .virtual-page .note-repeat-rate input[type="range"] {
-    width: 3.6rem;
-  }
-
-  .virtual-page .note-repeat-rate-label {
-    font-size: 0.68rem;
-    min-width: 2.2em;
-  }
-
-  .virtual-page .audio-viz-panel {
-    display: none;
-  }
-
-  .virtual-page .edit-mode-hint {
-    display: none;
-  }
-
-  .virtual-page main {
-    padding: 0;
-  }
-
-  .virtual-page .kit-play-stage {
-    padding-bottom: max(0.25rem, env(safe-area-inset-bottom, 0px));
-    padding-left: env(safe-area-inset-left, 0px);
-    padding-right: env(safe-area-inset-right, 0px);
-  }
-
-  /* Same sacred distribution — do not override tom sizes here */
-  .virtual-page .battery {
-    margin: 0.1rem auto;
-  }
-
-  .virtual-page .battery-rate-container {
-    flex-wrap: nowrap;
-  }
-
-  .virtual-page .whatsapp-fab {
-    transform: scale(0.88);
-    transform-origin: bottom right;
   }
 }

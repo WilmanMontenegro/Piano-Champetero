@@ -18,6 +18,10 @@
   --color-error: #FF6B6B;
   --color-whatsapp: #25d366;
   --color-whatsapp-hover: #1ebe57;
+  /* Favicon / PWA icon — rasta brand (green → yellow → red) */
+  --color-rasta-green: #54A830;
+  --color-rasta-yellow: #FCCC0C;
+  --color-rasta-red: #E43024;
 
   /* Gradientes reutilizables */
   --gradient-body: linear-gradient(135deg, #FFE066 0%, #FF9A56 25%, #FF6B6B 50%, #FFB7C5 75%, #FFF5E6 100%);
@@ -45,8 +49,7 @@
   --bp-mobile-max: 767px;
   --bp-tablet-min: 768px;
   --bp-desktop-min: 1024px;
-  /* Sync with js/site-config.js MOBILE_LANDSCAPE_MAX_HEIGHT_PX (phones in landscape often width>767) */
-  --bp-mobile-landscape-max-height: 560px;
+  /* Pad/play layout: only these 3 widths. No height/landscape play breakpoints. */
 
   --ticker-block-height: 2.15rem;
 
@@ -68,8 +71,8 @@
   --sombra-nav-dropdown: 0 4px 12px rgba(0, 0, 0, 0.3);
 
   /* Pads / toms — feedback al tocar (paleta caribeña) */
-  --pad-glow-idle: rgba(255, 154, 86, 0.35);
-  --pad-hit-ring: rgba(255, 224, 102, 0.95);
+  --pad-glow-idle: color-mix(in srgb, var(--color-rasta-yellow) 35%, transparent);
+  --pad-hit-ring: color-mix(in srgb, var(--color-rasta-yellow) 95%, transparent);
   --tom-glow-idle: rgba(255, 224, 102, 0.35);
   --hit-flash-duration: 0.16s;
 
@@ -78,11 +81,23 @@
    * never re-declare .pad-* property blocks in virtual.css.
    *
    * Layout:  --pad-gap, --pad-grid-pad, --pad-view-max-width, --pad-view-padding
-   * Cell:    --pad-item-padding, --pad-item-radius
+   * Cell:    --pad-item-padding, --pad-item-radius, --pad-fill*
    * Labels:  --pad-key-size, --pad-sound-size/weight/color
    * JS size: PAD_LAYOUT_BY_TIER (maxCap/minPad/…) + reads --pad-gap/--pad-grid-pad
    * Runtime: --pad-cols/--pad-rows/--pad-size set on #pads-view by virtual.js
+   *
+   * Fill: favicon diagonal green→yellow→red (icon_soft: mix white, not charcoal).
+   * Charcoal mute made pads look olive/green — avoid.
    */
+  --pad-fill-start: color-mix(in srgb, var(--color-rasta-green) 72%, white);
+  --pad-fill-mid: color-mix(in srgb, var(--color-rasta-yellow) 78%, white);
+  --pad-fill-end: color-mix(in srgb, var(--color-rasta-red) 72%, white);
+  --pad-fill: linear-gradient(
+    135deg,
+    var(--pad-fill-start) 0%,
+    var(--pad-fill-mid) 48%,
+    var(--pad-fill-end) 100%
+  );
   --pad-gap: 10px;
   --pad-grid-pad: 10px;
   --pad-view-max-width: min(1420px, 96%);

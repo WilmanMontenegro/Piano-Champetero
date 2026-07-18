@@ -1284,9 +1284,13 @@ function pickResponsivePadLayout(total, availW, availH, gap, gridPad, maxCap, mi
     .filter((c) => c.size >= maxSize * 0.98)
     .sort((a, b) => soft(b.fillH) - soft(a.fillH))[0];
 
-  // Tall slack under widest near-max layout → open pool to taller shapes
-  const verticalSlack = soft(largest.fillH) < 0.85;
-  const sizeFloor = maxSize * (verticalSlack ? 0.78 : 0.92);
+  // Viewport portrait (not stage box): wide near-max → open taller pool (6×4→4×6).
+  // Stage availH×availW is often landscape after chrome; use window aspect.
+  const preferTall = window.innerHeight > window.innerWidth;
+  let verticalSlack = soft(largest.fillH) < 0.85;
+  if (preferTall && largest.cols > largest.rows) verticalSlack = true;
+  // ponytail: 0.70 floor when forcing tall — 4×6 drops below 0.78×maxSize with mid chrome
+  const sizeFloor = maxSize * (verticalSlack ? (preferTall && largest.cols > largest.rows ? 0.7 : 0.78) : 0.92);
   const pool = candidates.filter((c) => c.size >= sizeFloor);
 
   pool.sort((a, b) => {
