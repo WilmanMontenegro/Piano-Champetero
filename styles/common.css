@@ -150,45 +150,44 @@ header {
   font-size: var(--header-title-size);
   font-weight: normal;
   margin: var(--header-title-margin-block) 0;
-  padding: 0 6.5rem 0 1rem;
+  padding: 0 4.25rem 0 1rem;
   max-width: 100%;
   word-wrap: break-word;
   overflow-wrap: break-word;
   line-height: 1.15;
 }
 
-/* Claro/Oscuro — esquina derecha del header; botón sólido (contraste sobre foto) */
+/* Claro/Oscuro — esquina derecha del header */
 .theme-toggle--header {
   position: absolute;
-  top: 0.35rem;
-  right: 0.65rem;
+  top: 0.45rem;
+  right: 0.7rem;
   z-index: calc(var(--z-nav-hamburger) + 1);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.45em;
+  gap: 0.35em;
   margin: 0;
-  padding: 0.55em 1.15em;
-  border: 3px solid var(--color-brand-dark);
+  padding: 0.32em 0.7em;
+  border: 2px solid var(--color-brand-dark);
   border-radius: var(--borde-radius);
   background: var(--color-amarillo);
   color: var(--color-brand-dark);
   font-family: var(--font-body);
-  font-size: clamp(0.95rem, 0.55rem + 0.85vw, 1.2rem);
-  font-weight: 800;
+  font-size: clamp(0.72rem, 0.4rem + 0.45vw, 0.88rem);
+  font-weight: 700;
   line-height: 1;
   cursor: pointer;
   text-shadow: none;
   white-space: nowrap;
   box-shadow: var(--sombra-btn);
-  transition: background 0.2s, color 0.2s, border-color 0.2s, box-shadow 0.2s, transform 0.15s;
+  transition: background 0.2s, color 0.2s, border-color 0.2s, box-shadow 0.2s;
 }
 
 .theme-toggle--header:hover {
   background: var(--color-blanco);
   border-color: var(--color-brand-dark);
   box-shadow: var(--sombra-btn-hover);
-  transform: translateY(-1px);
 }
 
 .theme-toggle--header[aria-pressed="true"] {
@@ -198,7 +197,7 @@ header {
 }
 
 .theme-toggle--header i {
-  font-size: 1.05em;
+  font-size: 0.95em;
 }
 
 /* ===================== BOTONES ===================== */
