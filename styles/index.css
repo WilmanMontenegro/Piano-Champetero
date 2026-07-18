@@ -8,16 +8,27 @@
 }
 
 section h2 {
-  color: var(--color-marron);
+  color: var(--color-display);
   font-weight: 700;
 }
 
 .faq-item {
   margin-bottom: 1.5em;
   padding: 1em;
-  background: var(--color-surface-yellow);
+  background: var(--color-surface);
   border-radius: 8px;
-  border: 1px solid var(--color-tint-green);
+  border: 1px solid color-mix(in srgb, var(--color-brand-dark) 8%, transparent);
+  border-left: 3px solid var(--accent-soft-yellow);
+}
+
+.faq-item:nth-child(3n + 2) {
+  border-left-color: var(--accent-soft-green);
+  background: var(--color-surface-green);
+}
+
+.faq-item:nth-child(3n + 3) {
+  border-left-color: var(--accent-soft-red);
+  background: var(--color-surface-red);
 }
 
 .faq-item h3 {

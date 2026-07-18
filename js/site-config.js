@@ -20,6 +20,9 @@ export const WHATSAPP_COMMUNITY_URL = 'https://chat.whatsapp.com/JDQqXwQoJ8V3YcD
 /** Label for floating WhatsApp button (es-419). */
 export const WHATSAPP_COMMUNITY_LABEL = 'Únete al grupo';
 
+/** localStorage: `light` | `dark` — theme toggle (Claro / Oscuro). */
+export const THEME_STORAGE_KEY = 'pianoChampeteroTheme';
+
 export const AUDIO_UI = {
   hitFlashMs: 140,
   /** Same pad: min ms between hits (ghost-tap shield). Lower = tighter rolls on mobile. */

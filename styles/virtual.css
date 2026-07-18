@@ -30,8 +30,8 @@ main {
   50% {
     box-shadow:
       0 4px 15px rgba(0, 0, 0, 0.3),
-      0 0 22px rgba(255, 107, 107, 0.45),
-      0 0 0 2px rgba(255, 107, 107, 0.7);
+      0 0 22px color-mix(in srgb, var(--pad-edit-pulse) 45%, transparent),
+      0 0 0 2px color-mix(in srgb, var(--pad-edit-pulse) 70%, transparent);
   }
 }
 
@@ -55,7 +55,7 @@ main {
 
 .battery-volume {
   width: 180px;
-  accent-color: var(--color-principal);
+  accent-color: var(--accent-volume);
 }
 
 .battery-rate-container {
@@ -68,6 +68,8 @@ main {
   touch-action: none;
   /* Bigger finger target; we own horizontal drag via pointer events. */
   min-height: 44px;
+  /* Overrides .battery-volume — rate accent from tokens */
+  accent-color: var(--accent-rate);
 }
 
 .rate-fixed-label {
@@ -79,7 +81,7 @@ main {
   flex-shrink: 0;
   font-size: var(--font-size-sm);
   font-weight: 600;
-  color: var(--color-marron);
+  color: var(--chrome-label);
   cursor: pointer;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
@@ -88,7 +90,7 @@ main {
 .rate-fixed-label input {
   width: 1em;
   height: 1em;
-  accent-color: var(--color-principal);
+  accent-color: var(--accent-rate-fixed);
   cursor: pointer;
 }
 
@@ -102,7 +104,7 @@ main {
 #volume-percent,
 #rate-percent {
   font-size: var(--font-size-lg);
-  color: var(--color-marron);
+  color: var(--chrome-label);
   font-weight: bold;
   letter-spacing: 1px;
 }
@@ -1313,15 +1315,14 @@ ul.sampler-list {
   margin: 0;
   padding: 0.15em 0.45em;
   border-radius: 8px;
-  /* Ink on light chrome — yellow-on-mint had no contrast */
-  color: var(--color-brand-dark);
-  background: color-mix(in srgb, var(--color-blanco) 88%, transparent);
-  border: 2px solid color-mix(in srgb, var(--color-brand-dark) 22%, transparent);
+  color: var(--chrome-btn-fg);
+  background: var(--chrome-btn-bg);
+  border: 2px solid var(--chrome-btn-border);
   font-size: 0.72rem;
   font-weight: 700;
   cursor: pointer;
   user-select: none;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--chrome-btn-shadow);
 }
 
 .note-repeat-rate--on {
@@ -1331,7 +1332,7 @@ ul.sampler-list {
 .note-repeat-rate input[type="range"] {
   width: 4.5rem;
   min-width: 3.5rem;
-  accent-color: var(--color-principal);
+  accent-color: var(--accent-note-repeat-slider);
   cursor: pointer;
 }
 
@@ -1339,12 +1340,13 @@ ul.sampler-list {
   min-width: 2.4em;
   text-align: center;
   letter-spacing: 0.02em;
-  color: var(--color-brand-dark);
+  color: var(--chrome-btn-fg);
   font-variant-numeric: tabular-nums;
 }
 
-/* Expanded (default): Más hidden; panel children flow in the bar */
-.more-controls-btn {
+/* Expanded (default): Más hidden; panel children flow in the bar.
+   Compound selector beats `.ctrl-btn { display:flex }` so Más never leaks. */
+.ctrl-btn.more-controls-btn {
   display: none;
   flex: 0 0 auto;
   min-width: 2.6rem;
@@ -1360,7 +1362,7 @@ ul.sampler-list {
   flex-wrap: nowrap;
 }
 
-.controls-bar--overflow .more-controls-btn {
+.controls-bar--overflow .ctrl-btn.more-controls-btn {
   display: inline-flex;
 }
 
@@ -1376,8 +1378,8 @@ ul.sampler-list {
   margin: 0;
   box-sizing: border-box;
   border-radius: 10px;
-  background: color-mix(in srgb, var(--color-blanco) 90%, var(--color-brand-dark));
-  border: 1px solid color-mix(in srgb, var(--color-brand-dark) 18%, transparent);
+  background: color-mix(in srgb, var(--chrome-audio-bg) 92%, var(--color-surface-yellow));
+  border: 1px solid var(--chrome-bar-border);
 }
 
 .controls-bar--overflow.controls-bar--more-open {
@@ -1395,7 +1397,7 @@ ul.sampler-list {
 }
 
 .group-label {
-  color: var(--color-brand-dark);
+  color: var(--chrome-label);
   font-size: 0.75rem;
   font-weight: bold;
   text-transform: uppercase;
@@ -1404,9 +1406,9 @@ ul.sampler-list {
 }
 
 .ctrl-btn {
-  background: color-mix(in srgb, var(--color-blanco) 88%, transparent);
-  color: var(--color-brand-dark);
-  border: 2px solid color-mix(in srgb, var(--color-brand-dark) 22%, transparent);
+  background: var(--chrome-btn-bg);
+  color: var(--chrome-btn-fg);
+  border: 2px solid var(--chrome-btn-border);
   border-radius: 8px;
   font-family: inherit;
   font-weight: bold;
@@ -1418,30 +1420,21 @@ ul.sampler-list {
   display: flex;
   align-items: center;
   gap: 0.3em;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--chrome-btn-shadow);
 }
 
 .ctrl-btn.reset-btn {
-  color: var(--color-brand-dark);
+  color: var(--chrome-btn-fg);
 }
 
 .ctrl-btn:hover {
-  background: var(--color-blanco);
-  border-color: color-mix(in srgb, var(--color-brand-dark) 40%, transparent);
+  background: var(--chrome-btn-bg-hover);
+  border-color: var(--chrome-btn-border-hover);
 }
 
 .ctrl-btn.reset-btn:hover {
-  background: color-mix(in srgb, var(--color-brand-red) 12%, white);
-  border-color: color-mix(in srgb, var(--color-brand-red) 45%, transparent);
-}
-
-.ctrl-btn.reset-btn i {
-  color: var(--color-brand-red);
-}
-
-.ctrl-btn.reset-btn:hover i {
-  color: var(--color-brand-red);
-  filter: none;
+  background: color-mix(in srgb, var(--color-brand-red) 18%, var(--chrome-btn-bg));
+  border-color: color-mix(in srgb, var(--color-brand-red) 55%, transparent);
 }
 
 .ctrl-btn.active {
@@ -1514,6 +1507,33 @@ ul.sampler-list {
 
 .ctrl-btn i { font-size: 0.9em; }
 
+/* Icon colors → tokens.css (--icon-*). Static; no decorative motion. */
+.ctrl-btn .fa-solid {
+  transition: color 0.15s ease;
+}
+
+#immersion-btn i { color: var(--icon-immersion); }
+#edit-btn i { color: var(--icon-edit); }
+#edit-btn.edit-mode-active i { color: var(--icon-on-active); }
+#share-kit-btn i { color: var(--icon-export); }
+#note-repeat-btn i { color: var(--icon-note-repeat); }
+#note-repeat-btn[aria-pressed="true"] i { color: var(--icon-note-repeat-on); }
+.note-repeat-rate > .fa-gauge-high { color: var(--icon-note-repeat-gauge); }
+#session-record-btn .session-record-icon,
+#session-record-btn i { color: var(--icon-record); }
+#pattern-loop-btn i { color: var(--icon-loop); }
+#pattern-loop-btn[aria-pressed="true"] i { color: var(--icon-loop-on); }
+.ctrl-btn.reset-btn i { color: var(--icon-reset); }
+.ctrl-btn.reset-btn:hover i { color: var(--icon-reset); filter: none; }
+#help-btn i { color: var(--icon-help); }
+#more-controls-btn i { color: var(--icon-more); }
+.battery-kit-chevron { color: var(--icon-kit-chevron); }
+.battery-volume-container .volume-icon { color: var(--icon-volume); }
+.battery-rate-container .volume-icon { color: var(--icon-rate); }
+.audio-viz-title .fa-wave-square { color: var(--icon-viz); }
+.session-recordings-title .fa-compact-disc { color: var(--icon-recordings); }
+.pattern-loops-title .fa-infinity { color: var(--icon-loops-panel); }
+
 .divider {
   width: 1px;
   height: 24px;
@@ -1529,9 +1549,9 @@ ul.sampler-list {
 }
 
 .grid-opt {
-  background: color-mix(in srgb, var(--color-blanco) 88%, transparent);
-  color: var(--color-brand-dark);
-  border: 2px solid color-mix(in srgb, var(--color-brand-dark) 22%, transparent);
+  background: var(--chrome-btn-bg);
+  color: var(--chrome-btn-fg);
+  border: 2px solid var(--chrome-btn-border);
   border-radius: 6px;
   font-family: inherit;
   font-weight: bold;
@@ -1541,11 +1561,11 @@ ul.sampler-list {
   transition: background 0.15s, border-color 0.15s, color 0.15s;
   min-width: 32px;
   text-align: center;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--chrome-btn-shadow);
 }
 
 .grid-opt:hover {
-  background: var(--color-blanco);
+  background: var(--chrome-btn-bg-hover);
   border-color: var(--color-principal);
 }
 
@@ -2064,7 +2084,7 @@ ul.sampler-list {
 }
 
 .virtual-page .controls-bar {
-  padding: 0.2rem 0.45rem;
+  padding: 0.35rem 0.55rem;
   gap: 6px;
   row-gap: 6px;
   flex-shrink: 0;
@@ -2072,8 +2092,13 @@ ul.sampler-list {
   justify-content: center;
   align-content: center;
   align-self: stretch;
-  max-width: 100%;
+  max-width: min(1180px, calc(100% - 0.5rem));
+  margin-inline: auto;
   box-sizing: border-box;
+  border-radius: 12px;
+  background: var(--chrome-bar-bg);
+  border: 1px solid var(--chrome-bar-border);
+  box-shadow: 0 1px 0 color-mix(in srgb, var(--color-brand-green) 18%, transparent);
 }
 
 @media (min-width: 768px) {
@@ -2168,6 +2193,14 @@ ul.sampler-list {
   gap: 0.2rem 1.25rem;
   margin-top: 0.75rem;
   margin-bottom: clamp(0.75rem, 2vh, 1.25rem);
+}
+
+.virtual-page #volume-percent {
+  color: var(--value-volume);
+}
+
+.virtual-page #rate-percent {
+  color: var(--value-rate);
 }
 
 .virtual-page .battery-volume-container,
@@ -2367,7 +2400,7 @@ ul.sampler-list {
     display: none;
   }
 
-  /* Audio in normal flow — transparent (no white cloud). Battery sizes = distribution. */
+  /* Audio in normal flow — no card / no white cloud (sliders loose on body) */
   .virtual-page .kit-play-stage {
     order: 1;
     width: 100%;

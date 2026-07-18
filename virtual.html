@@ -1,6 +1,13 @@
 <!DOCTYPE html>
 <html lang="es-419">
 <head>
+  <script>
+    try {
+      var t = localStorage.getItem('pianoChampeteroTheme');
+      if (t === 'dark' || t === 'light') document.documentElement.setAttribute('data-theme', t);
+    } catch (e) {}
+  </script>
+
   <!-- Google Tag Manager -->
   <script>
     (function (w, d, s, l, i) {
@@ -309,7 +316,7 @@
         <hr class="kit-share-divider">
 
         <label class="kit-share-label" for="kit-import-payload">Importar kit de otro</label>
-        <textarea id="kit-import-payload" class="kit-share-payload kit-import-payload" rows="4" placeholder="Pegá el código BC1… o el enlace que te enviaron" aria-label="Código o enlace para importar"></textarea>
+        <textarea id="kit-import-payload" class="kit-share-payload kit-import-payload" rows="4" placeholder="Pegá el código BC1… completo (si WhatsApp lo partió en líneas, pegá todo)" aria-label="Código o enlace para importar"></textarea>
         <p id="kit-import-status" class="kit-import-status" hidden role="status"></p>
 
         <div class="modal-actions">

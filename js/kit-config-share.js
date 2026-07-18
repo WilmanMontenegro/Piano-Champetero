@@ -19,6 +19,23 @@ const STORAGE = {
   padKeys: (grid) => `pianoChampeteroPadKeys_${grid}`,
 };
 
+/** WhatsApp / messengers insert ZWSP, soft hyphens, and line breaks in long codes. */
+function stripInvisible(text) {
+  return String(text || '').replace(/[\u200B-\u200D\uFEFF\u00AD\u2060\u180E]/g, '');
+}
+
+function compactBase64Url(text) {
+  return stripInvisible(text).replace(/\s+/g, '');
+}
+
+/** Normalize a BC1.* token (no spaces / invisible junk). */
+export function normalizeKitToken(token) {
+  const compact = compactBase64Url(token);
+  if (!compact) return '';
+  const m = compact.match(/BC1\.[A-Za-z0-9_-]+/);
+  return m ? m[0] : compact.startsWith(KIT_CONFIG_PREFIX) ? compact : '';
+}
+
 function readJson(key) {
   try {
     const raw = localStorage.getItem(key);
@@ -73,9 +90,11 @@ function toBase64Url(text) {
 }
 
 function fromBase64Url(b64url) {
-  const pad = '='.repeat((4 - (b64url.length % 4)) % 4);
-  const std = (b64url + pad).replace(/-/g, '+').replace(/_/g, '/');
-  const bin = atob(std);
+  let s = compactBase64Url(b64url).replace(/-/g, '+').replace(/_/g, '/');
+  // Tolerate standard base64 if someone re-encoded
+  const pad = '='.repeat((4 - (s.length % 4)) % 4);
+  s += pad;
+  const bin = atob(s);
   const bytes = new Uint8Array(bin.length);
   for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
   return new TextDecoder().decode(bytes);
@@ -87,46 +106,117 @@ export function encodeKitSnapshot(snapshot) {
   return KIT_CONFIG_PREFIX + toBase64Url(json);
 }
 
-/** Extract kit token from pasted text, URL, or raw BC1 string. */
-export function extractKitToken(input) {
-  const trimmed = String(input || '').trim();
-  if (!trimmed) return '';
+/**
+ * Collect possible kit tokens from paste (URL kit=, BC1 broken across lines, etc.).
+ * Longest BC1 first — truncated WhatsApp links often lose out to a full pasted code.
+ */
+export function extractKitTokenCandidates(input) {
+  const text = stripInvisible(String(input || '')).trim();
+  if (!text) return [];
 
-  try {
-    if (/^https?:\/\//i.test(trimmed)) {
-      const url = new URL(trimmed);
+  /** @type {string[]} */
+  const out = [];
+  const push = (raw) => {
+    const n = normalizeKitToken(raw);
+    if (n.startsWith(KIT_CONFIG_PREFIX) && !out.includes(n)) out.push(n);
+  };
+
+  const urlMatches = text.match(/https?:\/\/[^\s<>"')\]]+/gi) || [];
+  for (const rawUrl of urlMatches) {
+    try {
+      const cleaned = rawUrl.replace(/[),.;!?]+$/g, '');
+      const url = new URL(cleaned);
       const fromQuery = url.searchParams.get('kit');
-      if (fromQuery) return fromQuery.trim();
+      if (fromQuery) push(fromQuery);
       const hashParams = new URLSearchParams(url.hash.replace(/^#/, ''));
       const fromHash = hashParams.get('kit');
-      if (fromHash) return fromHash.trim();
+      if (fromHash) push(fromHash);
+    } catch { /* not a URL */ }
+  }
+
+  // Each BC1. … run: keep base64url chars, skip spaces/newlines inside (WhatsApp wrap)
+  let idx = 0;
+  while ((idx = text.indexOf(KIT_CONFIG_PREFIX, idx)) !== -1) {
+    let i = idx + KIT_CONFIG_PREFIX.length;
+    let body = '';
+    while (i < text.length) {
+      const ch = text[i];
+      if (/[A-Za-z0-9_-]/.test(ch)) {
+        body += ch;
+        i += 1;
+      } else if (/\s/.test(ch)) {
+        i += 1; // line wrap — do not stop
+      } else {
+        break; // punctuation / emoji / other
+      }
     }
-  } catch { /* not a URL */ }
+    push(KIT_CONFIG_PREFIX + body);
+    idx = i;
+  }
 
-  const bcMatch = trimmed.match(/BC1\.[A-Za-z0-9_-]+/);
-  if (bcMatch) return bcMatch[0];
+  // Prefer longer tokens (more complete) when trying decode
+  out.sort((a, b) => b.length - a.length);
+  return out;
+}
 
-  if (trimmed.startsWith(KIT_CONFIG_PREFIX)) return trimmed.split(/\s/)[0];
+/** Extract kit token from pasted text, URL, or raw BC1 string. */
+export function extractKitToken(input) {
+  const candidates = extractKitTokenCandidates(input);
+  return candidates[0] || '';
+}
 
-  return trimmed;
+function parseKitJson(b64) {
+  const parsed = JSON.parse(fromBase64Url(b64));
+  if (!parsed || typeof parsed !== 'object') {
+    throw new Error('Formato de kit no reconocido.');
+  }
+  if (parsed.v !== KIT_CONFIG_VERSION) {
+    throw new Error('Versión de kit no compatible.');
+  }
+  return parsed;
+}
+
+/**
+ * Decode BC1 payload; trim trailing junk glued by chats (e.g. "salu2" after the code).
+ * ponytail: O(n) suffix trim — ceiling ~400 chops; upgrade = checksum in BC2.
+ */
+function parseKitJsonTolerant(b64) {
+  let s = compactBase64Url(b64);
+  const maxChops = 400;
+  for (let chop = 0; chop <= maxChops && s.length >= 8; chop += 1) {
+    try {
+      return parseKitJson(s);
+    } catch (err) {
+      if (err instanceof Error && /Versión|Formato/.test(err.message)) throw err;
+      s = s.slice(0, -1);
+    }
+  }
+  throw new Error('corrupt');
 }
 
 /** @returns {ReturnType<typeof collectKitSnapshot>} */
 export function decodeKitToken(token) {
-  const raw = extractKitToken(token);
-  if (!raw.startsWith(KIT_CONFIG_PREFIX)) {
-    throw new Error('Código inválido: debe empezar con BC1.');
+  const candidates = extractKitTokenCandidates(token);
+  if (!candidates.length) {
+    throw new Error('Código inválido: debe empezar con BC1. o ser un enlace con ?kit=');
   }
-  const b64 = raw.slice(KIT_CONFIG_PREFIX.length);
-  let parsed;
-  try {
-    parsed = JSON.parse(fromBase64Url(b64));
-  } catch {
-    throw new Error('No se pudo leer el código. Está incompleto o corrupto.');
+
+  let sawCorrupt = false;
+  for (const raw of candidates) {
+    try {
+      return parseKitJsonTolerant(raw.slice(KIT_CONFIG_PREFIX.length));
+    } catch (err) {
+      if (err instanceof Error && /Versión|Formato/.test(err.message)) throw err;
+      sawCorrupt = true;
+    }
   }
-  if (!parsed || typeof parsed !== 'object') throw new Error('Formato de kit no reconocido.');
-  if (parsed.v !== KIT_CONFIG_VERSION) throw new Error('Versión de kit no compatible.');
-  return parsed;
+
+  if (sawCorrupt) {
+    throw new Error(
+      'No se pudo leer el código. Suele pasar si WhatsApp lo cortó o partió en varias líneas. Pedí el código BC1 completo (botón Copiar) y pegalo entero.'
+    );
+  }
+  throw new Error('Código inválido: debe empezar con BC1.');
 }
 
 /** @param {string} code @param {string} [baseHref] */
@@ -144,14 +234,29 @@ export function buildWhatsAppSendUrl(message) {
   return `https://wa.me/?text=${encodeURIComponent(message)}`;
 }
 
-/** @param {ReturnType<typeof collectKitSnapshot>} snapshot @param {string} code @param {string} [baseHref] */
+/**
+ * Prefer the raw BC1 code in WhatsApp — long ?kit= URLs get truncated by the app.
+ * @param {ReturnType<typeof collectKitSnapshot>} snapshot
+ * @param {string} code
+ * @param {string} [baseHref]
+ */
 export function buildShareMessage(snapshot, code, baseHref) {
   const name = snapshot.n || 'Batería champetera';
   const link = buildKitShareUrl(code, baseHref);
+  // Short kits: link is fine. Long kits: code-first so paste/import still works if URL truncates.
+  const preferCode = code.length > 1200;
+  if (preferCode) {
+    return (
+      `🥁 *Kit Batería Champetera* — ${name}\n\n` +
+      `En bateriachampetera.com → *Exportar* → pegá este código completo:\n\n` +
+      `${code}\n\n` +
+      `(Si el enlace no abre, usá el código de arriba.)\n${link}`
+    );
+  }
   return (
     `🥁 *Kit Batería Champetera* — ${name}\n\n` +
     `Abrí este enlace para cargarlo:\n${link}\n\n` +
-    `O en bateriachampetera.com → *Exportar* → pegá este código:\n${code}`
+    `O pegá este código en Exportar → Importar:\n${code}`
   );
 }
 
@@ -195,7 +300,18 @@ export function persistKitSnapshot(snapshot) {
 export function kitTokenFromPageUrl(search = location.search, hash = location.hash) {
   const params = new URLSearchParams(search);
   const fromQuery = params.get('kit');
-  if (fromQuery) return fromQuery.trim();
+  if (fromQuery) return normalizeKitToken(fromQuery) || fromQuery.trim();
   const hashParams = new URLSearchParams(hash.replace(/^#/, ''));
-  return hashParams.get('kit')?.trim() || '';
+  const fromHash = hashParams.get('kit');
+  return fromHash ? (normalizeKitToken(fromHash) || fromHash.trim()) : '';
+}
+
+// ponytail: smoke — WhatsApp line-wrap + trailing chat junk must still decode
+{
+  const snap = { v: 1, n: 'test', vm: 'pads' };
+  const code = encodeKitSnapshot(snap);
+  const wrapped = `${code.slice(0, 40)}\n${code.slice(40)}\u200B`;
+  const withJunk = `Mira hermano\n${wrapped}\nsalu2`;
+  console.assert(decodeKitToken(withJunk).n === 'test', 'kit decode survives WhatsApp wrap+junk');
+  console.assert(extractKitToken(wrapped).startsWith('BC1.'), 'kit extract joins wrapped BC1');
 }

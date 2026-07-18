@@ -1,64 +1,178 @@
 /* =====================================================
-   Design tokens — editar aquí colores, espaciado y escalas
+   Design tokens — SSOT del sitio
+   Cambiar paleta → solo bloque «PALETTE» abajo.
+   El resto deriva con var() / color-mix (no hardcodear hex
+   en common.css / virtual.css salvo casos puntuales).
    ===================================================== */
 :root {
-  /* Brand identity — rasta + ink (pads vivid; chrome calm) */
-  --color-brand-green: #00A859;
-  --color-brand-yellow: #FFCC00;
-  --color-brand-red: #ED1C24;
-  --color-brand-dark: #333333;
+  /* =========================================================
+   * PALETTE — única fuente de hex. Cambiá aquí = rebrand.
+   * Brand (pads / CTAs / iconos) + atmósfera cuerpo alegre.
+   * ========================================================= */
+  --palette-green: #00A859;
+  --palette-yellow: #FFCC00;
+  --palette-red: #ED1C24;
+  --palette-ink: #333333;
+  --palette-white: #ffffff;
+  --palette-black: #000000;
+  /* Fondo Caribe alegre (clásico; estático — sin animación) */
+  --palette-sun: #FFE066;
+  --palette-orange: #FF9A56;
+  --palette-coral: #FF6B6B;
+  --palette-pink: #FFB7C5;
+  --palette-cream: #FFF5E6;
+  /* Neutrales UI */
+  --palette-gray-100: #f8f9fa;
+  --palette-gray-300: #e0e0e0;
+  --palette-gray-600: #555555;
+  --palette-gray-700: #5c5c5c;
+  /* Apps externas */
+  --palette-whatsapp: #25d366;
+  --palette-whatsapp-hover: #1ebe57;
+  /* Oscuro (base noche) */
+  --palette-night: #121212;
+  --palette-night-elevated: #1a1a1a;
+  --palette-night-card: #262626;
 
-  /* Alias legado UI → marca */
-  --color-principal: var(--color-brand-green);
-  --color-principal-hover: color-mix(in srgb, var(--color-brand-green) 78%, black);
-  --color-secundario: var(--color-brand-red);
-  --color-amarillo: var(--color-brand-yellow);
-  --color-marron: var(--color-brand-dark);
-  --color-footer: #FFF8E7;
-  --color-rosa-claro: color-mix(in srgb, var(--color-brand-red) 16%, white);
-  --color-blanco: #ffffff;
-  --color-gris-claro: #f8f9fa;
-  --color-gris-medio: #e0e0e0;
-  --color-gris-oscuro: #555555;
-  --color-negro: var(--color-brand-dark);
-  --color-exito: var(--color-brand-green);
-  --color-error: var(--color-brand-red);
-  --color-whatsapp: #25d366;
-  --color-whatsapp-hover: #1ebe57;
-  /* Soft chrome tints (never neon on body/chrome) */
-  --color-surface: #FFF8E7;
-  --color-surface-green: color-mix(in srgb, var(--color-brand-green) 12%, white);
-  --color-surface-yellow: color-mix(in srgb, var(--color-brand-yellow) 20%, white);
-  --color-tint-green: color-mix(in srgb, var(--color-brand-green) 14%, transparent);
-  --color-tint-yellow: color-mix(in srgb, var(--color-brand-yellow) 22%, transparent);
-  /* Pads / icon — same brand rasta (hero identity) */
-  --color-rasta-green: var(--color-brand-green);
-  --color-rasta-yellow: var(--color-brand-yellow);
-  --color-rasta-red: var(--color-brand-red);
+  /* =========================================================
+   * BRAND aliases (código legado + docs)
+   * ========================================================= */
+  --color-brand-green: var(--palette-green);
+  --color-brand-yellow: var(--palette-yellow);
+  --color-brand-red: var(--palette-red);
+  --color-brand-dark: var(--palette-ink);
 
-  /* Gradientes — body pastel; ticker green (readable white); pads keep vivid fill */
-  --gradient-body: linear-gradient(
-    160deg,
-    color-mix(in srgb, var(--color-brand-yellow) 20%, white) 0%,
-    color-mix(in srgb, var(--color-brand-green) 12%, white) 42%,
-    color-mix(in srgb, var(--color-brand-red) 7%, white) 72%,
-    var(--color-surface) 100%
+  --color-principal: var(--palette-green);
+  --color-principal-hover: color-mix(in srgb, var(--palette-green) 78%, var(--palette-black));
+  --color-secundario: var(--palette-red);
+  --color-amarillo: var(--palette-yellow);
+  --color-marron: var(--palette-ink);
+  --color-footer: var(--palette-cream);
+  --color-rosa-claro: color-mix(in srgb, var(--palette-red) 16%, var(--palette-white));
+  --color-blanco: var(--palette-white);
+  --color-gris-claro: var(--palette-gray-100);
+  --color-gris-medio: var(--palette-gray-300);
+  --color-gris-oscuro: var(--palette-gray-600);
+  --color-negro: var(--palette-ink);
+  --color-exito: var(--palette-green);
+  --color-error: var(--palette-red);
+  --color-whatsapp: var(--palette-whatsapp);
+  --color-whatsapp-hover: var(--palette-whatsapp-hover);
+
+  /* =========================================================
+   * SURFACES / TEXT
+   * ========================================================= */
+  --color-surface: color-mix(in srgb, var(--palette-cream) 92%, var(--palette-white));
+  --color-surface-green: color-mix(in srgb, var(--palette-green) 7%, var(--palette-white));
+  --color-surface-yellow: color-mix(in srgb, var(--palette-yellow) 14%, var(--palette-white));
+  --color-surface-red: color-mix(in srgb, var(--palette-red) 6%, var(--palette-white));
+  --color-tint-green: color-mix(in srgb, var(--palette-green) 8%, transparent);
+  --color-tint-yellow: color-mix(in srgb, var(--palette-yellow) 14%, transparent);
+  --color-tint-red: color-mix(in srgb, var(--palette-red) 8%, transparent);
+  --color-card: color-mix(in srgb, var(--palette-white) 97%, var(--palette-cream));
+  --color-text: var(--palette-ink);
+  --color-text-muted: var(--palette-gray-700);
+  --color-display: color-mix(in srgb, var(--palette-ink) 88%, var(--palette-green));
+
+  --accent-soft-green: color-mix(in srgb, var(--palette-green) 55%, var(--palette-white));
+  --accent-soft-yellow: color-mix(in srgb, var(--palette-yellow) 60%, var(--palette-white));
+  --accent-soft-red: color-mix(in srgb, var(--palette-red) 50%, var(--palette-white));
+
+  --gradient-card-edge: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--palette-green) 38%, var(--palette-white)),
+    color-mix(in srgb, var(--palette-yellow) 48%, var(--palette-white)),
+    color-mix(in srgb, var(--palette-red) 36%, var(--palette-white))
   );
-  --gradient-footer: linear-gradient(135deg, var(--color-brand-dark) 0%, #1f1f1f 100%);
-  --gradient-nav-dropdown: linear-gradient(135deg, var(--color-brand-dark) 0%, #222 100%);
+
+  /* =========================================================
+   * CHROME (botones / barra controles)
+   * ========================================================= */
+  --chrome-btn-bg: color-mix(in srgb, var(--color-surface-yellow) 72%, var(--palette-white));
+  --chrome-btn-bg-hover: color-mix(in srgb, var(--palette-yellow) 18%, var(--palette-white));
+  --chrome-btn-fg: var(--palette-ink);
+  --chrome-btn-border: color-mix(in srgb, var(--palette-yellow) 42%, transparent);
+  --chrome-btn-border-hover: color-mix(in srgb, var(--palette-green) 48%, transparent);
+  --chrome-label: color-mix(in srgb, var(--palette-ink) 78%, var(--palette-green));
+  --chrome-btn-shadow: 0 1px 3px color-mix(in srgb, var(--palette-yellow) 22%, transparent);
+  --chrome-bar-bg: color-mix(in srgb, var(--color-surface-yellow) 65%, transparent);
+  --chrome-bar-border: color-mix(in srgb, var(--palette-yellow) 32%, transparent);
+  --chrome-audio-bg: color-mix(in srgb, var(--color-card) 88%, var(--color-surface-yellow));
+
+  /* =========================================================
+   * ICONS / SLIDERS (virtual) — colores vivos, SSOT
+   * Amarillo “ink-mix” = legible en chips claros; lima = legible en coral.
+   * ========================================================= */
+  --icon-on-light-yellow: color-mix(in srgb, var(--palette-yellow) 50%, var(--palette-ink));
+  --icon-lime: color-mix(in srgb, var(--palette-green) 58%, var(--palette-yellow));
+
+  --icon-immersion: color-mix(in srgb, var(--palette-yellow) 55%, var(--palette-ink));
+  --icon-edit: var(--palette-green);
+  --icon-export: var(--icon-on-light-yellow);
+  --icon-note-repeat: var(--palette-green);
+  --icon-note-repeat-on: color-mix(in srgb, var(--palette-yellow) 45%, var(--palette-ink));
+  --icon-note-repeat-gauge: var(--icon-on-light-yellow);
+  --icon-record: var(--palette-red);
+  --icon-loop: var(--palette-green);
+  --icon-loop-on: color-mix(in srgb, var(--palette-yellow) 40%, var(--palette-ink));
+  --icon-reset: var(--palette-red);
+  --icon-help: color-mix(in srgb, var(--palette-yellow) 48%, var(--palette-ink));
+  --icon-more: var(--palette-green);
+  --icon-kit-chevron: color-mix(in srgb, var(--palette-yellow) 45%, var(--palette-ink));
+  --icon-volume: var(--palette-green);
+  --icon-rate: var(--icon-lime);
+  --icon-viz: color-mix(in srgb, var(--palette-yellow) 70%, var(--palette-white));
+  --icon-recordings: var(--palette-red);
+  --icon-loops-panel: var(--palette-green);
+  --icon-on-active: var(--palette-white);
+
+  --accent-volume: var(--palette-green);
+  --accent-rate: var(--palette-yellow);
+  --accent-rate-fixed: var(--palette-yellow);
+  --accent-note-repeat-slider: var(--palette-red);
+  --value-volume: color-mix(in srgb, var(--palette-green) 55%, var(--palette-ink));
+  --value-rate: var(--icon-lime);
+
+  /* Pads / rasta fill */
+  --color-rasta-green: var(--palette-green);
+  --color-rasta-yellow: var(--palette-yellow);
+  --color-rasta-red: var(--palette-red);
+
+  /* =========================================================
+   * GRADIENTS
+   * Body: alegre clásico — SIN animation (perf samplers).
+   * ========================================================= */
+  --gradient-body:
+    radial-gradient(circle at 30% 20%, color-mix(in srgb, var(--palette-sun) 35%, transparent) 0%, transparent 50%),
+    radial-gradient(circle at 70% 80%, color-mix(in srgb, var(--palette-coral) 22%, transparent) 0%, transparent 50%),
+    linear-gradient(
+      135deg,
+      var(--palette-sun) 0%,
+      var(--palette-orange) 25%,
+      var(--palette-coral) 50%,
+      var(--palette-pink) 75%,
+      var(--palette-cream) 100%
+    );
+  --gradient-footer: linear-gradient(135deg, var(--palette-ink) 0%, color-mix(in srgb, var(--palette-ink) 85%, var(--palette-black)) 100%);
+  --gradient-nav-dropdown: linear-gradient(135deg, var(--palette-ink) 0%, color-mix(in srgb, var(--palette-ink) 80%, var(--palette-black)) 100%);
   --gradient-ticker: linear-gradient(
     90deg,
-    color-mix(in srgb, var(--color-brand-green) 82%, black),
-    var(--color-brand-green),
-    color-mix(in srgb, var(--color-brand-green) 70%, var(--color-brand-dark))
+    color-mix(in srgb, var(--palette-green) 55%, var(--palette-ink)) 0%,
+    color-mix(in srgb, var(--palette-green) 78%, var(--palette-black)) 22%,
+    color-mix(in srgb, var(--palette-yellow) 38%, #3a3020) 48%,
+    color-mix(in srgb, var(--palette-red) 72%, #2a1515) 74%,
+    color-mix(in srgb, var(--palette-green) 55%, var(--palette-ink)) 100%
   );
-  --overlay-header: linear-gradient(rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.22));
+  --overlay-header: linear-gradient(
+    color-mix(in srgb, var(--palette-black) 35%, transparent),
+    color-mix(in srgb, var(--palette-black) 22%, transparent)
+  );
 
   /* Layout */
   --layout-content-max: 900px;
   --layout-content-gutter: 2rem;
   --layout-inline-pad: clamp(0.75rem, 3vw, 1.5rem);
-  --header-border: 3px solid color-mix(in srgb, var(--color-brand-yellow) 70%, transparent);
+  --header-border: 3px solid color-mix(in srgb, var(--palette-yellow) 70%, transparent);
   --header-padding-top: 1.15rem;
   --header-title-size: clamp(1.75rem, 5.5vw, 4.25rem);
   --header-title-margin-block: 0.3rem;
@@ -67,13 +181,12 @@
   /*
    * Breakpoints viewport — 3 niveles (usar estos valores en CSS)
    * Móvil:  max-width 767px  (--bp-mobile-max)
-   * Tablet: 768px – 1023px   (--bp-tablet-min – --bp-desktop-min - 1)
+   * Tablet: 768px – 1023px
    * Desktop: min-width 1024px (--bp-desktop-min)
    */
   --bp-mobile-max: 767px;
   --bp-tablet-min: 768px;
   --bp-desktop-min: 1024px;
-  /* Pad/play layout: only these 3 widths. No height/landscape play breakpoints. */
 
   --ticker-block-height: 2.15rem;
 
@@ -81,7 +194,6 @@
   --nav-mobile-max: 767px;
   --nav-dropdown-max-width: 320px;
   --nav-link-gap: 1.25em;
-  /* Escala con el ancho de pantalla en PC (tope ~1.3rem) */
   --nav-link-size: clamp(1rem, 0.45rem + 0.72vw, 1.35rem);
   --nav-menu-max-width: min(96vw, 1400px);
 
@@ -89,28 +201,21 @@
   --borde-radius: 8px;
   --borde-radius-grande: 16px;
   --borde-radius-nav-dropdown: 12px;
-  --sombra-btn: 0 2px 8px rgba(0, 0, 0, 0.1);
-  --sombra-btn-hover: 0 4px 16px rgba(0, 0, 0, 0.14);
-  --sombra-card: 0 4px 24px rgba(0, 0, 0, 0.1);
-  --sombra-nav-dropdown: 0 4px 12px rgba(0, 0, 0, 0.3);
+  --sombra-btn: 0 2px 8px color-mix(in srgb, var(--palette-black) 10%, transparent);
+  --sombra-btn-hover: 0 4px 16px color-mix(in srgb, var(--palette-black) 14%, transparent);
+  --sombra-card: 0 4px 24px color-mix(in srgb, var(--palette-black) 10%, transparent);
+  --sombra-nav-dropdown: 0 4px 12px color-mix(in srgb, var(--palette-black) 30%, transparent);
 
-  /* Pads / toms — feedback al tocar (paleta caribeña) */
+  /* Pads / toms — feedback */
   --pad-glow-idle: color-mix(in srgb, var(--color-rasta-yellow) 35%, transparent);
   --pad-hit-ring: color-mix(in srgb, var(--color-rasta-yellow) 95%, transparent);
-  --tom-glow-idle: color-mix(in srgb, var(--color-brand-yellow) 40%, transparent);
+  --tom-glow-idle: color-mix(in srgb, var(--palette-yellow) 40%, transparent);
   --hit-flash-duration: 0.16s;
+  --pad-edit-pulse: var(--palette-coral);
 
   /*
    * Pads SSOT (desktop defaults). Tier MQs below ONLY retune these vars —
    * never re-declare .pad-* property blocks in virtual.css.
-   *
-   * Layout:  --pad-gap, --pad-grid-pad, --pad-view-max-width, --pad-view-padding
-   * Cell:    --pad-item-padding, --pad-item-radius, --pad-fill*
-   * Labels:  --pad-key-size, --pad-sound-size/weight/color
-   * JS size: PAD_LAYOUT_BY_TIER (maxCap/minPad/…) + reads --pad-gap/--pad-grid-pad
-   * Runtime: --pad-cols/--pad-rows/--pad-size set on #pads-view by virtual.js
-   *
-   * Fill: favicon diagonal green→yellow→red (vivid — no white mix = no metallic wash).
    */
   --pad-fill-start: var(--color-rasta-green);
   --pad-fill-mid: var(--color-rasta-yellow);
@@ -128,16 +233,16 @@
   --pad-item-padding: clamp(2px, 0.45vw, 4px);
   --pad-item-radius: 10px;
   --pad-key-size: clamp(0.9em, 2.5vw, 1.5em);
-  --pad-key-color: var(--color-brand-dark);
+  --pad-key-color: var(--palette-ink);
   --pad-sound-size: clamp(0.68em, 1.1vw, 0.9em);
   --pad-sound-weight: 500;
-  --pad-sound-color: color-mix(in srgb, var(--color-brand-dark) 82%, transparent);
+  --pad-sound-color: color-mix(in srgb, var(--palette-ink) 82%, transparent);
 
   /* Ticker */
   --ticker-duration: 18s;
   --ticker-font-size: 0.95em;
 
-  /* Tipografía — Permanent Marker = marca/títulos; Inter = UI */
+  /* Tipografía */
   --font-display: 'Permanent Marker', cursive;
   --font-body: 'Inter', system-ui, -apple-system, sans-serif;
   --font-size-xs: 0.875rem;
@@ -159,8 +264,57 @@
   --z-ticker: 9999;
   --z-whatsapp-fab: 9500;
 
-  /* virtual.html: espacio reservado sobre footer (sidebar fijo) */
   --virtual-footer-block: 2.85rem;
+}
+
+/* Dark theme — reasigna tokens; pads siguen vividos vía --palette-* */
+[data-theme="dark"] {
+  color-scheme: dark;
+  --gradient-body:
+    radial-gradient(circle at 28% 18%, color-mix(in srgb, var(--palette-yellow) 18%, transparent) 0%, transparent 48%),
+    radial-gradient(circle at 72% 82%, color-mix(in srgb, var(--palette-red) 14%, transparent) 0%, transparent 50%),
+    linear-gradient(
+      155deg,
+      color-mix(in srgb, var(--palette-yellow) 10%, var(--palette-night)) 0%,
+      color-mix(in srgb, var(--palette-night) 92%, var(--palette-ink)) 40%,
+      color-mix(in srgb, var(--palette-red) 8%, var(--palette-night)) 100%
+    );
+  --color-surface: var(--palette-night-elevated);
+  --color-surface-green: color-mix(in srgb, var(--palette-green) 8%, var(--palette-night-elevated));
+  --color-surface-yellow: color-mix(in srgb, var(--palette-yellow) 8%, var(--palette-night-elevated));
+  --color-surface-red: color-mix(in srgb, var(--palette-red) 8%, var(--palette-night-elevated));
+  --color-card: var(--palette-night-card);
+  --color-footer: #e8e8e8;
+  --color-gris-oscuro: #c0c0c0;
+  --color-gris-claro: #2a2a2a;
+  --color-gris-medio: #3a3a3a;
+  --color-text: #e6e6e6;
+  --color-text-muted: #a8a8a8;
+  --color-display: color-mix(in srgb, #e6e6e6 90%, var(--palette-yellow));
+  --accent-soft-green: color-mix(in srgb, var(--palette-green) 45%, var(--palette-ink));
+  --accent-soft-yellow: color-mix(in srgb, var(--palette-yellow) 40%, var(--palette-ink));
+  --accent-soft-red: color-mix(in srgb, var(--palette-red) 42%, var(--palette-ink));
+  --gradient-card-edge: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--palette-green) 28%, var(--palette-ink)),
+    color-mix(in srgb, var(--palette-yellow) 30%, var(--palette-ink)),
+    color-mix(in srgb, var(--palette-red) 28%, var(--palette-ink))
+  );
+  --chrome-btn-bg: color-mix(in srgb, #2a2a22 88%, var(--palette-yellow));
+  --chrome-btn-bg-hover: color-mix(in srgb, #333328 85%, var(--palette-yellow));
+  --chrome-btn-fg: #eaeaea;
+  --chrome-btn-border: color-mix(in srgb, var(--palette-yellow) 28%, transparent);
+  --chrome-btn-border-hover: color-mix(in srgb, var(--palette-green) 40%, transparent);
+  --chrome-label: color-mix(in srgb, #ddd 80%, var(--palette-yellow));
+  --chrome-btn-shadow: 0 1px 4px color-mix(in srgb, var(--palette-black) 30%, transparent);
+  --chrome-bar-bg: color-mix(in srgb, var(--palette-yellow) 8%, var(--palette-night-elevated));
+  --chrome-bar-border: color-mix(in srgb, var(--palette-yellow) 22%, transparent);
+  --chrome-audio-bg: color-mix(in srgb, #262620 92%, var(--palette-yellow));
+  --value-volume: color-mix(in srgb, var(--palette-green) 55%, var(--palette-white));
+  --value-rate: color-mix(in srgb, var(--palette-yellow) 55%, var(--palette-green));
+  --icon-rate: var(--value-rate);
+  --sombra-card: 0 4px 28px color-mix(in srgb, var(--palette-black) 45%, transparent);
+  --sombra-btn: 0 2px 8px color-mix(in srgb, var(--palette-black) 30%, transparent);
 }
 
 /* Pad tier retunes — same vars as :root (breakpoints = --bp-*) */

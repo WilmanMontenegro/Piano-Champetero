@@ -50,7 +50,8 @@ Do **not** use or add `.claude/` or `.vscode/` config (legacy / local IDE). **Cu
 
 | Change | File |
 |--------|------|
-| Colors, spacing, shadows | `styles/tokens.css` |
+| Colors / palette / theme | `styles/tokens.css` → bloque **PALETTE** (`--palette-*`); el resto deriva. Iconos virtual: `--icon-*`, sliders `--accent-*` |
+| Colors, spacing, shadows (detalle) | `styles/tokens.css` |
 | Header title size / padding | `styles/tokens.css` → `--header-title-size`, `--header-padding-top`, `--header-nav-margin-block` |
 | Nav layout, active link style | `styles/components/nav.css` |
 | Ticker / colaboradores | `js/site-config.js` → `CONTRIBUTORS` (append-only; cinta + Sobre nosotros), `TICKER_STATIC_LINES` |

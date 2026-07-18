@@ -1072,9 +1072,12 @@ function initMoreControls() {
   const panel = document.getElementById('more-controls-panel');
   if (!bar || !btn || !panel) return;
 
+  const TOLERANCE_ENTER_PX = 4;
+  const TOLERANCE_EXIT_PX = 12;
+
   let open = false;
   let syncing = false;
-  /** Hysteresis: enter overflow sooner than exit (px slack). */
+  /** Hysteresis: stay in overflow until clearly fits. */
   let overflowOn = false;
 
   const applyExpanded = () => {
@@ -1096,30 +1099,36 @@ function initMoreControls() {
   };
 
   const setOpen = (next) => {
-    open = !!next;
-    if (!bar.classList.contains('controls-bar--overflow')) {
+    if (!overflowOn || !bar.classList.contains('controls-bar--overflow')) {
       open = false;
       applyExpanded();
       return;
     }
+    open = !!next;
     applyOverflow(open);
   };
 
-  /** Sum flex pieces (unwrap display:contents panel). Ignore Más btn. */
-  const contentWidthPx = () => {
-    const gap = parseFloat(getComputedStyle(bar).columnGap || getComputedStyle(bar).gap) || 0;
+  /** Visible chrome pieces excluding Más (unwrap panel children). */
+  const collectPieces = () => {
     const pieces = [];
     for (const el of bar.children) {
       if (el === btn) continue;
       if (el === panel) {
-        for (const child of panel.children) pieces.push(child);
+        for (const child of panel.children) {
+          if (child instanceof HTMLElement) pieces.push(child);
+        }
         continue;
       }
-      pieces.push(el);
+      if (el instanceof HTMLElement) pieces.push(el);
     }
+    return pieces;
+  };
+
+  const sumPieceWidths = (pieces, gap) => {
     let total = 0;
     let counted = 0;
     for (const el of pieces) {
+      if (getComputedStyle(el).display === 'none') continue;
       const w = el.getBoundingClientRect().width;
       if (w <= 0) continue;
       total += w + (counted > 0 ? gap : 0);
@@ -1128,19 +1137,75 @@ function initMoreControls() {
     return total;
   };
 
+  /**
+   * Force expanded + single row, measure intrinsic chrome width vs bar.
+   * Temporarily override panel `display:contents` → flex row (measure-safe),
+   * force nowrap/no-shrink on chrome pieces, then sum flat widths.
+   */
   const measureNeedsOverflow = () => {
-    // Temporarily expand + nowrap to measure full chrome width
+    const prevBarWrap = bar.style.flexWrap;
+    const prevPanelDisplay = panel.style.display;
+    const prevPanelFlex = panel.style.flexFlow;
+    const prevPanelWidth = panel.style.width;
+    const prevPanelGap = panel.style.gap;
+    const prevPanelShrink = panel.style.flexShrink;
+
     bar.classList.remove('controls-bar--overflow', 'controls-bar--more-open', 'controls-bar--roomy');
     btn.hidden = true;
     panel.hidden = false;
     bar.style.flexWrap = 'nowrap';
+    // display:contents can report wrong widths — measure panel as flex row
+    panel.style.display = 'flex';
+    panel.style.flexFlow = 'row nowrap';
+    panel.style.width = 'max-content';
+    panel.style.flexShrink = '0';
+    panel.style.gap = getComputedStyle(bar).gap || '0px';
+
+    const pieces = collectPieces();
+    const styleBackup = pieces.map((el) => ({
+      el,
+      wrap: el.style.flexWrap,
+      shrink: el.style.flexShrink,
+    }));
+    for (const el of pieces) {
+      el.style.flexWrap = 'nowrap';
+      el.style.flexShrink = '0';
+    }
     void bar.offsetWidth;
-    const used = contentWidthPx();
+
+    const gap = parseFloat(getComputedStyle(bar).columnGap || getComputedStyle(bar).gap) || 0;
+    // Flat sum of all chrome pieces (as if panel were display:contents in one row)
+    let used = sumPieceWidths(pieces, gap);
+    // Sanity: if pieces under-reported, fall back to primary + panel box
+    if (used <= 0) {
+      const primary = [...bar.children].filter((el) => el !== btn && el !== panel);
+      let total = 0;
+      let counted = 0;
+      for (const el of primary) {
+        const w = el.getBoundingClientRect().width;
+        if (w <= 0) continue;
+        total += w + (counted > 0 ? gap : 0);
+        counted += 1;
+      }
+      const panelW = panel.getBoundingClientRect().width;
+      if (panelW > 0) total += panelW + (counted > 0 ? gap : 0);
+      used = total;
+    }
     const avail = bar.clientWidth;
-    bar.style.flexWrap = '';
-    // Hysteresis: stick on until clearly fits (avoids flicker)
-    if (overflowOn) return used > avail - 24;
-    return used > avail + 8;
+
+    for (const { el, wrap, shrink } of styleBackup) {
+      el.style.flexWrap = wrap;
+      el.style.flexShrink = shrink;
+    }
+    bar.style.flexWrap = prevBarWrap;
+    panel.style.display = prevPanelDisplay;
+    panel.style.flexFlow = prevPanelFlex;
+    panel.style.width = prevPanelWidth;
+    panel.style.gap = prevPanelGap;
+    panel.style.flexShrink = prevPanelShrink;
+
+    if (overflowOn) return used > avail - TOLERANCE_EXIT_PX;
+    return used > avail + TOLERANCE_ENTER_PX;
   };
 
   const syncOverflow = () => {
@@ -1155,24 +1220,32 @@ function initMoreControls() {
       open = false;
       applyExpanded();
     }
+    // Safety: never leave Más visible without overflow class
+    if (!bar.classList.contains('controls-bar--overflow')) {
+      btn.hidden = true;
+    }
     syncing = false;
   };
 
   btn.addEventListener('click', (e) => {
     e.stopPropagation();
-    if (btn.hidden || !bar.classList.contains('controls-bar--overflow')) return;
-    setOpen(panel.hidden);
+    e.preventDefault();
+    if (!bar.classList.contains('controls-bar--overflow')) {
+      btn.hidden = true;
+      return;
+    }
+    setOpen(!open);
   });
 
   document.addEventListener('pointerdown', (e) => {
-    if (!open || panel.hidden) return;
+    if (!open) return;
     const t = e.target;
     if (t instanceof Node && (panel.contains(t) || btn.contains(t))) return;
     setOpen(false);
   });
 
   document.addEventListener('keydown', (e) => {
-    if (e.key !== 'Escape' || !open || panel.hidden) return;
+    if (e.key !== 'Escape' || !open) return;
     setOpen(false);
     btn.focus();
   });
@@ -1186,11 +1259,16 @@ function initMoreControls() {
   if (typeof ResizeObserver !== 'undefined') {
     const ro = new ResizeObserver(scheduleSync);
     ro.observe(bar);
+    // Child chrome can grow/shrink without changing bar box (theme label, redoble rate)
+    for (const el of collectPieces()) ro.observe(el);
+    ro.observe(panel);
   }
   window.addEventListener('resize', scheduleSync);
+  document.documentElement.addEventListener('themechange', scheduleSync);
   if (document.fonts?.ready) {
     document.fonts.ready.then(scheduleSync).catch(() => {});
   }
+
   syncOverflow();
 }
 

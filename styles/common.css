@@ -37,10 +37,14 @@ main {
 }
 
 /* ===================== CONTENEDOR DE CONTENIDO ===================== */
+/* Only top-level main sections / .content-card — nested <section> stay plain (no card-in-card). */
 .content-card,
-section {
-  background: rgba(255, 255, 255, 0.95);
+main > section {
+  border: 2px solid transparent;
   border-radius: 18px;
+  background:
+    linear-gradient(var(--color-card), var(--color-card)) padding-box,
+    var(--gradient-card-edge) border-box;
   box-shadow: var(--sombra-card);
   padding: 2.2em 2em 1.5em;
   max-width: min(var(--layout-content-max), calc(100% - var(--layout-content-gutter)));
@@ -50,10 +54,17 @@ section {
 }
 
 /* ===================== TIPOGRAFÍA ===================== */
-main > h1 {
+main > h1,
+.page-title,
+.content-card h2,
+section h2 {
   font-family: var(--font-display);
   text-align: center;
-  color: var(--color-principal);
+  letter-spacing: 1px;
+  color: var(--color-display);
+}
+
+main > h1 {
   margin: 1.5rem 1rem;
   padding: 0 1rem;
   line-height: 1.3;
@@ -66,12 +77,8 @@ main > h1 {
 .page-title,
 .content-card h2,
 section h2 {
-  font-family: var(--font-display);
   font-size: clamp(2em, 5vw, 2.7em);
-  color: var(--color-principal);
   margin: 0 0 0.5em;
-  text-align: center;
-  letter-spacing: 1px;
 }
 
 .content-card h3,
@@ -83,7 +90,7 @@ section h3 {
 
 section p,
 .content-card p {
-  color: var(--color-gris-oscuro);
+  color: var(--color-text-muted);
   line-height: var(--line-height-normal);
   margin-bottom: 1em;
   font-size: var(--font-size-md);
@@ -95,14 +102,25 @@ section ul:not(.policy-container ul, .modal-instructions) {
   margin: 1em 0;
 }
 
+/* Soft cycle g/y/r — pastel bars, same cream-ish fills */
 section li:not(.policy-container li, .modal-instructions li) {
-  background: var(--color-surface-green);
   padding: 0.8em 1em;
   margin-bottom: 0.5em;
   border-radius: var(--borde-radius);
-  border-left: 4px solid var(--color-principal);
+  border-left: 3px solid var(--accent-soft-green);
+  background: var(--color-surface);
   font-size: var(--font-size-sm);
-  color: var(--color-gris-oscuro);
+  color: var(--color-text-muted);
+}
+
+section li:not(.policy-container li, .modal-instructions li):nth-child(3n + 2) {
+  border-left-color: var(--accent-soft-yellow);
+  background: var(--color-surface-yellow);
+}
+
+section li:not(.policy-container li, .modal-instructions li):nth-child(3n + 3) {
+  border-left-color: var(--accent-soft-red);
+  background: var(--color-surface-red);
 }
 
 /* ===================== HEADER ===================== */
@@ -132,6 +150,30 @@ header {
   word-wrap: break-word;
   overflow-wrap: break-word;
   line-height: 1.15;
+}
+
+/* Tema claro/oscuro — header del sitio (casotal). No vive en la batería. */
+.theme-toggle--header {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+  margin: 0 0 0.55rem;
+  padding: 0.35em 0.75em;
+  border-radius: 999px;
+  border: 2px solid color-mix(in srgb, var(--color-blanco) 55%, transparent);
+  background: color-mix(in srgb, #000 35%, transparent);
+  color: var(--color-blanco);
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  text-shadow: none;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.theme-toggle--header:hover {
+  background: color-mix(in srgb, #000 50%, transparent);
+  border-color: var(--color-amarillo);
 }
 
 /* ===================== BOTONES ===================== */
@@ -214,7 +256,7 @@ header {
 }
 
 .modal-content {
-  background: linear-gradient(145deg, #fff 0%, #faf9f8 100%);
+  background: var(--color-card);
   border-radius: 20px;
   padding: 2rem;
   max-width: 480px;

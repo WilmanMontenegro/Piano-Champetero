@@ -1,6 +1,13 @@
 <!DOCTYPE html>
 <html lang="es-419">
 <head>
+  <script>
+    try {
+      var t = localStorage.getItem('pianoChampeteroTheme');
+      if (t === 'dark' || t === 'light') document.documentElement.setAttribute('data-theme', t);
+    } catch (e) {}
+  </script>
+
   <!-- Google Tag Manager -->
   <script>
     (function (w, d, s, l, i) {

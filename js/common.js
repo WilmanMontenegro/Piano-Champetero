@@ -1,6 +1,70 @@
 // js/common.js — utilidades UI compartidas entre páginas
-import { buildTickerInnerHtml, WHATSAPP_COMMUNITY_URL, WHATSAPP_COMMUNITY_LABEL } from './site-config.js';
+import {
+  buildTickerInnerHtml,
+  WHATSAPP_COMMUNITY_URL,
+  WHATSAPP_COMMUNITY_LABEL,
+  THEME_STORAGE_KEY,
+} from './site-config.js';
 import { WHATSAPP_GROUP_ICON_SVG, WHATSAPP_FAB_ICON_SVG } from './whatsapp-group-icon.js';
+
+// Apply stored theme ASAP (module still deferred — reduces flash)
+try {
+  const bootTheme = localStorage.getItem(THEME_STORAGE_KEY);
+  if (bootTheme === 'dark' || bootTheme === 'light') {
+    document.documentElement.setAttribute('data-theme', bootTheme);
+  }
+} catch { /* ignore */ }
+
+function syncThemeToggleUi(theme) {
+  const isDark = theme === 'dark';
+  document.querySelectorAll('[data-theme-toggle]').forEach((btn) => {
+    if (!(btn instanceof HTMLElement)) return;
+    btn.setAttribute('aria-pressed', isDark ? 'true' : 'false');
+    btn.title = isDark ? 'Cambiar a tema claro' : 'Cambiar a tema oscuro';
+    const icon = btn.querySelector('[data-theme-icon]');
+    if (icon) {
+      icon.classList.toggle('fa-moon', !isDark);
+      icon.classList.toggle('fa-sun', isDark);
+    }
+    const label = btn.querySelector('[data-theme-label]');
+    if (label) label.textContent = isDark ? 'Claro' : 'Oscuro';
+  });
+}
+
+/** Persist Claro/Oscuro; `data-theme` on <html>. */
+export function initTheme() {
+  const root = document.documentElement;
+
+  const apply = (theme) => {
+    const next = theme === 'dark' ? 'dark' : 'light';
+    root.setAttribute('data-theme', next);
+    try {
+      localStorage.setItem(THEME_STORAGE_KEY, next);
+    } catch { /* ignore */ }
+    const themeMeta = document.querySelector('meta[name="theme-color"]');
+    if (themeMeta) themeMeta.setAttribute('content', next === 'dark' ? '#121212' : '#00A859');
+    syncThemeToggleUi(next);
+    // Virtual controls «Más» must remeasure (label Claro/Oscuro width flips)
+    root.dispatchEvent(new CustomEvent('themechange', { detail: { theme: next } }));
+  };
+
+  let stored = 'light';
+  try {
+    const raw = localStorage.getItem(THEME_STORAGE_KEY);
+    if (raw === 'dark' || raw === 'light') stored = raw;
+  } catch { /* ignore */ }
+  apply(stored);
+
+  if (document.documentElement.dataset.themeToggleBound === '1') return;
+  document.documentElement.dataset.themeToggleBound = '1';
+
+  document.addEventListener('click', (e) => {
+    const btn = e.target instanceof Element ? e.target.closest('[data-theme-toggle]') : null;
+    if (!btn) return;
+    const cur = root.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+    apply(cur === 'dark' ? 'light' : 'dark');
+  });
+}
 
 export function initNav() {
   return fetch('nav.html')
@@ -119,6 +183,10 @@ export async function loadHeader() {
     console.error('loadHeader failed, injecting fallback header:', err);
     const fallback = `
       <h1 class="title">Batería Champetera Virtual</h1>
+      <button type="button" class="theme-toggle theme-toggle--header" data-theme-toggle aria-pressed="false" title="Cambiar a tema oscuro">
+        <i class="fa-solid fa-moon" data-theme-icon aria-hidden="true"></i>
+        <span data-theme-label>Oscuro</span>
+      </button>
       <nav class="main-nav">
         <button class="nav-hamburger" id="nav-hamburger" type="button" aria-label="Abrir menú" aria-expanded="false" aria-controls="nav-menu">
           <span></span>
@@ -183,4 +251,5 @@ export async function initSiteChrome() {
   await Promise.all([loadHeader(), loadContributorTicker()]);
   initHamburgerMenu();
   initWhatsAppFab();
+  initTheme();
 }

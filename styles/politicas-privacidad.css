@@ -27,10 +27,6 @@
   text-align: left;
 }
 
-.policy-container section {
-  width: 100%;
-}
-
 /* Listas con bullets (sobrescribe el estilo sin bullets de common.css) */
 .policy-container ul {
   margin: 0 0 1rem 0;
