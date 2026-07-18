@@ -1294,6 +1294,11 @@ function pickResponsivePadLayout(total, availW, availH, gap, gridPad, maxCap, mi
   const pool = candidates.filter((c) => c.size >= sizeFloor);
 
   pool.sort((a, b) => {
+    if (preferTall) {
+      const tallA = a.rows >= a.cols ? 1 : 0;
+      const tallB = b.rows >= b.cols ? 1 : 0;
+      if (tallA !== tallB) return tallB - tallA;
+    }
     if (verticalSlack) {
       const dH = soft(b.fillH) - soft(a.fillH);
       if (Math.abs(dH) > 0.03) return dH;
