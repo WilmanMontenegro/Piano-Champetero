@@ -2240,6 +2240,18 @@ ul.sampler-list {
     gap: 0.35rem 0.85rem;
   }
 
+  .virtual-page .battery-rate-container {
+    width: 100%;
+    max-width: 22rem;
+    padding: 0.35rem 0.25rem;
+    gap: 0.4em 0.65em;
+  }
+
+  .virtual-page .battery-rate {
+    width: min(92vw, 20rem);
+    min-height: 48px;
+  }
+
   .virtual-page .battery-volume-container,
   .virtual-page .battery-rate-container {
     gap: 0.25em 0.55em;

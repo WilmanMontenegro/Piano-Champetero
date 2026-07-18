@@ -1706,8 +1706,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   const sliderRate = document.getElementById('rate-slider');
   const labelRate = document.getElementById('rate-percent');
   const rateFixedCheck = document.getElementById('rate-fixed');
-  if (sliderRate) {
-    // Hold + drag sideways until finger up; spring to center unless Fijo.
+  const rateSurface = sliderRate?.closest('.battery-rate-container') || sliderRate;
+  if (sliderRate && rateSurface) {
+    // Mobile-first: hold + drag sideways on the whole control until finger up.
     let ratePointerId = null;
 
     const syncRateUi = (rate) => {
@@ -1739,26 +1740,28 @@ document.addEventListener('DOMContentLoaded', async () => {
       saveStoredPlaybackRate(DEFAULT_PLAYBACK_RATE);
     }
 
-    sliderRate.addEventListener('pointerdown', (e) => {
+    rateSurface.addEventListener('pointerdown', (e) => {
       if (e.button !== 0) return;
+      if (e.target instanceof Element && e.target.closest('.rate-fixed-label')) return;
       e.preventDefault();
       ratePointerId = e.pointerId;
-      try { sliderRate.setPointerCapture(e.pointerId); } catch { /* ignore */ }
+      try { rateSurface.setPointerCapture(e.pointerId); } catch { /* ignore */ }
       applyRateSliderValue(rateFromClientX(e.clientX));
     });
-    sliderRate.addEventListener('pointermove', (e) => {
+    rateSurface.addEventListener('pointermove', (e) => {
       if (ratePointerId !== e.pointerId) return;
+      e.preventDefault();
       applyRateSliderValue(rateFromClientX(e.clientX));
     });
     const endRateDrag = (e) => {
       if (ratePointerId == null) return;
       if (e.pointerId != null && e.pointerId !== ratePointerId) return;
       ratePointerId = null;
-      try { sliderRate.releasePointerCapture(e.pointerId); } catch { /* ignore */ }
+      try { rateSurface.releasePointerCapture(e.pointerId); } catch { /* ignore */ }
       if (!playbackRateFixed) snapRateToCenter();
     };
-    sliderRate.addEventListener('pointerup', endRateDrag);
-    sliderRate.addEventListener('pointercancel', endRateDrag);
+    rateSurface.addEventListener('pointerup', endRateDrag);
+    rateSurface.addEventListener('pointercancel', endRateDrag);
     window.addEventListener('blur', () => {
       if (ratePointerId == null) return;
       ratePointerId = null;
