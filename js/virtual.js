@@ -1,7 +1,7 @@
 // js/virtual.js — batería virtual.html
 // Hit path: buffer en RAM → start(0) sync; flash/DOM después; volumen en masterGain
 import { initSiteChrome, setYearFooter, resumeOnUserGesture } from './common.js';
-import { AUDIO_UI, NAV_MOBILE_MAX_PX } from './site-config.js';
+import { AUDIO_UI, NAV_MOBILE_MAX_PX, MOBILE_PLAY_MQ } from './site-config.js';
 import { PAD_GRID_CONFIGS as gridConfigs, PAD_GRID_SIZE_ORDER } from './pad-grid-config.js';
 import { initModal, isModalOpen } from './modal-utils.js';
 import { DEFAULT_PAD_KEY_CHAR_ORDER, BATTERY_DEFAULT_PAD_CHARS, buildPadKeyIndexMap, resolvePadIndexFromKeyboard } from './pad-keyboard.js';
@@ -1070,7 +1070,7 @@ function initMoreControls() {
   const panel = document.getElementById('more-controls-panel');
   if (!btn || !panel) return;
 
-  const mq = window.matchMedia(`(max-width: ${NAV_MOBILE_MAX_PX}px)`);
+  const mq = window.matchMedia(MOBILE_PLAY_MQ);
 
   const setOpen = (open) => {
     if (!mq.matches) {
@@ -1124,7 +1124,7 @@ function initPageScrollLock() {
 
 /** Rejilla pads: columnas y tamaño según espacio (volumen siempre abajo). */
 let padsLayoutFrame = 0;
-const MOBILE_PADS_MQ = window.matchMedia(`(max-width: ${NAV_MOBILE_MAX_PX}px)`);
+const MOBILE_PADS_MQ = window.matchMedia(MOBILE_PLAY_MQ);
 
 function factorPadGridPairs(total) {
   const pairs = [];

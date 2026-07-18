@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bateria-champeta-v196';
+const CACHE_NAME = 'bateria-champeta-v197';
 // Only real files — directories (/samplers/, /images/) 404 on GitHub Pages and break addAll
 const STATIC_ASSETS = [
   '/',

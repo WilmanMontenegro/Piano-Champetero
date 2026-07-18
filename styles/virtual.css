@@ -2153,8 +2153,9 @@ ul.sampler-list {
   }
 }
 
-/* ===================== RESPONSIVE VIEWS (móvil ≤767) ===================== */
-@media (max-width: 767px) {
+/* ===================== RESPONSIVE VIEWS (móvil + landscape phone) ===================== */
+/* Landscape phones often have width >767 — also match short height + coarse pointer */
+@media (max-width: 767px), (orientation: landscape) and (max-height: 560px) and (pointer: coarse) {
   .view-toggle-btn {
     font-size: 0.8rem;
     padding: 0.4em 0.9em;
@@ -2450,19 +2451,19 @@ ul.sampler-list {
   }
 }
 /*
- * Mobile landscape + vista Batería only.
+ * Mobile landscape play — phones report width >767 when rotated, so use max-height.
  * Same tom grid/margins — only size + chrome. No black bar, no reorder.
  */
-@media (max-width: 767px) and (orientation: landscape) {
-  .virtual-page:has(#battery-view:not(.hidden)) {
+@media (orientation: landscape) and (max-height: 560px) and (pointer: coarse) {
+  .virtual-page {
     padding-top: 0;
   }
 
-  .virtual-page:has(#battery-view:not(.hidden)) .contributor-ticker {
+  .virtual-page .contributor-ticker {
     display: none;
   }
 
-  .virtual-page:has(#battery-view:not(.hidden)) header {
+  .virtual-page header {
     max-height: 0;
     padding: 0;
     margin: 0;
@@ -2472,21 +2473,21 @@ ul.sampler-list {
     border: none;
   }
 
-  .virtual-page:has(#battery-view:not(.hidden)) .controls-bar {
+  .virtual-page .controls-bar {
     padding: 0.1rem 0.3rem;
     gap: 4px;
     row-gap: 4px;
   }
 
-  .virtual-page:has(#battery-view:not(.hidden)) .control-group--secondary .group-label,
-  .virtual-page:has(#battery-view:not(.hidden)) .control-group--primary .group-label {
+  .virtual-page .control-group--secondary .group-label,
+  .virtual-page .control-group--primary .group-label {
     display: none;
   }
 
-  .virtual-page:has(#battery-view:not(.hidden)) .control-group--secondary .ctrl-btn-text,
-  .virtual-page:has(#battery-view:not(.hidden)) #session-record-label,
-  .virtual-page:has(#battery-view:not(.hidden)) #pattern-loop-label,
-  .virtual-page:has(#battery-view:not(.hidden)) #note-repeat-btn-label {
+  .virtual-page .control-group--secondary .ctrl-btn-text,
+  .virtual-page #session-record-label,
+  .virtual-page #pattern-loop-label,
+  .virtual-page #note-repeat-btn-label {
     position: absolute;
     width: 1px;
     height: 1px;
@@ -2498,38 +2499,38 @@ ul.sampler-list {
     border: 0;
   }
 
-  .virtual-page:has(#battery-view:not(.hidden)) .control-group--secondary .ctrl-btn,
-  .virtual-page:has(#battery-view:not(.hidden)) .control-group--record .ctrl-btn {
+  .virtual-page .control-group--secondary .ctrl-btn,
+  .virtual-page .control-group--record .ctrl-btn {
     position: relative;
     min-width: 2.35rem;
     padding-inline: 0.5em;
     justify-content: center;
   }
 
-  .virtual-page:has(#battery-view:not(.hidden)) .audio-viz-panel {
+  .virtual-page .audio-viz-panel {
     display: none;
   }
 
-  .virtual-page:has(#battery-view:not(.hidden)) .edit-mode-hint {
+  .virtual-page .edit-mode-hint {
     display: none;
   }
 
-  .virtual-page:has(#battery-view:not(.hidden)) main {
+  .virtual-page main {
     padding: 0;
   }
 
-  .virtual-page:has(#battery-view:not(.hidden)) .kit-play-stage {
+  .virtual-page .kit-play-stage {
     padding-bottom: calc(4.5rem + env(safe-area-inset-bottom, 0px));
     padding-left: env(safe-area-inset-left, 0px);
     padding-right: env(safe-area-inset-right, 0px);
   }
 
-  .virtual-page:has(#battery-view:not(.hidden)) .battery {
+  .virtual-page .battery {
     margin: 0.1rem auto;
     max-width: min(96vw, 720px);
   }
 
-  /* Larger touch targets; distribution/grid unchanged */
+  /* Larger touch targets; distribution/grid unchanged — vista Batería */
   .virtual-page:has(#battery-view:not(.hidden)) .battery-tom--small {
     width: clamp(52px, 18vmin, 108px);
     height: clamp(52px, 18vmin, 108px);
@@ -2545,18 +2546,11 @@ ul.sampler-list {
     height: clamp(82px, 28vmin, 148px);
   }
 
-  .virtual-page:has(#battery-view:not(.hidden)) .kit-audio-controls {
-    margin-top: 0.2rem;
-    padding: 0.15rem 0.4rem max(0.2rem, env(safe-area-inset-bottom, 0px));
-    background: transparent;
-    border: none;
-  }
-
-  .virtual-page:has(#battery-view:not(.hidden)) .battery-rate-container {
+  .virtual-page .battery-rate-container {
     flex-wrap: nowrap;
   }
 
-  .virtual-page:has(#battery-view:not(.hidden)) .whatsapp-fab {
+  .virtual-page .whatsapp-fab {
     transform: scale(0.88);
     transform-origin: bottom right;
   }

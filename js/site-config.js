@@ -8,6 +8,13 @@ export const BREAKPOINT_DESKTOP_MIN_PX = 1024;
 export const BREAKPOINT_TABLET_MIN_PX = 768;
 /** Max viewport width for mobile nav (hamburger below tablet). */
 export const NAV_MOBILE_MAX_PX = 767;
+/**
+ * Phones in landscape often report width > 767 (e.g. 844).
+ * Detect play-compact UI by short height + coarse pointer instead.
+ */
+export const MOBILE_LANDSCAPE_MAX_HEIGHT_PX = 560;
+/** Portrait phone OR landscape phone — use in matchMedia + keep CSS in sync. */
+export const MOBILE_PLAY_MQ = `(max-width: ${NAV_MOBILE_MAX_PX}px), (orientation: landscape) and (max-height: ${MOBILE_LANDSCAPE_MAX_HEIGHT_PX}px) and (pointer: coarse)`;
 
 /**
  * WhatsApp Community invite link (Comunidades → enlace de invitación).
