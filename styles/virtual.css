@@ -60,6 +60,8 @@ main {
 
 .battery-rate {
   touch-action: none;
+  /* Bigger finger target; we own horizontal drag via pointer events. */
+  min-height: 44px;
 }
 
 .rate-fixed-label {
