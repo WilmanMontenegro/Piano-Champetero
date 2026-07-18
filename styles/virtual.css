@@ -1287,7 +1287,7 @@ ul.sampler-list {
   align-items: center;
   gap: 8px;
   justify-content: center;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   padding: 0.5rem 0.8rem;
   width: 100%;
   max-width: 100%;
@@ -1298,6 +1298,7 @@ ul.sampler-list {
   display: flex;
   align-items: center;
   gap: 4px;
+  flex-shrink: 0;
 }
 
 .control-group--record {
@@ -1336,13 +1337,55 @@ ul.sampler-list {
   letter-spacing: 0.02em;
 }
 
-/* Desktop: Más hidden; panel children flow in controls-bar */
+/* Expanded (default): Más hidden; panel children flow in the bar */
 .more-controls-btn {
   display: none;
+  flex: 0 0 auto;
+  min-width: 2.6rem;
+  order: 2;
 }
 
 .more-controls-panel {
   display: contents;
+}
+
+/* Overflow: JS adds .controls-bar--overflow when one row doesn't fit */
+.controls-bar--overflow {
+  flex-wrap: nowrap;
+}
+
+.controls-bar--overflow .more-controls-btn {
+  display: inline-flex;
+}
+
+.controls-bar--overflow .more-controls-panel {
+  display: none;
+  order: 10;
+  width: 100%;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  padding: 0.4rem 0.35rem;
+  margin: 0;
+  box-sizing: border-box;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--color-marron) 22%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-blanco) 28%, transparent);
+}
+
+.controls-bar--overflow.controls-bar--more-open {
+  flex-wrap: wrap;
+}
+
+.controls-bar--overflow.controls-bar--more-open .more-controls-panel {
+  display: flex;
+}
+
+.controls-bar--overflow .more-controls-panel .control-group--secondary,
+.controls-bar--overflow .more-controls-panel .control-group--tertiary {
+  order: unset;
+  justify-content: center;
 }
 
 .group-label {
@@ -1585,17 +1628,19 @@ ul.sampler-list {
 }
 
 /* ===================== PADS VIEW ===================== */
+/* Layout/typography values live in tokens.css (--pad-*). No tier property blocks here. */
 .pads-view {
   width: 100%;
-  max-width: min(1180px, 100%);
+  max-width: var(--pad-view-max-width);
   margin: 0 auto;
-  padding: 0 clamp(0.25rem, 1.2vw, 0.75rem);
+  padding: var(--pad-view-padding);
+  box-sizing: border-box;
 }
 
 .pads-grid {
   display: grid;
-  gap: clamp(5px, 1vw, 8px);
-  padding: clamp(0.35rem, 1.2vw, 0.55rem);
+  gap: var(--pad-gap);
+  padding: var(--pad-grid-pad);
   width: 100%;
   box-sizing: border-box;
 }
@@ -1605,7 +1650,7 @@ ul.sampler-list {
   aspect-ratio: 1 / 1;
   background: linear-gradient(145deg, var(--color-principal) 0%, var(--color-secundario) 100%);
   border: 2px solid rgba(255, 255, 255, 0.85);
-  border-radius: 10px;
+  border-radius: var(--pad-item-radius);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1617,7 +1662,9 @@ ul.sampler-list {
   overflow: hidden;
   min-height: 0;
   min-width: 0;
-  padding: clamp(3px, 0.8vw, 5px);
+  width: 100%;
+  height: 100%;
+  padding: var(--pad-item-padding);
   touch-action: none;
   -webkit-tap-highlight-color: transparent;
 }
@@ -1630,13 +1677,6 @@ ul.sampler-list {
   pointer-events: none;
   opacity: 0;
   background: radial-gradient(circle at 50% 38%, rgba(255, 255, 255, 0.82) 0%, var(--pad-hit-ring) 32%, transparent 72%);
-}
-
-@media (min-width: 1024px) {
-  .pad-item {
-    width: 100%;
-    padding: clamp(2px, 0.45vw, 4px);
-  }
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -1693,7 +1733,7 @@ ul.sampler-list {
 .pad-key {
   position: relative;
   z-index: 1;
-  font-size: clamp(0.9em, 2.5vw, 1.5em);
+  font-size: var(--pad-key-size);
   font-weight: bold;
   color: var(--color-blanco);
   text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
@@ -1703,7 +1743,6 @@ ul.sampler-list {
 .pad-sound {
   position: relative;
   z-index: 1;
-  /* Typography SSOT: --pad-sound-* in tokens.css (tier MQs retune same vars) */
   font-size: var(--pad-sound-size);
   font-weight: var(--pad-sound-weight);
   color: var(--pad-sound-color);
@@ -2004,62 +2043,14 @@ ul.sampler-list {
   flex-shrink: 0;
 }
 
-/* virtual.html: rejilla vía JS (--pad-cols, --pad-rows, --pad-size). Always 1:1. */
+/* virtual.html: rejilla vía JS (--pad-cols/rows/size). Gap/pad = tokens. Always 1:1. */
 .virtual-page .pads-grid {
-  grid-template-columns: repeat(var(--pad-cols, 4), var(--pad-size, 72px)) !important;
+  grid-template-columns: repeat(var(--pad-cols, 4), var(--pad-size, 72px));
   grid-template-rows: repeat(var(--pad-rows, 4), var(--pad-size, 72px));
   justify-content: center;
   width: fit-content;
   max-width: 100%;
   margin-inline: auto;
-  box-sizing: border-box;
-  gap: 8px;
-  padding: 0.45rem;
-}
-
-.virtual-page .pads-grid .pad-item {
-  aspect-ratio: 1 / 1;
-  width: 100%;
-  height: 100%;
-}
-
-/*
- * Pad layout gutters — exactly 3 breakpoints (tokens --bp-*):
- * desktop ≥1024 (default) | tablet 768–1023 | mobile ≤767
- * Desktop uses more width (bigger square pads); tablet/mobile keep tighter gutters.
- */
-.virtual-page .pads-view {
-  max-width: min(1420px, 96%);
-  padding: 0.35rem 1rem 0.2rem;
-}
-
-.virtual-page .pads-grid {
-  gap: 10px;
-  padding: 0.4rem;
-}
-
-@media (min-width: 768px) and (max-width: 1023px) {
-  .virtual-page .pads-view {
-    max-width: min(1180px, 100%);
-    padding: 0.4rem 1.15rem 0.3rem;
-  }
-
-  .virtual-page .pads-grid {
-    gap: 7px;
-    padding: 0.4rem;
-  }
-}
-
-@media (max-width: 767px) {
-  .virtual-page .pads-view {
-    max-width: 100%;
-    padding: 0.35rem 0.85rem 0.25rem;
-  }
-
-  .virtual-page .pads-grid {
-    gap: 6px;
-    padding: 0.35rem;
-  }
 }
 
 .virtual-page .controls-bar {
@@ -2067,7 +2058,7 @@ ul.sampler-list {
   gap: 6px;
   row-gap: 6px;
   flex-shrink: 0;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   justify-content: center;
   align-content: center;
   align-self: stretch;
@@ -2233,14 +2224,6 @@ ul.sampler-list {
     padding: 0.1em 0.4em;
   }
 
-  .pad-item {
-    border-radius: 10px;
-  }
-
-  .pad-key {
-    font-size: clamp(1em, 4vw, 1.5em);
-  }
-
   /* virtual.html — más alto útil para pads táctiles */
   .virtual-page main {
     padding: 0.1rem 0 0;
@@ -2256,8 +2239,8 @@ ul.sampler-list {
     align-items: center;
   }
 
-  /* Solo wrap cuando el panel Más está abierto */
-  .virtual-page .controls-bar:has(.more-controls-panel:not([hidden])) {
+  /* Wrap only when Más panel is open (overflow class) */
+  .virtual-page .controls-bar.controls-bar--more-open {
     flex-wrap: wrap;
   }
 
@@ -2277,33 +2260,6 @@ ul.sampler-list {
     width: auto;
     flex: 0 1 auto;
     min-width: 0;
-  }
-
-  .virtual-page .more-controls-btn {
-    display: inline-flex;
-    order: 2;
-    min-width: 2.6rem;
-    flex: 0 0 auto;
-  }
-
-  .virtual-page .more-controls-panel {
-    display: none;
-    order: 10;
-    width: 100%;
-    flex-wrap: wrap;
-    justify-content: center;
-    align-items: center;
-    gap: 6px;
-    padding: 0.4rem 0.35rem;
-    margin: 0;
-    box-sizing: border-box;
-    border-radius: 10px;
-    background: color-mix(in srgb, var(--color-marron) 22%, transparent);
-    border: 1px solid color-mix(in srgb, var(--color-blanco) 28%, transparent);
-  }
-
-  .virtual-page .more-controls-panel:not([hidden]) {
-    display: flex;
   }
 
   .virtual-page .more-controls-panel .control-group--secondary,

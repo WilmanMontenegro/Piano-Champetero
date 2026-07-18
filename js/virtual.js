@@ -3,7 +3,6 @@
 import { initSiteChrome, setYearFooter, resumeOnUserGesture } from './common.js';
 import {
   AUDIO_UI,
-  MOBILE_PLAY_MQ,
   NAV_MOBILE_MAX_PX,
   BREAKPOINT_DESKTOP_MIN_PX,
 } from './site-config.js';
@@ -1063,48 +1062,99 @@ function initImmersionMode() {
   });
 }
 
-/** Mobile: collapse setup chrome into "Más" so pads/toms keep height. */
+/**
+ * "Más" only when controls don't fit one row (overflow), any tier.
+ * Not tied to mobile MQ — desktop with space never shows the button.
+ */
 function initMoreControls() {
+  const bar = document.querySelector('.virtual-page .controls-bar');
   const btn = document.getElementById('more-controls-btn');
   const panel = document.getElementById('more-controls-panel');
-  if (!btn || !panel) return;
+  if (!bar || !btn || !panel) return;
 
-  const mq = window.matchMedia(MOBILE_PLAY_MQ);
+  let open = false;
+  let syncing = false;
 
-  const setOpen = (open) => {
-    if (!mq.matches) {
-      panel.hidden = false;
-      panel.classList.remove('is-open');
-      btn.hidden = true;
-      btn.setAttribute('aria-expanded', 'false');
+  const applyExpanded = () => {
+    bar.classList.remove('controls-bar--overflow', 'controls-bar--more-open');
+    btn.hidden = true;
+    panel.hidden = false;
+    btn.setAttribute('aria-expanded', 'false');
+  };
+
+  const applyOverflow = (isOpen) => {
+    bar.classList.add('controls-bar--overflow');
+    bar.classList.toggle('controls-bar--more-open', isOpen);
+    btn.hidden = false;
+    panel.hidden = !isOpen;
+    btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+  };
+
+  const setOpen = (next) => {
+    open = !!next;
+    if (!bar.classList.contains('controls-bar--overflow')) {
+      open = false;
+      applyExpanded();
       return;
     }
-    btn.hidden = false;
-    panel.hidden = !open;
-    panel.classList.toggle('is-open', open);
-    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    applyOverflow(open);
+  };
+
+  const measureNeedsOverflow = () => {
+    // Expande + nowrap pa’ medir si caben todos en una fila
+    applyExpanded();
+    bar.style.flexWrap = 'nowrap';
+    const needs = bar.scrollWidth > bar.clientWidth + 2;
+    bar.style.flexWrap = '';
+    return needs;
+  };
+
+  const syncOverflow = () => {
+    if (syncing) return;
+    syncing = true;
+    const wasOpen = open;
+    const needs = measureNeedsOverflow();
+    if (needs) {
+      open = wasOpen;
+      applyOverflow(open);
+    } else {
+      open = false;
+      applyExpanded();
+    }
+    syncing = false;
   };
 
   btn.addEventListener('click', (e) => {
     e.stopPropagation();
+    if (btn.hidden || !bar.classList.contains('controls-bar--overflow')) return;
     setOpen(panel.hidden);
   });
 
   document.addEventListener('pointerdown', (e) => {
-    if (!mq.matches || panel.hidden) return;
+    if (!open || panel.hidden) return;
     const t = e.target;
     if (t instanceof Node && (panel.contains(t) || btn.contains(t))) return;
     setOpen(false);
   });
 
   document.addEventListener('keydown', (e) => {
-    if (e.key !== 'Escape' || !mq.matches || panel.hidden) return;
+    if (e.key !== 'Escape' || !open || panel.hidden) return;
     setOpen(false);
     btn.focus();
   });
 
-  mq.addEventListener('change', () => setOpen(false));
-  setOpen(false);
+  let raf = 0;
+  const scheduleSync = () => {
+    cancelAnimationFrame(raf);
+    raf = requestAnimationFrame(syncOverflow);
+  };
+
+  if (typeof ResizeObserver !== 'undefined') {
+    const ro = new ResizeObserver(scheduleSync);
+    ro.observe(bar);
+  }
+  window.addEventListener('resize', scheduleSync);
+  syncOverflow();
 }
 
 /** Sin scroll en virtual.html; excepción listas en modales/nav. */
@@ -1130,18 +1180,17 @@ function initPageScrollLock() {
 /**
  * Pad layout — exactly 3 tiers (tokens.css / site-config):
  * mobile ≤767 | tablet 768–1023 | desktop ≥1024
- * Pads always square (1:1). No rectangular --pad-size-w/h.
+ * Pads always square (1:1). Gutters from CSS vars (--pad-gap / --pad-grid-pad).
  */
 let padsLayoutFrame = 0;
 
 /** @typedef {'mobile'|'tablet'|'desktop'} PadViewportTier */
 
+/** Size math only — gap/gridPad come from tokens.css via readPadGutterVars(). */
 const PAD_LAYOUT_BY_TIER = {
   mobile: {
-    gap: 6,
     sideInset: 28,
     topInset: 10,
-    gridPad: 8,
     maxCap: 112,
     minPad: 44,
     volFloor: 72,
@@ -1150,10 +1199,8 @@ const PAD_LAYOUT_BY_TIER = {
     pickLayout: true,
   },
   tablet: {
-    gap: 7,
     sideInset: 40,
     topInset: 12,
-    gridPad: 10,
     maxCap: 120,
     minPad: 48,
     volFloor: 64,
@@ -1163,10 +1210,8 @@ const PAD_LAYOUT_BY_TIER = {
   },
   desktop: {
     // Fuller stage: bigger squares, modest margins (not edge-flush)
-    gap: 10,
     sideInset: 32,
     topInset: 10,
-    gridPad: 10,
     maxCap: 176,
     minPad: 48,
     volFloor: 56,
@@ -1181,6 +1226,14 @@ function getPadViewportTier() {
   if (w <= NAV_MOBILE_MAX_PX) return 'mobile';
   if (w < BREAKPOINT_DESKTOP_MIN_PX) return 'tablet';
   return 'desktop';
+}
+
+/** Sync JS size math with tokens.css --pad-gap / --pad-grid-pad. */
+function readPadGutterVars() {
+  const cs = getComputedStyle(document.documentElement);
+  const gap = parseFloat(cs.getPropertyValue('--pad-gap')) || 8;
+  const gridPad = parseFloat(cs.getPropertyValue('--pad-grid-pad')) || 8;
+  return { gap, gridPad };
 }
 
 function factorPadGridPairs(total) {
@@ -1268,7 +1321,8 @@ function layoutResponsivePads() {
 
   const tier = getPadViewportTier();
   const L = PAD_LAYOUT_BY_TIER[tier];
-  const { gap, sideInset, topInset, gridPad, maxCap, minPad, volFloor, volExtra, sizeScale } = L;
+  const { sideInset, topInset, maxCap, minPad, volFloor, volExtra, sizeScale } = L;
+  const { gap, gridPad } = readPadGutterVars();
 
   const vol = kitPlay.querySelector('.kit-audio-controls') || kitPlay.querySelector('.battery-volume-container');
   const playRect = kitPlay.getBoundingClientRect();
