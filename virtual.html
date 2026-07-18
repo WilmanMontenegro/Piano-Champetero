@@ -141,20 +141,12 @@
     <div class="drum-kit-container">
       <div class="controls-bar">
         <div class="control-group control-group--primary control-group--view">
-          <span class="group-label">Vista:</span>
-          <button id="view-bateria" class="ctrl-btn view-btn active" title="Vista Batería">
-            <i class="fa-solid fa-drum"></i> Batería
-          </button>
-          <button id="view-pads" class="ctrl-btn view-btn new-feature-btn" title="Vista Pads - más sonidos disponibles">
-            <i class="fa-solid fa-th-large"></i> Pads
-            <span class="new-badge">NUEVO</span>
-          </button>
           <button id="immersion-btn" type="button" class="ctrl-btn immersion-btn" title="Ocultar menú y cinta para más espacio" aria-pressed="false">
             <i class="fa-solid fa-expand" aria-hidden="true"></i>
             <span class="immersion-btn-label">Inmersión</span>
           </button>
         </div>
-        <div id="grid-selector" class="grid-selector-inline control-group--primary" style="display:none;">
+        <div id="grid-selector" class="grid-selector-inline control-group--primary">
           <span class="group-label">Pads:</span>
           <div id="grid-options" class="grid-options"></div>
         </div>
@@ -230,47 +222,7 @@
       </section>
         </aside>
         <div class="kit-play-stage">
-        <div class="battery-view" id="battery-view">
-        <div class="battery">
-          <button class="battery-tom battery-tom--small" id="tom-1">
-        <span class="battery-tom-key"></span>
-        <span class="battery-tom-info-sound"></span>
-      </button>
-      <button class="battery-tom battery-tom--small" id="tom-2">
-        <span class="battery-tom-key"></span>
-        <span class="battery-tom-info-sound"></span>
-      </button>
-      <button class="battery-tom battery-tom--small" id="tom-3">
-        <span class="battery-tom-key"></span>
-        <span class="battery-tom-info-sound"></span>
-      </button>
-      <button class="battery-tom battery-tom--large" id="tom-4">
-        <span class="battery-tom-key"></span>
-        <span class="battery-tom-info-sound"></span>
-      </button>
-      <button class="battery-tom battery-tom--large" id="tom-5">
-        <span class="battery-tom-key"></span>
-        <span class="battery-tom-info-sound"></span>
-      </button>
-      <button class="battery-tom battery-tom--small" id="tom-6">
-        <span class="battery-tom-key"></span>
-        <span class="battery-tom-info-sound"></span>
-      </button>
-      <button class="battery-tom battery-tom--large" id="tom-7">
-        <span class="battery-tom-key"></span>
-        <span class="battery-tom-info-sound"></span>
-      </button>
-      <button class="battery-tom battery-tom--medium" id="tom-8">
-        <span class="battery-tom-key"></span>
-        <span class="battery-tom-info-sound"></span>
-      </button>
-      <button class="battery-tom battery-tom--large" id="tom-9">
-        <span class="battery-tom-key"></span>
-        <span class="battery-tom-info-sound"></span>
-          </button>
-        </div>
-      </div>
-      <div class="pads-view hidden" id="pads-view">
+      <div class="pads-view" id="pads-view">
         <div class="pads-grid" id="pads-grid"></div>
       </div>
       <div class="kit-audio-controls">

@@ -82,9 +82,35 @@
 /* ===================== MÓVIL ≤767 ===================== */
 @media (max-width: 767px) {
   header {
-    --header-padding-top: 0.65rem;
+    --header-padding-top: 0.45rem;
     padding: var(--header-padding-top) 0;
     background-image: var(--overlay-header), url('../images/bateria-champetera-atardecer-mobile.webp');
+  }
+
+  /* Título + hamburguesa en una fila — ahorra alto */
+  #header-container {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 0.35rem 0.5rem;
+    width: 100%;
+    padding-inline: 0.55rem 0.35rem;
+    box-sizing: border-box;
+  }
+
+  #header-container .title {
+    margin: 0;
+    padding: 0;
+    text-align: left;
+    font-size: clamp(1.15rem, 4.8vw, 1.55rem);
+    line-height: 1.2;
+  }
+
+  #nav-container {
+    margin: 0;
+    width: auto;
+    max-width: none;
+    padding-inline: 0;
   }
 
   main {
@@ -131,16 +157,12 @@
   .ticker-content {
     animation-duration: 40s;
   }
-
-  .title {
-    font-size: clamp(1.5rem, 6vw, 2rem);
-  }
 }
 
 /* Ajuste fino móvil muy estrecho */
 @media (max-width: 360px) {
-  .title {
-    font-size: 1.75rem;
+  #header-container .title {
+    font-size: 1.05rem;
   }
 
   section,

@@ -324,7 +324,8 @@ function savePadsViewSounds(gridType, sounds) {
   try { localStorage.setItem(`pianoChampeteroPads_${gridType}`, JSON.stringify(sounds)); } catch (e) {}
 }
 
-let currentViewMode = localStorage.getItem('pianoChampeteroViewMode') || 'bateria';
+let currentViewMode = 'pads';
+localStorage.setItem('pianoChampeteroViewMode', 'pads');
 let currentGridType = localStorage.getItem('pianoChampeteroGridType') || '3x4';
 
 // Validar que el grid type exista, si no usar default
@@ -875,32 +876,18 @@ function generateGridOptions() {
   });
 }
 
-function switchView(view) {
-  currentViewMode = view;
-  localStorage.setItem('pianoChampeteroViewMode', view);
+function switchView(_view) {
+  // Pads-only product surface — battery view removed from UI.
+  currentViewMode = 'pads';
+  localStorage.setItem('pianoChampeteroViewMode', 'pads');
 
-  const batteryView = document.getElementById('battery-view');
   const padsView = document.getElementById('pads-view');
   const gridSelector = document.getElementById('grid-selector');
-  const viewBateriaBtn = document.getElementById('view-bateria');
-  const viewPadsBtn = document.getElementById('view-pads');
-
-  if (view === 'pads') {
-    batteryView.classList.add('hidden');
-    padsView.classList.remove('hidden');
-    gridSelector.style.display = 'flex';
-    viewBateriaBtn.classList.remove('active');
-    viewPadsBtn.classList.add('active');
-    generateGridOptions();
-    generatePadsView();
-    scheduleResponsivePadsLayout();
-  } else {
-    batteryView.classList.remove('hidden');
-    padsView.classList.add('hidden');
-    gridSelector.style.display = 'none';
-    viewBateriaBtn.classList.add('active');
-    viewPadsBtn.classList.remove('active');
-  }
+  if (padsView) padsView.classList.remove('hidden');
+  if (gridSelector) gridSelector.style.display = 'flex';
+  generateGridOptions();
+  generatePadsView();
+  scheduleResponsivePadsLayout();
   refreshBatteryPresets();
 }
 
@@ -1550,7 +1537,7 @@ async function applyImportedKit(snapshot) {
   actualizarNombresPads();
 
   const view = localStorage.getItem('pianoChampeteroViewMode') || 'bateria';
-  switchView(view === 'pads' ? 'pads' : 'bateria');
+  switchView('pads');
 
   const noteRepeatBtn = document.getElementById('note-repeat-btn');
   const noteRepeatLabel = document.getElementById('note-repeat-btn-label');
@@ -1645,7 +1632,7 @@ function initKitConfigShare(noteRepeatApply) {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
-  const isMainPage = document.getElementById('tom-1') !== null;
+  const isMainPage = document.getElementById('pads-grid') !== null;
   await initSiteChrome();
   const navVirtual = document.getElementById('nav-virtual');
   if (navVirtual) navVirtual.classList.add('active');
@@ -1721,16 +1708,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     onActivate: () => setSidebarMode('loop'),
     ...loopSidebarOpts,
     getContext: () => ({
-      view: currentViewMode === 'pads' ? 'pads' : 'bateria',
+      view: 'pads',
       gridType: currentGridType,
     }),
     ensureContext: async (pattern) => {
-      if (pattern.view === 'pads') {
-        if (currentViewMode !== 'pads') switchView('pads');
-        if (pattern.gridType && pattern.gridType !== currentGridType) changeGrid(pattern.gridType);
-      } else if (currentViewMode !== 'bateria') {
-        switchView('bateria');
-      }
+      switchView('pads');
+      if (pattern.gridType && pattern.gridType !== currentGridType) changeGrid(pattern.gridType);
     },
     playHit: (hit) => {
       if (hit.kind === 'tom') activateTomSampler(hit.id, { flash: true });
@@ -1971,12 +1954,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     refreshBatteryPresets();
   });
 
-  // View toggle buttons
-  const viewBateriaBtn = document.getElementById('view-bateria');
-  const viewPadsBtn = document.getElementById('view-pads');
-  if (viewBateriaBtn) viewBateriaBtn.addEventListener('click', () => switchView('bateria'));
-  if (viewPadsBtn) viewPadsBtn.addEventListener('click', () => switchView('pads'));
-
+  // Pads-only — no battery/pads view toggle
   const gridOptionsRoot = document.getElementById('grid-options');
   if (gridOptionsRoot) {
     gridOptionsRoot.addEventListener('click', e => {
@@ -2000,12 +1978,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
   openPadEditModalRef = openPadEditModal;
 
-  // Initialize view after pad editor ref is ready (generatePadsView needs it for Editar + pads)
-  if (currentViewMode === 'pads') {
-    switchView('pads');
-  } else {
-    switchView('bateria');
-  }
+  switchView('pads');
 
   // Navegación con flechas en la lista de samplers
   if (modal) {

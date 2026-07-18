@@ -108,7 +108,14 @@ main {
 }
 
 /* ===================== BATERÍA GRID ===================== */
+/*
+ * SACRED DISTRIBUTION — do not change ratios or wing tokens.
+ * Only .battery width may change (whole kit scales). Toms are 16/20/24
+ * of kit width via cqw — never vw/clamp overrides per breakpoint.
+ */
 .battery {
+  container-type: inline-size;
+  container-name: battery;
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   grid-template-rows: repeat(3, auto);
@@ -121,6 +128,10 @@ main {
   max-width: 800px;
   margin: 0 auto;
   overflow: visible;
+  /* Locked tom fractions of kit width */
+  --tom-sm: 16cqw;
+  --tom-md: 20cqw;
+  --tom-lg: 24cqw;
   /* Alas izq/der — mismos tokens = misma altura espejada */
   --wing-top-overlap: 31%;
   --wing-outer-nudge: 6%;
@@ -179,7 +190,7 @@ main {
 
 .battery-tom.active {
   z-index: 2;
-  transform: scale(1.12);
+  /* No transform:scale — keeps sacred sizes equal (Q/W stay same px) */
   filter: brightness(1.1);
   box-shadow:
     0 6px 25px rgba(0, 0, 0, 0.4),
@@ -209,10 +220,10 @@ main {
   opacity: 0 !important;
 }
 
-/* Tamaños de toms — small (alas arriba) / medium (alas) / large (par central + fila inferior) */
-.battery-tom--small  { width: clamp(50px, 12vw, 100px); height: clamp(50px, 12vw, 100px); }
-.battery-tom--medium { width: clamp(68px, 16vw, 128px); height: clamp(68px, 16vw, 128px); }
-.battery-tom--large  { width: clamp(82px, 20vw, 158px); height: clamp(82px, 20vw, 158px); }
+/* Tamaños sagrados — solo varían si cambia el ancho de .battery */
+.battery-tom--small  { width: var(--tom-sm); height: var(--tom-sm); }
+.battery-tom--medium { width: var(--tom-md); height: var(--tom-md); }
+.battery-tom--large  { width: var(--tom-lg); height: var(--tom-lg); }
 
 /* Posicionamiento — grid 5×3 + overlap (ref. batería champeta) */
 /* Fila 1: alas superiores (Q/W) — espejo exacto */
@@ -1233,10 +1244,7 @@ ul.sampler-list {
   .battery-tom {
     background-image: url('../images/tombos-bg-mobile.webp');
   }
-  .battery-tom--small  { width: 16vw; height: 16vw; }
-  .battery-tom--medium { width: 20vw; height: 20vw; }
-  .battery-tom--large  { width: 24vw; height: 24vw; }
-  .battery-tom-key { font-size: clamp(0.8rem, 3vw, 1.1rem); }
+  .battery-tom-key { font-size: clamp(0.8rem, 3cqw, 1.1rem); }
 
   .battery-volume { width: 140px; }
   #volume-percent,
@@ -2066,21 +2074,6 @@ ul.sampler-list {
   margin-bottom: 0.35em;
 }
 
-.virtual-page .battery-tom--small {
-  width: clamp(48px, 10.5vw, 88px);
-  height: clamp(48px, 10.5vw, 88px);
-}
-
-.virtual-page .battery-tom--medium {
-  width: clamp(60px, 13.5vw, 118px);
-  height: clamp(60px, 13.5vw, 118px);
-}
-
-.virtual-page .battery-tom--large {
-  width: clamp(74px, 17.5vw, 142px);
-  height: clamp(74px, 17.5vw, 142px);
-}
-
 .virtual-page .kit-audio-controls {
   flex-direction: row;
   flex-wrap: wrap;
@@ -2121,25 +2114,14 @@ ul.sampler-list {
   font-size: 0.78rem;
 }
 
-/* Pantallas bajas (ej. laptop 768px alto, 1366×768) */
+/* Pantallas bajas — achicar el kit entero, no los ratios de toms */
 @media (max-height: 860px) {
   .virtual-page .audio-viz-canvas {
     height: 44px;
   }
 
-  .virtual-page .battery-tom--small {
-    width: clamp(38px, 8.5vw, 68px);
-    height: clamp(38px, 8.5vw, 68px);
-  }
-
-  .virtual-page .battery-tom--medium {
-    width: clamp(50px, 12vw, 100px);
-    height: clamp(50px, 12vw, 100px);
-  }
-
-  .virtual-page .battery-tom--large {
-    width: clamp(58px, 14vw, 112px);
-    height: clamp(58px, 14vw, 112px);
+  .virtual-page .battery {
+    width: min(100%, 70vh);
   }
 }
 
@@ -2192,27 +2174,40 @@ ul.sampler-list {
     padding: 0.15rem 0.35rem;
     gap: 5px;
     row-gap: 6px;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     justify-content: center;
     align-content: flex-start;
+    align-items: center;
+  }
+
+  /* Solo wrap cuando el panel Más está abierto */
+  .virtual-page .controls-bar:has(.more-controls-panel:not([hidden])) {
+    flex-wrap: wrap;
   }
 
   .virtual-page .control-group--primary {
     width: auto;
-    flex: 1 1 auto;
+    flex: 0 0 auto;
     justify-content: center;
     order: 1;
   }
 
+  .virtual-page .control-group--view {
+    order: 0;
+  }
+
   .virtual-page .grid-selector-inline.control-group--primary {
     order: 1;
-    width: 100%;
+    width: auto;
+    flex: 0 1 auto;
+    min-width: 0;
   }
 
   .virtual-page .more-controls-btn {
     display: inline-flex;
     order: 2;
     min-width: 2.6rem;
+    flex: 0 0 auto;
   }
 
   .virtual-page .more-controls-panel {
@@ -2279,14 +2274,14 @@ ul.sampler-list {
   }
 
   .virtual-page .control-group {
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     justify-content: center;
     row-gap: 4px;
     max-width: 100%;
   }
 
   .virtual-page .grid-selector-inline {
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     justify-content: center;
     max-width: 100%;
     margin-left: 0;
@@ -2419,23 +2414,8 @@ ul.sampler-list {
     max-width: none;
   }
 
-  .virtual-page .battery-tom--small {
-    width: 16vw;
-    height: 16vw;
-  }
-
-  .virtual-page .battery-tom--medium {
-    width: 20vw;
-    height: 20vw;
-  }
-
-  .virtual-page .battery-tom--large {
-    width: 24vw;
-    height: 24vw;
-  }
-
   .virtual-page .battery-tom-key {
-    font-size: clamp(0.8rem, 3vw, 1.1rem);
+    font-size: clamp(0.8rem, 3cqw, 1.1rem);
   }
 
   .virtual-page .kit-play-stage .kit-audio-controls {
@@ -2452,7 +2432,7 @@ ul.sampler-list {
 }
 /*
  * Mobile landscape play — sync with --bp-mobile-landscape-max-height / MOBILE_PLAY_MQ.
- * Chrome only (hide ticker/header/viz). Tom sizes stay 16/20/24vw — never rescale grid.
+ * Chrome only (hide ticker/header/viz). Sacred tom ratios on .battery — never override here.
  */
 @media (orientation: landscape) and (max-height: 560px) and (pointer: coarse) {
   .virtual-page {
@@ -2525,7 +2505,7 @@ ul.sampler-list {
     padding-right: env(safe-area-inset-right, 0px);
   }
 
-  /* Same grid + wing tokens + 16/20/24vw as portrait — do not rescale toms here */
+  /* Same sacred distribution — do not override tom sizes here */
   .virtual-page .battery {
     margin: 0.1rem auto;
   }

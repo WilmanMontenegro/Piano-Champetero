@@ -138,11 +138,16 @@ export function getTickerSegments(pageFile = '') {
   const base = file === 'virtual.html' ? TICKER_STATIC_LINES_VIRTUAL : TICKER_STATIC_LINES;
   const staticLines = buildStaticTickerLines(base);
 
-  const thanks = CONTRIBUTORS.filter(
-    (c) => !c.pages || c.pages.includes(file)
-  ).map((c) => ({
-    html: `🎉 ¡Gracias <strong>${escapeHtml(c.name)}</strong> ${escapeHtml(c.thanksFor)}! ${c.emoji || ''}`.trim(),
-  }));
+  // ponytail: ticker shows only newest thanks; full list stays on Sobre nosotros
+  const eligible = CONTRIBUTORS.filter((c) => !c.pages || c.pages.includes(file));
+  const latest = eligible[eligible.length - 1];
+  const thanks = latest
+    ? [
+        {
+          html: `🎉 ¡Gracias <strong>${escapeHtml(latest.name)}</strong> ${escapeHtml(latest.thanksFor)}! ${latest.emoji || ''}`.trim(),
+        },
+      ]
+    : [];
 
   const statics = staticLines.map((line) => ({ html: line.html }));
   return [...thanks, ...statics];
