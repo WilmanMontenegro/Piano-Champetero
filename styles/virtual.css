@@ -62,6 +62,26 @@ main {
   touch-action: none;
 }
 
+.rate-fixed-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+  margin: 0;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-marron);
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.rate-fixed-label input {
+  width: 1em;
+  height: 1em;
+  accent-color: var(--color-principal);
+  cursor: pointer;
+}
+
 .battery-volume-label {
   margin-top: 0.5em;
   width: 100%;

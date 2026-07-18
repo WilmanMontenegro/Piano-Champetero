@@ -189,6 +189,7 @@ const tomSamplerBuffers = {};
 const VOLUME_STORAGE_KEY = 'pianoChampeteroVolume';
 const DEFAULT_VOLUME = 0.5;
 const RATE_STORAGE_KEY = 'pianoChampeteroPlaybackRate';
+const RATE_FIXED_STORAGE_KEY = 'pianoChampeteroPlaybackRateFixed';
 const PLAYBACK_RATE_MIN = AUDIO_UI.playbackRate?.min ?? 0.5;
 const PLAYBACK_RATE_MAX = AUDIO_UI.playbackRate?.max ?? 2;
 const DEFAULT_PLAYBACK_RATE = AUDIO_UI.playbackRate?.default ?? 1;
@@ -248,8 +249,23 @@ function saveStoredPlaybackRate(v) {
   try { localStorage.setItem(RATE_STORAGE_KEY, String(v)); } catch { /* ignore */ }
 }
 
+function readStoredRateFixed() {
+  try {
+    return localStorage.getItem(RATE_FIXED_STORAGE_KEY) === '1';
+  } catch {
+    return false;
+  }
+}
+
+function saveStoredRateFixed(fixed) {
+  try {
+    localStorage.setItem(RATE_FIXED_STORAGE_KEY, fixed ? '1' : '0');
+  } catch { /* ignore */ }
+}
+
 let currentVolume = readStoredVolume();
 let currentPlaybackRate = readStoredPlaybackRate();
+let playbackRateFixed = readStoredRateFixed();
 
 let keyToTomId = {};
 
@@ -1687,29 +1703,48 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   const sliderRate = document.getElementById('rate-slider');
   const labelRate = document.getElementById('rate-percent');
+  const rateFixedCheck = document.getElementById('rate-fixed');
   if (sliderRate) {
-    // Spring pitch bend: hold + drag L/R; release → center (1×).
+    // Spring bend unless "Fijo" is checked.
     const syncRateUi = (rate) => {
       sliderRate.value = String(sliderFromPlaybackRate(rate));
       if (labelRate) labelRate.textContent = formatPlaybackRate(rate);
     };
-    const snapPitchToCenter = () => {
+    const snapRateToCenter = () => {
       setPlaybackRate(DEFAULT_PLAYBACK_RATE, { persist: true });
       syncRateUi(DEFAULT_PLAYBACK_RATE);
     };
-    currentPlaybackRate = DEFAULT_PLAYBACK_RATE;
-    syncRateUi(DEFAULT_PLAYBACK_RATE);
-    saveStoredPlaybackRate(DEFAULT_PLAYBACK_RATE);
+    if (rateFixedCheck) rateFixedCheck.checked = playbackRateFixed;
+    if (playbackRateFixed) {
+      syncRateUi(currentPlaybackRate);
+    } else {
+      currentPlaybackRate = DEFAULT_PLAYBACK_RATE;
+      syncRateUi(DEFAULT_PLAYBACK_RATE);
+      saveStoredPlaybackRate(DEFAULT_PLAYBACK_RATE);
+    }
 
     sliderRate.addEventListener('input', e => {
-      setPlaybackRate(playbackRateFromSlider(e.target.value));
+      setPlaybackRate(playbackRateFromSlider(e.target.value), { persist: playbackRateFixed });
       if (labelRate) labelRate.textContent = formatPlaybackRate(currentPlaybackRate);
     });
-    const endPitchBend = () => snapPitchToCenter();
-    sliderRate.addEventListener('pointerup', endPitchBend);
-    sliderRate.addEventListener('pointercancel', endPitchBend);
-    sliderRate.addEventListener('change', endPitchBend);
-    window.addEventListener('blur', endPitchBend);
+    const endRateBend = () => {
+      if (playbackRateFixed) return;
+      snapRateToCenter();
+    };
+    sliderRate.addEventListener('pointerup', endRateBend);
+    sliderRate.addEventListener('pointercancel', endRateBend);
+    sliderRate.addEventListener('change', endRateBend);
+    window.addEventListener('blur', endRateBend);
+
+    rateFixedCheck?.addEventListener('change', () => {
+      playbackRateFixed = !!rateFixedCheck.checked;
+      saveStoredRateFixed(playbackRateFixed);
+      if (playbackRateFixed) {
+        saveStoredPlaybackRate(currentPlaybackRate);
+      } else {
+        snapRateToCenter();
+      }
+    });
   }
 
   const editBtn = document.getElementById('edit-btn');

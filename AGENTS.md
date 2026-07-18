@@ -57,7 +57,7 @@ Do **not** use or add `.claude/` or `.vscode/` config (legacy / local IDE). **Cu
 | Espacio bajo cinta fija | `styles/tokens.css` → `--ticker-block-height`; `body { padding-top }` en `common.css` |
 | WhatsApp community invite URL | `js/site-config.js` → `WHATSAPP_COMMUNITY_URL` (ticker, Contáctanos, botón flotante) |
 | Hit flash duration on pads/toms | `js/site-config.js` → `AUDIO_UI.hitFlashMs` |
-| Sampler pitch (spring bend) | `js/site-config.js` → `AUDIO_UI.playbackRate`; slider Pitch en `virtual.html` (soltar → centro) |
+| Sampler velocidad | `js/site-config.js` → `AUDIO_UI.playbackRate`; slider + checkbox Fijo en `virtual.html` |
 | Nav hamburger (móvil) | `js/common.js` → `initHamburgerMenu()` (delegación en `document`, clase `html.nav-open`); panel fijo en `nav.css` ≤767px |
 | Desktop/tablet/mobile breakpoints | `styles/tokens.css` → `--bp-desktop-min` 1024, `--bp-tablet-min` 768, `--bp-mobile-max` 767; `responsive.css` |
 | Battery / pads behavior | `js/virtual.js`, `styles/virtual.css` |
@@ -92,6 +92,7 @@ Same **edit** flow: **Editar** → cell → modal **Sonido** / **Tecla** → **G
 | `pianoChampeteroGridType` | `3x3`, `3x4`, `4x4`, `4x6` |
 | `pianoChampeteroVolume` | Master volume 0–1 |
 | `pianoChampeteroPlaybackRate` | Sampler speed (`AUDIO_UI.playbackRate`; 1 = normal) |
+| `pianoChampeteroPlaybackRateFixed` | `"1"` \| `"0"` — velocidad fija (no vuelve al centro) |
 | `pianoChampeteroNoteRepeat` | Redoble on/off |
 
 **Edit modal save** (`virtual.js`): applies sampler and key independently when set — not gated on visible tab.

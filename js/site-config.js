@@ -32,8 +32,8 @@ export const AUDIO_UI = {
     intervalMs: 125,
   },
   /**
-   * Sampler pitch bend (Web Audio playbackRate).
-   * UI is a spring slider: hold + drag L/R; release returns to default (1).
+   * Sampler speed (Web Audio playbackRate).
+   * Default UI: spring slider (hold + drag; release → 1). Checkbox "Fijo" locks value.
    */
   playbackRate: {
     min: 0.5,
