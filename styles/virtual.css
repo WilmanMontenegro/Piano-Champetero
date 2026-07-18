@@ -1735,8 +1735,8 @@ ul.sampler-list {
   z-index: 1;
   font-size: var(--pad-key-size);
   font-weight: bold;
-  color: var(--color-blanco);
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.55), 0 0 10px rgba(0, 0, 0, 0.25);
+  color: var(--pad-key-color);
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.25);
   line-height: 1;
 }
 
@@ -1753,7 +1753,7 @@ ul.sampler-list {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.22);
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.2);
   margin-top: 2px;
   line-height: 1.15;
   letter-spacing: 0.01em;
