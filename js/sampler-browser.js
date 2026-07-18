@@ -255,12 +255,13 @@ export function mountSamplerBrowser(rootEl, opts) {
 
     if (selectedPath && pathsMatch(selectedPath, path)) li.classList.add('selected');
 
-    const activate = async () => {
+    const activate = () => {
       listEl.querySelectorAll('.sampler-item').forEach((el) => el.classList.remove('selected'));
       li.classList.add('selected');
       selectedPath = path;
       onSelect(path);
-      await onPreview(path);
+      // Fire-and-forget: preview cancels prior via epoch (await stacked races)
+      void onPreview(path);
     };
     li.addEventListener('click', () => activate());
     li.addEventListener('keydown', (e) => {

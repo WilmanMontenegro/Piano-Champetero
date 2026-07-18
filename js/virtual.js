@@ -330,6 +330,8 @@ let padsViewBuffers = {};
 
 // Cache global de TODOS los samplers cargados (evita re-fetch)
 const globalSamplerCache = {};
+/** @type {Record<string, Promise<AudioBuffer>>} */
+const globalSamplerLoading = {};
 
 /** @type {Map<string, string>} */
 let samplerByFullPath = new Map();
@@ -717,15 +719,23 @@ async function loadAvailableSamplers() {
   reconcileSamplerAssignments();
 }
 
-// Carga un sampler con cache global (evita re-fetch)
+// Carga un sampler con cache global (evita re-fetch); una sola promesa por URL en vuelo
 async function loadSamplerBuffer(url) {
   if (globalSamplerCache[url]) return globalSamplerCache[url];
-  const response = await fetch(url);
-  if (!response.ok) throw new Error(`Sampler HTTP ${response.status}`);
-  const arrayBuffer = await response.arrayBuffer();
-  const buffer = await audioCtx.decodeAudioData(arrayBuffer);
-  globalSamplerCache[url] = buffer;
-  return buffer;
+  if (globalSamplerLoading[url]) return globalSamplerLoading[url];
+  globalSamplerLoading[url] = (async () => {
+    try {
+      const response = await fetch(url);
+      if (!response.ok) throw new Error(`Sampler HTTP ${response.status}`);
+      const arrayBuffer = await response.arrayBuffer();
+      const buffer = await audioCtx.decodeAudioData(arrayBuffer);
+      globalSamplerCache[url] = buffer;
+      return buffer;
+    } finally {
+      delete globalSamplerLoading[url];
+    }
+  })();
+  return globalSamplerLoading[url];
 }
 
 // Preload: solo sonidos asignados (batería + pads actuales). Catálogo = bajo demanda en Editar.

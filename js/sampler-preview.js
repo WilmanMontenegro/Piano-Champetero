@@ -1,13 +1,15 @@
 /**
  * Modal sampler preview — single voice, stops previous preview on new play.
+ * In-flight loads are cancelled via epoch so rapid clicks don't stack voices.
  */
 
 import { samplerUrl } from './sampler-path.js';
 
 /** @type {AudioBufferSourceNode | null} */
 let previewSource = null;
+let previewEpoch = 0;
 
-export function stopSamplerPreview() {
+function stopPreviewSource() {
   if (!previewSource) return;
   try {
     previewSource.stop();
@@ -15,6 +17,11 @@ export function stopSamplerPreview() {
     /* already stopped */
   }
   previewSource = null;
+}
+
+export function stopSamplerPreview() {
+  previewEpoch += 1;
+  stopPreviewSource();
 }
 
 /**
@@ -29,11 +36,15 @@ export function stopSamplerPreview() {
  * }} deps
  */
 export async function previewSamplerPath(audioCtx, relativePath, deps) {
-  stopSamplerPreview();
+  const epoch = ++previewEpoch;
+  stopPreviewSource();
   if (!relativePath) return;
   try {
     if (audioCtx.state !== 'running') await audioCtx.resume();
+    if (epoch !== previewEpoch) return;
     const buffer = await deps.loadBuffer(samplerUrl(relativePath));
+    if (epoch !== previewEpoch) return;
+    stopPreviewSource();
     const source = audioCtx.createBufferSource();
     const gainNode = audioCtx.createGain();
     gainNode.gain.value = deps.getVolume();
@@ -43,6 +54,9 @@ export async function previewSamplerPath(audioCtx, relativePath, deps) {
     deps.connectHit(gainNode);
     source.start(0);
     previewSource = source;
+    source.onended = () => {
+      if (previewSource === source) previewSource = null;
+    };
     deps.pulseViz?.();
   } catch {
     /* ignore preview errors */
