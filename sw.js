@@ -1,4 +1,5 @@
-const CACHE_NAME = 'bateria-champeta-v195';
+const CACHE_NAME = 'bateria-champeta-v196';
+// Only real files — directories (/samplers/, /images/) 404 on GitHub Pages and break addAll
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -28,6 +29,7 @@ const STATIC_ASSETS = [
   '/js/sampler-preview.js',
   '/js/note-repeat.js',
   '/js/pad-grid-config.js',
+  '/js/pad-keyboard.js',
   '/js/session-recorder.js',
   '/js/battery-presets.js',
   '/js/pattern-loop.js',
@@ -37,20 +39,29 @@ const STATIC_ASSETS = [
   '/js/modal-utils.js',
   '/js/politicas-privacidad.js',
   '/js/sobre-nosotros.js',
-  '/samplers/',
-  '/images/',
-  'https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Seaweed+Script&display=swap',
-  'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css'
 ];
 
 const SAMPLER_CACHE = 'bateria-champeta-samplers-v1';
+
+/** Cache each URL; skip failures so one 404 does not abort install. */
+async function precacheStatic(cache) {
+  await Promise.all(
+    STATIC_ASSETS.map(async (url) => {
+      try {
+        await cache.add(url);
+      } catch (err) {
+        console.warn('SW precache skip:', url, err);
+      }
+    })
+  );
+}
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => {
         console.log('Caching static assets');
-        return cache.addAll(STATIC_ASSETS.filter(url => !url.startsWith('http')));
+        return precacheStatic(cache);
       })
       .then(() => self.skipWaiting())
   );
