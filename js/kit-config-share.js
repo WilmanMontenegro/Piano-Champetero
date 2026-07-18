@@ -265,6 +265,7 @@ export function buildWhatsAppSendUrl(message) {
 export const KIT_SHARE_SAFE_URL_LEN = 1800;
 
 /**
+ * WhatsApp share: link OR code — never both (chats truncate fat messages).
  * @param {ReturnType<typeof collectKitSnapshot>} snapshot
  * @param {string} code
  * @param {string} [baseHref]
@@ -272,22 +273,14 @@ export const KIT_SHARE_SAFE_URL_LEN = 1800;
 export function buildShareMessage(snapshot, code, baseHref) {
   const name = snapshot.n || 'Batería champetera';
   const link = buildKitShareUrl(code, baseHref);
-  const site = 'https://bateriachampetera.com/virtual.html';
 
+  // Link fits → just the link (one tap to import)
   if (link.length <= KIT_SHARE_SAFE_URL_LEN) {
-    return (
-      `🥁 *Kit Batería Champetera* — ${name}\n\n` +
-      `Tocá el enlace y el kit se carga solo:\n${link}\n\n` +
-      `Si el link no abre, pegá este código en la web → Exportar → Importar:\n${code}`
-    );
+    return `🥁 ${name}\n${link}`;
   }
 
-  // Link too long for chats — code is the reliable path
-  return (
-    `🥁 *Kit Batería Champetera* — ${name}\n\n` +
-    `El kit es grande: abrí ${site} → *Exportar* → pegá este código completo → *Importar*:\n\n` +
-    `${code}`
-  );
+  // Link too long → code only (paste in Imp/Exp → Importar)
+  return `🥁 ${name}\n${code}`;
 }
 
 /** Write snapshot fields to localStorage (caller refreshes runtime state). */
@@ -397,4 +390,8 @@ export async function copyTextToClipboard(text, field = null) {
   const withJunk = `Mira hermano\n${wrapped}\nsalu2`;
   console.assert(decodeKitToken(withJunk).n === 'test', 'kit decode survives WhatsApp wrap+junk');
   console.assert(extractKitToken(wrapped).startsWith('BC1.'), 'kit extract joins wrapped BC1');
+  const wa = buildShareMessage(snap, code, 'https://bateriachampetera.com/virtual.html');
+  const waLines = wa.trim().split('\n');
+  console.assert(waLines.length === 2, 'WA message is name + one payload');
+  console.assert(waLines[1].startsWith('http') || waLines[1].startsWith('BC1.'), 'WA payload is link XOR code');
 }

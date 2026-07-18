@@ -1,21 +1,29 @@
 {
+  "id": "/",
   "name": "Batería Champetera Virtual",
   "short_name": "Bateria Champeta",
   "description": "Toca batería de champeta virtual gratis. Batería champetera y piano champetero online.",
   "start_url": "/virtual.html",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#FFF5E6",
   "theme_color": "#00A859",
   "orientation": "any",
   "icons": [
     {
-      "src": "/favicon.png",
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/favicon.png",
+      "src": "/icons/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"

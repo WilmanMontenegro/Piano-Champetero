@@ -64,12 +64,12 @@
   padding: 0 0.75rem;
   margin: 0 auto;
   max-width: var(--nav-menu-max-width);
-  width: 100%;
+  width: max-content;
   box-sizing: border-box;
 }
 
 .nav-menu li {
-  flex: 0 1 auto;
+  flex: 0 0 auto;
   min-width: 0;
 }
 
@@ -113,8 +113,8 @@
 /* Tablet: enlaces un poco más compactos, puede hacer wrap */
 @media (min-width: 768px) and (max-width: 1023px) {
   #nav-container {
-    --nav-link-size: clamp(0.8rem, 1.05vw, 0.92rem);
-    --nav-link-gap: clamp(0.4rem, 1vw, 0.85em);
+    --nav-link-size: clamp(0.92rem, 1.2vw, 1.05rem);
+    --nav-link-gap: clamp(0.45rem, 1vw, 0.75em);
   }
 
   .nav-menu {

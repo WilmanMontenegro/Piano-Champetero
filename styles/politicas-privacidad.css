@@ -1,23 +1,23 @@
 /* =====================================================
-   ESTILOS ESPECÍFICOS - politicas-privacidad.html
-   Depende de: reset.css, common.css
+   politicas-privacidad.html
+   Text roles: tokens.css → --color-display / --color-text / --color-text-muted
    ===================================================== */
 
 .policy-container {
-  color: var(--color-marron);
+  color: var(--color-text);
   text-align: left;
 }
 
-/* Título principal centrado */
 .policy-container > .page-title {
   text-align: center;
+  color: var(--color-display);
 }
 
-/* Subtítulos de secciones */
 .policy-container section h2 {
   font-size: var(--font-size-xl);
   margin-top: 1rem;
   text-align: left;
+  color: var(--color-display);
 }
 
 .policy-container p,
@@ -25,9 +25,15 @@
   font-size: var(--font-size-md);
   line-height: var(--line-height-normal);
   text-align: left;
+  color: var(--color-text-muted);
 }
 
-/* Listas con bullets (sobrescribe el estilo sin bullets de common.css) */
+.policy-container strong {
+  color: var(--color-text);
+  font-weight: 700;
+}
+
+/* Listas con bullets (sobrescribe el estilo soft-bar de common.css) */
 .policy-container ul {
   margin: 0 0 1rem 0;
   padding-left: 1.25rem;
@@ -35,14 +41,20 @@
   list-style-position: outside;
 }
 
+.policy-container li {
+  color: var(--color-text-muted);
+  background: none;
+  border: none;
+  padding: 0.15em 0;
+  margin-bottom: 0.4em;
+  border-radius: 0;
+}
+
 .policy-container a {
   color: var(--color-principal);
   text-decoration: underline;
 }
 
-/* ===================== RESPONSIVE ===================== */
-
-/* Tablet pequeño - 640px */
 @media (max-width: 640px) {
   .policy-container section h2 {
     font-size: var(--font-size-lg);

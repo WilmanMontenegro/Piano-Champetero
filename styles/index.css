@@ -12,32 +12,75 @@ section h2 {
   font-weight: 700;
 }
 
+/* FAQ accordion — native <details name="faq"> (one open at a time) */
 .faq-item {
-  margin-bottom: 1.5em;
-  padding: 1em;
+  margin-bottom: 0.75em;
+  padding: 0;
   background: var(--color-surface);
   border-radius: 8px;
   border: 1px solid color-mix(in srgb, var(--color-brand-dark) 8%, transparent);
   border-left: 3px solid var(--accent-soft-yellow);
+  overflow: hidden;
 }
 
-.faq-item:nth-child(3n + 2) {
+.faq-item:nth-of-type(3n + 2) {
   border-left-color: var(--accent-soft-green);
   background: var(--color-surface-green);
 }
 
-.faq-item:nth-child(3n + 3) {
+.faq-item:nth-of-type(3n + 3) {
   border-left-color: var(--accent-soft-red);
   background: var(--color-surface-red);
 }
 
-.faq-item h3 {
-  color: var(--color-marron);
-  margin-bottom: 0.5em;
-  font-size: 1.2em;
+.faq-item:last-child {
+  margin-bottom: 0;
+}
+
+.faq-item summary {
+  cursor: pointer;
+  list-style: none;
+  color: var(--color-text);
+  font-size: 1.15em;
+  font-weight: 600;
   font-family: inherit;
+  padding: 0.85em 2.5em 0.85em 1em;
+  position: relative;
+  line-height: var(--line-height-tight);
+}
+
+.faq-item summary::-webkit-details-marker {
+  display: none;
+}
+
+.faq-item summary::after {
+  content: "";
+  position: absolute;
+  right: 1em;
+  top: 50%;
+  width: 0.45em;
+  height: 0.45em;
+  border-right: 2px solid var(--color-text-muted);
+  border-bottom: 2px solid var(--color-text-muted);
+  transform: translateY(-65%) rotate(45deg);
+  transition: transform 0.2s ease;
+}
+
+.faq-item[open] summary::after {
+  transform: translateY(-35%) rotate(225deg);
+}
+
+.faq-item summary:hover {
+  color: var(--color-display);
+}
+
+.faq-item summary:focus-visible {
+  outline: 2px solid var(--color-principal);
+  outline-offset: 2px;
 }
 
 .faq-item p {
   margin: 0;
+  padding: 0 1em 1em;
+  color: var(--color-text-muted);
 }

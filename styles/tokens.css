@@ -46,7 +46,6 @@
   --color-principal-hover: color-mix(in srgb, var(--palette-green) 78%, var(--palette-black));
   --color-secundario: var(--palette-red);
   --color-amarillo: var(--palette-yellow);
-  --color-marron: var(--palette-ink);
   --color-footer: var(--palette-cream);
   --color-rosa-claro: color-mix(in srgb, var(--palette-red) 16%, var(--palette-white));
   --color-blanco: var(--palette-white);
@@ -61,6 +60,14 @@
 
   /* =========================================================
    * SURFACES / TEXT
+   * Page CSS — use these roles (not hex, not --color-marron for copy):
+   *   --color-display     titles (Permanent Marker / h1–h2)
+   *   --color-text        primary body
+   *   --color-text-muted  secondary body / paragraphs
+   *   --color-card        content card surface
+   * Fill that stays dark ink in both themes:
+   *   --color-ink-fill
+   * Legacy --color-marron = body text (follows theme). Do NOT use for backgrounds.
    * ========================================================= */
   --color-surface: color-mix(in srgb, var(--palette-cream) 92%, var(--palette-white));
   --color-surface-green: color-mix(in srgb, var(--palette-green) 7%, var(--palette-white));
@@ -73,7 +80,9 @@
   --color-text: var(--palette-ink);
   --color-text-muted: var(--palette-gray-700);
   --color-display: color-mix(in srgb, var(--palette-ink) 88%, var(--palette-green));
-
+  --color-ink-fill: var(--palette-ink);
+  /* Legacy alias → primary body text (light/dark). Use --color-ink-fill for solid bg. */
+  --color-marron: var(--color-text);
   --accent-soft-green: color-mix(in srgb, var(--palette-green) 55%, var(--palette-white));
   --accent-soft-yellow: color-mix(in srgb, var(--palette-yellow) 60%, var(--palette-white));
   --accent-soft-red: color-mix(in srgb, var(--palette-red) 50%, var(--palette-white));
@@ -208,9 +217,10 @@
   --nav-container-name: site-nav;
   --nav-mobile-max: 767px;
   --nav-dropdown-max-width: 320px;
-  --nav-link-gap: 1.25em;
-  --nav-link-size: clamp(1rem, 0.45rem + 0.72vw, 1.35rem);
-  --nav-menu-max-width: min(96vw, 1400px);
+  --nav-link-gap: 0.5em;
+  --nav-link-size: clamp(0.95rem, 1.2vw, 1.1rem);
+  /* Same cap as content cards — don't stretch links edge-to-edge */
+  --nav-menu-max-width: min(96vw, var(--layout-content-max));
 
   /* Radios y sombras */
   --borde-radius: 8px;
@@ -224,6 +234,7 @@
   /* Pads / toms — feedback */
   --pad-glow-idle: color-mix(in srgb, var(--color-rasta-yellow) 35%, transparent);
   --pad-hit-ring: color-mix(in srgb, var(--color-rasta-yellow) 95%, transparent);
+  --pad-border: rgba(255, 255, 255, 0.5);
   --tom-glow-idle: color-mix(in srgb, var(--palette-yellow) 40%, transparent);
   --hit-flash-duration: 0.16s;
   --pad-edit-pulse: var(--palette-coral);
@@ -231,6 +242,7 @@
   /*
    * Pads SSOT (desktop defaults). Tier MQs below ONLY retune these vars —
    * never re-declare .pad-* property blocks in virtual.css.
+   * --pad-fill-hit = press flash; light keeps same as idle.
    */
   --pad-fill-start: var(--color-rasta-green);
   --pad-fill-mid: var(--color-rasta-yellow);
@@ -241,6 +253,7 @@
     var(--pad-fill-mid) 48%,
     var(--pad-fill-end) 100%
   );
+  --pad-fill-hit: var(--pad-fill);
   --pad-gap: 10px;
   --pad-grid-pad: 10px;
   --pad-view-max-width: min(1420px, 96%);
@@ -282,7 +295,7 @@
   --virtual-footer-block: 2.85rem;
 }
 
-/* Dark theme — reasigna tokens; pads siguen vividos vía --palette-* */
+/* Dark theme — chrome night; pads idle soft / hit brighter but not full daylight */
 [data-theme="dark"] {
   color-scheme: dark;
   --gradient-body:
@@ -304,8 +317,10 @@
   --color-gris-claro: #2a2a2a;
   --color-gris-medio: #3a3a3a;
   --color-text: #e6e6e6;
-  --color-text-muted: #a8a8a8;
+  --color-text-muted: #b0b0b0;
   --color-display: color-mix(in srgb, #e6e6e6 90%, var(--palette-yellow));
+  --color-marron: var(--color-text);
+  --color-ink-fill: var(--palette-ink);
   --accent-soft-green: color-mix(in srgb, var(--palette-green) 45%, var(--palette-ink));
   --accent-soft-yellow: color-mix(in srgb, var(--palette-yellow) 40%, var(--palette-ink));
   --accent-soft-red: color-mix(in srgb, var(--palette-red) 42%, var(--palette-ink));
@@ -330,6 +345,23 @@
   --icon-rate: var(--value-rate);
   --sombra-card: 0 4px 28px color-mix(in srgb, var(--palette-black) 45%, transparent);
   --sombra-btn: 0 2px 8px color-mix(in srgb, var(--palette-black) 30%, transparent);
+
+  /* Idle ~48% night (stands out vs bg); hit ~15% night — balanced press. */
+  --pad-fill-start: color-mix(in srgb, var(--color-rasta-green) 52%, var(--palette-night-card));
+  --pad-fill-mid: color-mix(in srgb, var(--color-rasta-yellow) 48%, var(--palette-night-card));
+  --pad-fill-end: color-mix(in srgb, var(--color-rasta-red) 52%, var(--palette-night-card));
+  --pad-fill-hit: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--color-rasta-green) 85%, var(--palette-night-card)) 0%,
+    color-mix(in srgb, var(--color-rasta-yellow) 82%, var(--palette-night-card)) 48%,
+    color-mix(in srgb, var(--color-rasta-red) 85%, var(--palette-night-card)) 100%
+  );
+  --pad-glow-idle: color-mix(in srgb, var(--color-rasta-yellow) 24%, transparent);
+  --pad-hit-ring: color-mix(in srgb, var(--color-rasta-yellow) 55%, transparent);
+  --pad-border: color-mix(in srgb, var(--palette-yellow) 28%, transparent);
+  --pad-key-color: color-mix(in srgb, #eaeaea 92%, var(--palette-yellow));
+  --pad-sound-color: color-mix(in srgb, #e0e0e0 72%, transparent);
+  --tom-glow-idle: color-mix(in srgb, var(--palette-yellow) 22%, transparent);
 }
 
 /* Pad tier retunes — same vars as :root (breakpoints = --bp-*) */
@@ -349,7 +381,8 @@
     --pad-gap: 6px;
     --pad-grid-pad: 8px;
     --pad-view-max-width: 100%;
-    --pad-view-padding: 0.35rem 0.85rem 0.25rem;
+    /* ~0.55–0.65rem side inset — pads fill width without edge-stick */
+    --pad-view-padding: 0.3rem 0.6rem 0.2rem;
     --pad-item-padding: clamp(3px, 0.8vw, 5px);
     --pad-key-size: clamp(1em, 4vw, 1.5em);
     --pad-sound-size: clamp(0.88em, 3.4vw, 1.1em);

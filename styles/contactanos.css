@@ -1,13 +1,13 @@
 /* =====================================================
-   ESTILOS ESPECÍFICOS - contactanos.html
-   Depende de: reset.css, common.css
+   contactanos.html
+   Multiple top-level cards (main > section.content-card),
+   same pattern as sobre-nosotros — no mega-card, no card-in-card.
+   Text roles: --color-display / --color-text / --color-text-muted
    ===================================================== */
 
-.contact-container {
-  backdrop-filter: blur(10px);
-}
-
-.contact-container h2 {
+.contact-intro-card h2,
+.contact-whatsapp-card h2,
+.contact-form-card h2 {
   font-size: clamp(2.2em, 5vw, 3em);
   text-align: center;
   margin-bottom: 0.8em;
@@ -16,54 +16,26 @@
 
 .contact-intro {
   font-size: var(--font-size-md);
-  color: var(--color-gris-oscuro);
+  color: var(--color-text-muted);
   text-align: center;
-  margin-bottom: 2em;
+  margin: 0;
   line-height: var(--line-height-relaxed);
 }
 
-.contact-options {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1.5em;
-  margin: 2em 0;
+/* WhatsApp CTA — plain content inside its own top-level card */
+.contact-whatsapp-card {
+  text-align: center;
 }
 
 .contact-option {
-  background: rgba(255, 255, 255, 0.8);
-  border-radius: var(--borde-radius-grande);
-  padding: 1.5em 1em;
-  text-align: center;
-  box-shadow: var(--sombra-btn);
-  border-top: 2px solid var(--accent-soft-green);
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.contact-option:nth-child(3n + 2) {
-  border-top-color: var(--accent-soft-yellow);
-}
-
-.contact-option:nth-child(3n + 3) {
-  border-top-color: var(--accent-soft-red);
-}
-
-.contact-option:hover {
-  transform: translateY(-3px);
-  box-shadow: var(--sombra-btn-hover);
+  max-width: 28rem;
+  margin: 0 auto;
 }
 
 .contact-icon {
   font-size: 2.5em;
-  color: color-mix(in srgb, var(--color-brand-green) 70%, #333);
-  margin-bottom: 0.8em;
-}
-
-.contact-option:nth-child(3n + 2) .contact-icon {
-  color: color-mix(in srgb, var(--color-brand-yellow) 45%, #333);
-}
-
-.contact-option:nth-child(3n + 3) .contact-icon {
-  color: color-mix(in srgb, var(--color-brand-red) 65%, #333);
+  color: var(--color-whatsapp);
+  margin-bottom: 0.5em;
 }
 
 .contact-icon svg {
@@ -72,20 +44,10 @@
   color: var(--color-whatsapp);
 }
 
-.contact-option--whatsapp .contact-icon {
-  color: var(--color-whatsapp);
-}
-
-.contact-option h3 {
-  font-size: var(--font-size-lg);
-  color: var(--color-marron);
-  margin: 0.5em 0;
-}
-
 .contact-option p {
   font-size: var(--font-size-sm);
-  color: var(--color-gris-oscuro);
-  margin-bottom: 1.2em;
+  color: var(--color-text-muted);
+  margin: 0 0 1em;
   line-height: var(--line-height-tight);
 }
 
@@ -100,7 +62,7 @@
   border-radius: var(--borde-radius);
   font-weight: bold;
   text-shadow: var(--btn-primary-shadow-text);
-  transition: all 0.2s;
+  transition: background 0.2s, box-shadow 0.2s;
   box-shadow: var(--sombra-btn);
 }
 
@@ -131,28 +93,7 @@
   color: var(--color-blanco);
 }
 
-.contact-button--whatsapp:hover {
-  background: #1ebe57;
-}
-
-/* Formulario de contacto */
-.contact-form-section {
-  background: rgba(255, 255, 255, 0.8);
-  border-radius: var(--borde-radius-grande);
-  padding: clamp(1.5em, 4vw, 2.5em);
-  margin: 2em 0;
-  box-shadow: var(--sombra-card);
-  border: 1px solid rgba(255, 255, 255, 0.6);
-}
-
-.contact-form-section h3 {
-  font-size: clamp(1.6em, 4vw, 2em);
-  color: var(--color-principal);
-  margin-bottom: 1.5em;
-  text-align: center;
-  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
-}
-
+/* Form card */
 .contact-form {
   max-width: 100%;
   margin: 0 auto;
@@ -166,8 +107,8 @@
 .form-group label {
   display: flex;
   margin-bottom: 0.6em;
-  font-weight: bold;
-  color: var(--color-marron);
+  font-weight: 700;
+  color: var(--color-text);
   font-size: var(--font-size-md);
   align-items: center;
 }
@@ -187,16 +128,10 @@
   border-radius: var(--borde-radius-grande);
   font-family: inherit;
   font-size: var(--font-size-sm);
-  transition: all 0.3s;
+  color: var(--color-text);
+  background: var(--color-surface);
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
   box-sizing: border-box;
-  background: rgba(255, 255, 255, 0.9);
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
-}
-
-.form-group input:hover,
-.form-group select:hover,
-.form-group textarea:hover {
-  background: var(--color-blanco);
 }
 
 .form-group input:focus,
@@ -204,8 +139,7 @@
 .form-group textarea:focus {
   outline: none;
   border-color: var(--color-principal);
-  background: var(--color-blanco);
-  box-shadow: 0 4px 12px color-mix(in srgb, var(--color-brand-green) 22%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-brand-green) 22%, transparent);
 }
 
 .form-group textarea {
@@ -239,13 +173,13 @@
   padding: 0.9em 1.8em;
   margin-top: 1.5em;
   text-shadow: var(--btn-primary-shadow-text);
-  transition: background 0.3s, box-shadow 0.3s, transform 0.3s;
-  box-shadow: var(--sombra-btn-hover);
+  transition: background 0.2s, box-shadow 0.2s, transform 0.2s;
+  box-shadow: var(--sombra-btn);
 }
 
 .send-button:hover {
   background: var(--gradient-btn-primary-hover);
-  box-shadow: 0 6px 20px color-mix(in srgb, var(--palette-green) 35%, transparent);
+  box-shadow: var(--sombra-btn-hover);
   transform: translateY(-2px);
 }
 
@@ -283,7 +217,7 @@
   box-shadow: var(--sombra-card);
   border: 2px solid transparent;
   background:
-    linear-gradient(135deg, var(--color-blanco), var(--color-gris-claro)) padding-box,
+    linear-gradient(var(--color-card), var(--color-card)) padding-box,
     var(--gradient-card-edge) border-box;
   animation: slideIn 0.4s ease-out;
 }
@@ -302,32 +236,20 @@
 }
 
 .confirmation-content h4 {
-  color: var(--color-marron);
+  color: var(--color-text);
   margin: 0.8em 0;
   font-size: clamp(1.5em, 4vw, 1.8em);
   font-weight: bold;
 }
 
 .confirmation-content p {
-  color: var(--color-gris-oscuro);
+  color: var(--color-text-muted);
   margin-bottom: 2em;
   font-size: var(--font-size-md);
   line-height: var(--line-height-normal);
 }
 
-/* ===================== RESPONSIVE ===================== */
-
-/* Tablet - 768px */
 @media (max-width: 767px) {
-  .contact-container {
-    margin: 1em;
-    padding: 1.5em;
-  }
-
-  .contact-options {
-    grid-template-columns: 1fr;
-  }
-
   .form-row {
     grid-template-columns: 1fr;
   }

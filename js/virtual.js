@@ -1356,9 +1356,10 @@ let padsLayoutFrame = 0;
 /** Size math only — gap/gridPad come from tokens.css via readPadGutterVars(). */
 const PAD_LAYOUT_BY_TIER = {
   mobile: {
-    sideInset: 28,
+    sideInset: 16,
     topInset: 10,
-    maxCap: 112,
+    // No low artificial cap — padSquareSize already fits avail box (keeps ~safe margins).
+    maxCap: 168,
     minPad: 44,
     volFloor: 72,
     volExtra: 16,
@@ -1421,8 +1422,8 @@ function padSquareSize(cols, rows, availW, availH, gap, gridPad, maxCap) {
 
 /**
  * Mobile only: pick cols×rows for square pads.
- * Prefer near-max touch size; if that leaves tall dead space, prefer fewer cols / more rows
- * (e.g. 4×6 or 3×8 over 6×4) so the grid uses availH. Soft fill ≤0.92 keeps modest margins.
+ * 1) Max touch size  2) Fill width (kill side gutters)  3) Mild tall bias in portrait ties.
+ * Soft width rescue: if winner leaves big side gutters, prefer a near-max layout that fills width.
  */
 function pickResponsivePadLayout(total, availW, availH, gap, gridPad, maxCap, minPad, cfg) {
   const candidates = [];
@@ -1433,53 +1434,40 @@ function pickResponsivePadLayout(total, availW, availH, gap, gridPad, maxCap, mi
     if (size < minPad) continue;
 
     const widthUsed = cols * size + (cols - 1) * gap + 2 * gridPad;
-    const heightUsed = rows * size + (rows - 1) * gap + 2 * gridPad;
     candidates.push({
       cols,
       rows,
       size,
       fillW: widthUsed / Math.max(1, availW),
-      fillH: heightUsed / Math.max(1, availH),
     });
   }
 
   if (!candidates.length) return { cols: cfg.cols, rows: cfg.rows };
 
-  const soft = (n) => Math.min(n, 0.92);
-  const maxSize = Math.max(...candidates.map((c) => c.size));
-  const largest = candidates
-    .filter((c) => c.size >= maxSize * 0.98)
-    .sort((a, b) => soft(b.fillH) - soft(a.fillH))[0];
-
-  // Viewport portrait (not stage box): wide near-max → open taller pool (6×4→4×6).
-  // Stage availH×availW is often landscape after chrome; use window aspect.
   const preferTall = window.innerHeight > window.innerWidth;
-  let verticalSlack = soft(largest.fillH) < 0.85;
-  if (preferTall && largest.cols > largest.rows) verticalSlack = true;
-  // ponytail: 0.70 floor when forcing tall — 4×6 drops below 0.78×maxSize with mid chrome
-  const sizeFloor = maxSize * (verticalSlack ? (preferTall && largest.cols > largest.rows ? 0.7 : 0.78) : 0.92);
-  const pool = candidates.filter((c) => c.size >= sizeFloor);
-
-  pool.sort((a, b) => {
-    if (preferTall) {
-      const tallA = a.rows >= a.cols ? 1 : 0;
-      const tallB = b.rows >= b.cols ? 1 : 0;
-      if (tallA !== tallB) return tallB - tallA;
-    }
-    if (verticalSlack) {
-      const dH = soft(b.fillH) - soft(a.fillH);
-      if (Math.abs(dH) > 0.03) return dH;
-      const dS = b.size - a.size;
-      if (Math.abs(dS) > 1) return dS;
-      return b.rows - b.cols - (a.rows - a.cols);
-    }
+  candidates.sort((a, b) => {
     const dS = b.size - a.size;
     if (Math.abs(dS) > 0.5) return dS;
-    return soft(b.fillW) - soft(a.fillW);
+    const dW = b.fillW - a.fillW;
+    if (Math.abs(dW) > 0.02) return dW;
+    if (preferTall) return (b.rows - b.cols) - (a.rows - a.cols);
+    return 0;
   });
 
-  const best = pool[0];
+  let best = candidates[0];
+  // ponytail: avoid skinny 2-col when a ≥3-col layout is within ~12% size and fills width
+  if (best.fillW < 0.85) {
+    const maxSize = best.size;
+    const wide = candidates
+      .filter((c) => c.fillW >= 0.9 && c.size >= maxSize * 0.88)
+      .sort((a, b) => b.size - a.size)[0];
+    if (wide) best = wide;
+  }
+
   console.assert(best.cols * best.rows === total);
+  if (total === 12 && preferTall && availW >= 300) {
+    console.assert(best.cols >= 3, 'mobile 12-pad layout should use ≥3 columns');
+  }
   return { cols: best.cols, rows: best.rows };
 }
 
@@ -1911,6 +1899,8 @@ function initKitConfigShare(noteRepeatApply) {
   const copyBtn = document.getElementById('kit-share-copy-btn');
   const whatsappBtn = document.getElementById('kit-share-whatsapp-btn');
   const importBtn = document.getElementById('kit-import-btn');
+  const resultTitle = document.getElementById('kit-import-result-title');
+  const resultMsg = document.getElementById('kit-import-result-msg');
 
   if (!exportField || !importField) {
     return { consumeUrlKit: async () => false };
@@ -1923,9 +1913,18 @@ function initKitConfigShare(noteRepeatApply) {
     statusEl.classList.toggle('kit-import-status--error', isError);
   };
 
-  const openShareModal = () => {
-    const modal = document.getElementById('modal-kit-share');
-    if (modal) modal.style.display = 'flex';
+  const resultModal = initModal('modal-kit-import-result', {
+    closeBtnId: 'kit-import-result-ok-btn',
+    focusOnOpen: true,
+  });
+
+  const showImportResult = (ok, title, msg) => {
+    if (resultTitle) resultTitle.textContent = title;
+    if (resultMsg) {
+      resultMsg.textContent = msg;
+      resultMsg.classList.toggle('kit-import-status--error', !ok);
+    }
+    resultModal?.open();
   };
 
   const refreshExportPayload = () => {
@@ -1965,7 +1964,7 @@ function initKitConfigShare(noteRepeatApply) {
     }
     const ok = await copyTextToClipboard(text, exportField);
     if (ok) {
-      setStatus('Código copiado. Pegalo en WhatsApp o en Importar.');
+      setStatus('Código copiado.');
       return;
     }
     try {
@@ -2028,18 +2027,20 @@ function initKitConfigShare(noteRepeatApply) {
     /** @returns {Promise<boolean>} true if a URL kit was handled */
     async consumeUrlKit() {
       if (!pendingUrlKit) return false;
-      openShareModal();
-      importField.value = pendingUrlKit;
       try {
         const label = await runImport(pendingUrlKit);
-        importField.value = '';
-        setStatus(`${label} creado desde el enlace. Tu kit anterior sigue en la lista.`);
+        showImportResult(
+          true,
+          'Kit importado correctamente',
+          `${label} creado. Tu kit anterior sigue en la lista.`,
+        );
         return true;
       } catch (err) {
-        setStatus(
+        showImportResult(
+          false,
+          'No se pudo importar',
           (err instanceof Error ? err.message : 'No se pudo leer el enlace.')
-            + ' Si WhatsApp cortó el link, pedí el código BC1 y pegalo abajo.',
-          true,
+            + ' Pedí el código BC1 y pegalo en Imp/Exp → Importar.',
         );
         return false;
       }
@@ -2459,7 +2460,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     return true;
   }
 
-  const PLAY_KEYBOARD_BLOCK_MODALS = ['modal-edit', 'modal-kit-share', 'modal-help', 'modal-confirm-reset', 'modal-pc-audio-guide'];
+  const PLAY_KEYBOARD_BLOCK_MODALS = ['modal-edit', 'modal-kit-share', 'modal-kit-import-result', 'modal-help', 'modal-confirm-reset', 'modal-pc-audio-guide'];
 
   function shouldBlockPlayKeyboard(e) {
     if (modoEdicion) return true;

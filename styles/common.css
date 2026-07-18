@@ -7,6 +7,7 @@
 @import url('components/nav.css');
 @import url('components/ticker.css');
 @import url('components/whatsapp-fab.css');
+@import url('components/pwa-install.css');
 @import url('responsive.css');
 
 /* ===================== BASE ===================== */
@@ -85,7 +86,7 @@ section h2 {
 section h3 {
   font-family: var(--font-display);
   font-size: 1.8em;
-  color: var(--color-marron);
+  color: var(--color-display);
 }
 
 section p,
@@ -96,14 +97,14 @@ section p,
   font-size: var(--font-size-md);
 }
 
-section ul:not(.policy-container ul, .modal-instructions) {
+/* Soft g/y/r bars — only direct lists under top-level sections (not nested policy prose) */
+main > section:not(.policy-container) > ul:not(.contributors-list, .modal-instructions) {
   list-style: none;
   padding: 0;
   margin: 1em 0;
 }
 
-/* Soft cycle g/y/r — pastel bars, same cream-ish fills */
-section li:not(.policy-container li, .modal-instructions li) {
+main > section:not(.policy-container) > ul:not(.contributors-list, .modal-instructions) > li {
   padding: 0.8em 1em;
   margin-bottom: 0.5em;
   border-radius: var(--borde-radius);
@@ -113,12 +114,12 @@ section li:not(.policy-container li, .modal-instructions li) {
   color: var(--color-text-muted);
 }
 
-section li:not(.policy-container li, .modal-instructions li):nth-child(3n + 2) {
+main > section:not(.policy-container) > ul:not(.contributors-list, .modal-instructions) > li:nth-child(3n + 2) {
   border-left-color: var(--accent-soft-yellow);
   background: var(--color-surface-yellow);
 }
 
-section li:not(.policy-container li, .modal-instructions li):nth-child(3n + 3) {
+main > section:not(.policy-container) > ul:not(.contributors-list, .modal-instructions) > li:nth-child(3n + 3) {
   border-left-color: var(--accent-soft-red);
   background: var(--color-surface-red);
 }
@@ -214,7 +215,7 @@ header {
 
 .btn-danger:hover,
 .btn-reset:hover {
-  background: var(--color-marron);
+  background: var(--color-ink-fill);
   box-shadow: var(--sombra-btn-hover);
 }
 
@@ -323,14 +324,14 @@ header {
 }
 
 .modal-content h3 {
-  color: var(--color-marron);
+  color: var(--color-display);
   font-family: var(--font-display);
   font-size: 2.2em;
   margin: 0.5rem 0 1rem;
 }
 
 .modal-content p {
-  color: var(--color-gris-oscuro);
+  color: var(--color-text-muted);
   line-height: var(--line-height-normal);
   margin-bottom: 1rem;
   font-size: var(--font-size-md);

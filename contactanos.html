@@ -101,77 +101,75 @@
   </header>
 
   <main>
-    <section class="contact-container content-card">
-      <h2>¡Hablemos!</h2>
+    <section class="contact-intro-card content-card" aria-labelledby="contact-intro-heading">
+      <h2 id="contact-intro-heading">¡Hablemos!</h2>
       <p class="contact-intro">
         ¿Tienes alguna pregunta, sugerencia o quieres colaborar con nosotros?
         Completa el formulario y te responderemos lo antes posible. ¡Nos encanta escuchar de nuestra comunidad champetera!
       </p>
+    </section>
 
-      <div class="contact-options" id="contact-whatsapp-cta" hidden>
-        <div class="contact-option contact-option--whatsapp">
-          <div class="contact-icon" aria-hidden="true"></div>
-          <h3>Comunidad WhatsApp</h3>
-          <p>Únete al chat: comparte ritmos, pide ayuda con la batería y propón mejoras.</p>
-          <a class="contact-button contact-button--whatsapp" href="#" target="_blank" rel="noopener noreferrer">
-            <span class="contact-button__icon" aria-hidden="true"></span> Unirme a la comunidad
-          </a>
-        </div>
+    <section class="contact-whatsapp-card content-card" id="contact-whatsapp-cta" hidden aria-labelledby="contact-whatsapp-heading">
+      <h2 id="contact-whatsapp-heading">Comunidad WhatsApp</h2>
+      <div class="contact-option contact-option--whatsapp">
+        <div class="contact-icon" aria-hidden="true"></div>
+        <p>Únete al chat: comparte ritmos, pide ayuda con la batería y propón mejoras.</p>
+        <a class="contact-button contact-button--whatsapp" href="#" target="_blank" rel="noopener noreferrer">
+          <span class="contact-button__icon" aria-hidden="true"></span> Unirme a la comunidad
+        </a>
       </div>
+    </section>
 
-      <div class="contact-form-section">
-        <h3>Envíanos un mensaje</h3>
-        <form id="contact-form" class="contact-form" method="POST">
-          <div class="form-row">
-            <div class="form-group">
-              <label for="name">Nombre:</label>
-              <input type="text" id="name" name="fullName" required placeholder="Tu nombre completo">
-            </div>
-
-            <div class="form-group">
-              <label for="email">Email:</label>
-              <input type="email" id="email" name="emailAddress" required placeholder="tu@email.com">
-            </div>
-
-            <div class="form-group">
-              <label for="subject">Asunto:</label>
-              <select id="subject" name="messageSubject" required>
-                <option value="">Selecciona un tema</option>
-                <option value="Soporte técnico">Soporte técnico</option>
-                <option value="Sugerencia/Mejora">Sugerencia/Mejora</option>
-                <option value="Propuesta de colaboración">Propuesta de colaboración</option>
-                <option value="Reportar un error">Reportar un error</option>
-                <option value="Otro">Otro</option>
-              </select>
-            </div>
+    <section class="contact-form-card content-card" aria-labelledby="contact-form-heading">
+      <h2 id="contact-form-heading">Envíanos un mensaje</h2>
+      <form id="contact-form" class="contact-form" method="POST">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="name">Nombre:</label>
+            <input type="text" id="name" name="fullName" required placeholder="Tu nombre completo">
           </div>
 
-          <div class="form-group form-group--full">
-            <label for="message">Mensaje:</label>
-            <textarea id="message" name="messageContent" required placeholder="Cuéntanos tu consulta, sugerencia o propuesta..." rows="6"></textarea>
+          <div class="form-group">
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="emailAddress" required placeholder="tu@email.com">
           </div>
 
-          <!-- Campo oculto para identificar el sitio -->
-          <input type="hidden" name="_subject" value="Nuevo mensaje desde Batería Champetera Virtual">
+          <div class="form-group">
+            <label for="subject">Asunto:</label>
+            <select id="subject" name="messageSubject" required>
+              <option value="">Selecciona un tema</option>
+              <option value="Soporte técnico">Soporte técnico</option>
+              <option value="Sugerencia/Mejora">Sugerencia/Mejora</option>
+              <option value="Propuesta de colaboración">Propuesta de colaboración</option>
+              <option value="Reportar un error">Reportar un error</option>
+              <option value="Otro">Otro</option>
+            </select>
+          </div>
+        </div>
 
-          <button type="submit" class="send-button">
-            <i class="fas fa-paper-plane"></i> Enviar Mensaje
+        <div class="form-group form-group--full">
+          <label for="message">Mensaje:</label>
+          <textarea id="message" name="messageContent" required placeholder="Cuéntanos tu consulta, sugerencia o propuesta..." rows="6"></textarea>
+        </div>
+
+        <input type="hidden" name="_subject" value="Nuevo mensaje desde Batería Champetera Virtual">
+
+        <button type="submit" class="send-button">
+          <i class="fas fa-paper-plane"></i> Enviar Mensaje
+        </button>
+      </form>
+
+      <div id="confirmation-message" class="confirmation-message">
+        <div class="confirmation-content">
+          <i class="fas fa-check-circle"></i>
+          <h4>¡Mensaje enviado correctamente!</h4>
+          <p>Gracias por contactarnos. Te responderemos lo antes posible.</p>
+          <button type="button" id="back-to-form" class="send-button">
+            <i class="fas fa-arrow-left"></i> Enviar otro mensaje
           </button>
-        </form>
-
-        <!-- Mensaje de confirmación -->
-        <div id="confirmation-message" class="confirmation-message">
-          <div class="confirmation-content">
-            <i class="fas fa-check-circle"></i>
-            <h4>¡Mensaje enviado correctamente!</h4>
-            <p>Gracias por contactarnos. Te responderemos lo antes posible.</p>
-            <button type="button" id="back-to-form" class="send-button">
-              <i class="fas fa-arrow-left"></i> Enviar otro mensaje
-            </button>
-          </div>
         </div>
       </div>
-  </section>
+    </section>
   </main>
 
   <footer>

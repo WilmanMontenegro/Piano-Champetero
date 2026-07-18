@@ -246,10 +246,95 @@ export function initWhatsAppFab() {
   document.body.appendChild(link);
 }
 
+/**
+ * PWA install — Chrome/Edge show browser + our button via beforeinstallprompt.
+ * iOS: tip “Añadir a pantalla de inicio” (Safari no dispara beforeinstallprompt).
+ */
+export function initPwaInstall() {
+  if (document.getElementById('pwa-install-fab')) return;
+
+  const isStandalone =
+    window.matchMedia('(display-mode: standalone)').matches
+    || /** @type {Navigator & { standalone?: boolean }} */ (window.navigator).standalone === true;
+  if (isStandalone) return;
+
+  if (!document.querySelector('link[rel="apple-touch-icon"]')) {
+    const apple = document.createElement('link');
+    apple.rel = 'apple-touch-icon';
+    apple.href = '/icons/icon-192.png';
+    document.head.appendChild(apple);
+  }
+
+  const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent)
+    && !/crios|fxios|edgios/i.test(navigator.userAgent);
+
+  /** @type {BeforeInstallPromptEvent | null} */
+  let deferred = null;
+
+  const btn = document.createElement('button');
+  btn.id = 'pwa-install-fab';
+  btn.type = 'button';
+  btn.className = 'pwa-install-fab';
+  btn.setAttribute('aria-label', 'Instalar Batería Champetera');
+  btn.innerHTML = '<i class="fa-solid fa-download" aria-hidden="true"></i><span class="pwa-install-fab__label">Instalar app</span>';
+
+  const tip = document.createElement('p');
+  tip.id = 'pwa-install-tip';
+  tip.className = 'pwa-install-tip';
+  tip.hidden = true;
+  tip.setAttribute('role', 'status');
+
+  /** @type {ReturnType<typeof setTimeout> | undefined} */
+  let tipTimer;
+  const showTip = (text) => {
+    tip.textContent = text;
+    tip.hidden = false;
+    window.clearTimeout(tipTimer);
+    tipTimer = window.setTimeout(() => { tip.hidden = true; }, 8000);
+  };
+
+  const reveal = () => btn.classList.add('is-visible');
+
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferred = /** @type {BeforeInstallPromptEvent} */ (e);
+    reveal();
+  });
+
+  window.addEventListener('appinstalled', () => {
+    deferred = null;
+    btn.classList.remove('is-visible');
+    tip.hidden = true;
+  });
+
+  if (isIos) reveal();
+
+  btn.addEventListener('click', async () => {
+    if (deferred) {
+      deferred.prompt();
+      try {
+        await deferred.userChoice;
+      } catch { /* ignore */ }
+      deferred = null;
+      btn.classList.remove('is-visible');
+      return;
+    }
+    if (isIos) {
+      showTip('En Safari: tocá Compartir (□↑) → “Añadir a pantalla de inicio”.');
+      return;
+    }
+    showTip('En Chrome: menú ⋮ → “Instalar app” o el ícono ⊕ en la barra de direcciones.');
+  });
+
+  document.body.appendChild(btn);
+  document.body.appendChild(tip);
+}
+
 /** Header + nav + cinta — llamar al inicio de cada página */
 export async function initSiteChrome() {
   await Promise.all([loadHeader(), loadContributorTicker()]);
   initHamburgerMenu();
   initWhatsAppFab();
+  initPwaInstall();
   initTheme();
 }
