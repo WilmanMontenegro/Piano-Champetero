@@ -981,10 +981,21 @@ function generatePadsView() {
   rebuildPadKeyIndexMap();
   padsGrid.innerHTML = '';
   padsGrid.className = 'pads-grid grid-' + currentGridType;
-  // iOS: block callout/selection on pad labels (blue highlight under finger)
+  // iOS Safari: kill text-selection UI (blue handles / underline under finger)
   if (!padsGrid._iosSelectGuard) {
     padsGrid._iosSelectGuard = true;
+    const clearPadSelection = () => {
+      if (typeof window.getSelection !== 'function') return;
+      const sel = window.getSelection();
+      if (sel && sel.rangeCount) sel.removeAllRanges();
+    };
     padsGrid.addEventListener('selectstart', (e) => e.preventDefault());
+    padsGrid.addEventListener('touchstart', clearPadSelection, { passive: true });
+    document.addEventListener('selectionchange', () => {
+      if (!padsGrid.isConnected) return;
+      if (!padsGrid.querySelector('.pad-item:active, .pad-item.active')) return;
+      clearPadSelection();
+    });
   }
 
   for (let i = 0; i < config.total; i++) {
@@ -993,13 +1004,19 @@ function generatePadsView() {
     pad.className = 'pad-item';
     pad.dataset.padIndex = String(i);
 
+    const keyText = padKeyDisplayLabel(i, config.total);
+    const soundText = prettyName(padsViewState[i]) || '—';
+    pad.setAttribute('aria-label', `${keyText}, ${soundText}`);
+
     const keyLabel = document.createElement('span');
     keyLabel.className = 'pad-key';
-    keyLabel.textContent = padKeyDisplayLabel(i, config.total);
+    keyLabel.setAttribute('aria-hidden', 'true');
+    keyLabel.dataset.label = keyText;
 
     const soundLabel = document.createElement('span');
     soundLabel.className = 'pad-sound';
-    soundLabel.textContent = prettyName(padsViewState[i]) || '—';
+    soundLabel.setAttribute('aria-hidden', 'true');
+    soundLabel.dataset.label = soundText;
 
     pad.appendChild(keyLabel);
     pad.appendChild(soundLabel);
@@ -1013,7 +1030,6 @@ function generatePadsView() {
         return;
       }
       e.preventDefault();
-      // Kill iOS text-selection callout on the pad label
       if (typeof window.getSelection === 'function') {
         const sel = window.getSelection();
         if (sel && sel.rangeCount) sel.removeAllRanges();

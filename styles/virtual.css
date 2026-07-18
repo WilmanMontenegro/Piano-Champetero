@@ -1801,6 +1801,11 @@ ul.sampler-list {
   -webkit-touch-callout: none;
 }
 
+/* iOS: real text nodes get blue selection handles — paint label via CSS attr only */
+.pad-key::before {
+  content: attr(data-label);
+}
+
 .pad-sound {
   position: relative;
   z-index: 1;
@@ -1812,24 +1817,36 @@ ul.sampler-list {
   width: 100%;
   min-width: 0;
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
   text-shadow: 0 1px 0 rgba(255, 255, 255, 0.2);
   margin-top: 2px;
   line-height: 1.15;
   letter-spacing: 0.01em;
-  /* iOS: text under finger was selecting (blue) and stealing the hit */
   pointer-events: none;
   -webkit-user-select: none;
   user-select: none;
   -webkit-touch-callout: none;
 }
 
+.pad-sound::before {
+  content: attr(data-label);
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .pads-view,
-.pads-grid {
+.pads-grid,
+.pads-grid * {
   -webkit-user-select: none;
   user-select: none;
   -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.pads-grid *::selection {
+  background: transparent;
+  color: inherit;
 }
 
 /* Edit mode for pads view */
