@@ -1064,13 +1064,52 @@ function initImmersionMode() {
   });
 }
 
+/** Mobile: collapse setup chrome into "Más" so pads/toms keep height. */
+function initMoreControls() {
+  const btn = document.getElementById('more-controls-btn');
+  const panel = document.getElementById('more-controls-panel');
+  if (!btn || !panel) return;
+
+  const mq = window.matchMedia(`(max-width: ${NAV_MOBILE_MAX_PX}px)`);
+
+  const setOpen = (open) => {
+    if (!mq.matches) {
+      panel.hidden = false;
+      panel.classList.remove('is-open');
+      btn.hidden = true;
+      btn.setAttribute('aria-expanded', 'false');
+      return;
+    }
+    btn.hidden = false;
+    panel.hidden = !open;
+    panel.classList.toggle('is-open', open);
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  };
+
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    setOpen(panel.hidden);
+  });
+
+  document.addEventListener('pointerdown', (e) => {
+    if (!mq.matches || panel.hidden) return;
+    const t = e.target;
+    if (t instanceof Node && (panel.contains(t) || btn.contains(t))) return;
+    setOpen(false);
+  });
+
+  mq.addEventListener('change', () => setOpen(false));
+  setOpen(false);
+}
+
 /** Sin scroll en virtual.html; excepción listas en modales/nav. */
 const SCROLL_ALLOW_SELECTOR = '.sampler-list, .nav-menu.active, .help-content, .kit-share-content textarea';
 
 function initPageScrollLock() {
   const allowScroll = (target) => target instanceof Element && target.closest(SCROLL_ALLOW_SELECTOR);
   const allowRateDrag = (target) =>
-    target instanceof Element && target.closest('#rate-slider, .battery-rate-container');
+    target instanceof Element &&
+    target.closest('#rate-slider, .battery-rate-container, #volume-slider, .battery-volume-container, .kit-audio-controls');
 
   document.addEventListener('touchmove', (e) => {
     if (allowScroll(e.target) || allowRateDrag(e.target)) return;
@@ -1150,8 +1189,11 @@ function layoutResponsivePads() {
 
   const vol = kitPlay.querySelector('.kit-audio-controls') || kitPlay.querySelector('.battery-volume-container');
   const playRect = kitPlay.getBoundingClientRect();
-  // Always reserve audio bar height so pads never eat Volumen/Velocidad (main is overflow:hidden).
-  const volH = Math.max(vol ? vol.offsetHeight : 0, isMobile ? 88 : 56) + (isMobile ? 12 : 16);
+  // Mobile floating cloud is out of flow — reserve a slim bottom strip so pads don't sit under it
+  const floatingCloud = isMobile && vol && getComputedStyle(vol).position === 'fixed';
+  const volH = floatingCloud
+    ? 76
+    : Math.max(vol ? vol.offsetHeight : 0, isMobile ? 88 : 56) + (isMobile ? 12 : 16);
   const availW = playRect.width - (isMobile ? 12 : 20);
   const viewH = view.clientHeight;
   const stageBudget = Math.max(0, playRect.height - volH);
@@ -2176,5 +2218,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   initImmersionMode();
+  initMoreControls();
   initPlayGlide();
 });

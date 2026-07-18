@@ -1297,6 +1297,15 @@ ul.sampler-list {
   row-gap: 4px;
 }
 
+/* Desktop: Más hidden; panel children flow in controls-bar */
+.more-controls-btn {
+  display: none;
+}
+
+.more-controls-panel {
+  display: contents;
+}
+
 .group-label {
   color: rgba(255, 255, 255, 0.7);
   font-size: 0.75rem;
@@ -2188,7 +2197,8 @@ ul.sampler-list {
   }
 
   .virtual-page .control-group--primary {
-    width: 100%;
+    width: auto;
+    flex: 1 1 auto;
     justify-content: center;
     order: 1;
   }
@@ -2196,6 +2206,38 @@ ul.sampler-list {
   .virtual-page .grid-selector-inline.control-group--primary {
     order: 1;
     width: 100%;
+  }
+
+  .virtual-page .more-controls-btn {
+    display: inline-flex;
+    order: 2;
+    min-width: 2.6rem;
+  }
+
+  .virtual-page .more-controls-panel {
+    display: none;
+    order: 10;
+    width: 100%;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+    padding: 0.4rem 0.35rem;
+    margin: 0;
+    box-sizing: border-box;
+    border-radius: 10px;
+    background: color-mix(in srgb, var(--color-marron) 22%, transparent);
+    border: 1px solid color-mix(in srgb, var(--color-blanco) 28%, transparent);
+  }
+
+  .virtual-page .more-controls-panel:not([hidden]) {
+    display: flex;
+  }
+
+  .virtual-page .more-controls-panel .control-group--secondary,
+  .virtual-page .more-controls-panel .control-group--tertiary {
+    order: unset;
+    justify-content: center;
   }
 
   .virtual-page .control-group--secondary {
@@ -2288,31 +2330,37 @@ ul.sampler-list {
     display: none;
   }
 
-  /* Audio in normal flow — no black bar. Battery sizes = original mobile distribution. */
+  /* Nube flotante: Volumen/Velocidad fuera del flujo — pads/toms ganan altura */
   .virtual-page .kit-play-stage {
     order: 1;
     width: 100%;
-    padding-bottom: calc(0.35rem + env(safe-area-inset-bottom, 0px));
+    padding-bottom: calc(4.75rem + env(safe-area-inset-bottom, 0px));
+    flex: 1 1 auto;
+    min-height: 0;
   }
 
   .virtual-page .kit-audio-controls {
-    position: relative;
-    left: auto;
+    position: fixed;
+    left: 50%;
     right: auto;
-    bottom: auto;
-    z-index: 5;
-    margin: 0.35rem 0 0;
-    padding: 0.25rem 0.5rem calc(0.35rem + env(safe-area-inset-bottom, 0px));
-    gap: 0.45rem 0.85rem;
+    bottom: max(0.4rem, env(safe-area-inset-bottom, 0px));
+    transform: translateX(-50%);
+    z-index: 45;
+    width: min(94vw, 22rem);
+    margin: 0;
+    padding: 0.35rem 0.65rem 0.4rem;
+    gap: 0.35rem 0.55rem;
     flex-direction: row;
     flex-wrap: wrap;
     justify-content: center;
     align-items: center;
     box-sizing: border-box;
-    background: transparent;
-    border: none;
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
+    border-radius: 1rem;
+    background: color-mix(in srgb, var(--color-footer) 90%, transparent);
+    border: 1px solid color-mix(in srgb, var(--color-marron) 28%, transparent);
+    box-shadow: 0 6px 22px color-mix(in srgb, var(--color-marron) 30%, transparent);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
   }
 
   .virtual-page .battery-rate-container {
@@ -2329,26 +2377,28 @@ ul.sampler-list {
   }
 
   .virtual-page .battery-rate {
-    width: min(38vw, 9rem);
+    width: min(34vw, 8rem);
     min-height: 44px;
   }
 
   .virtual-page .battery-volume {
-    width: min(38vw, 9rem);
+    width: min(34vw, 8rem);
   }
 
   .virtual-page .battery-volume-container,
   .virtual-page .battery-rate-container {
-    gap: 0.25em 0.45em;
+    gap: 0.2em 0.35em;
   }
 
   .virtual-page .kit-play-stage:has(#battery-view:not(.hidden)) .kit-audio-controls {
-    margin-top: 0.45rem;
+    margin-top: 0;
   }
 
   .virtual-page .kit-play {
     flex-direction: column;
-    gap: 0.35rem;
+    gap: 0.25rem;
+    flex: 1 1 auto;
+    min-height: 0;
   }
 
   .virtual-page .kit-play-sidebar {
@@ -2363,7 +2413,7 @@ ul.sampler-list {
   }
 
   .virtual-page .battery {
-    margin: 0.5rem auto 0;
+    margin: 0.35rem auto 0;
     width: 100%;
     max-width: none;
   }
@@ -2392,7 +2442,11 @@ ul.sampler-list {
   }
 
   .virtual-page .kit-play-stage:has(#pads-view:not(.hidden)) .pads-grid {
-    padding: 0.25rem 0.2rem;
+    padding: 0.2rem 0.15rem;
+  }
+
+  .virtual-page .audio-viz-panel {
+    margin: 0.05em 0 0.1em;
   }
 }
 /*
@@ -2465,7 +2519,7 @@ ul.sampler-list {
   }
 
   .virtual-page:has(#battery-view:not(.hidden)) .kit-play-stage {
-    padding-bottom: max(0.25rem, env(safe-area-inset-bottom, 0px));
+    padding-bottom: calc(4.5rem + env(safe-area-inset-bottom, 0px));
     padding-left: env(safe-area-inset-left, 0px);
     padding-right: env(safe-area-inset-right, 0px);
   }

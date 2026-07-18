@@ -158,6 +158,11 @@
           <span class="group-label">Pads:</span>
           <div id="grid-options" class="grid-options"></div>
         </div>
+        <button id="more-controls-btn" type="button" class="ctrl-btn more-controls-btn" aria-expanded="false" aria-controls="more-controls-panel" title="Más opciones" hidden>
+          <i class="fa-solid fa-ellipsis" aria-hidden="true"></i>
+          <span class="ctrl-btn-text">Más</span>
+        </button>
+        <div id="more-controls-panel" class="more-controls-panel" role="region" aria-label="Más opciones">
         <div class="control-group control-group--secondary control-group--kit">
           <button id="edit-btn" type="button" class="ctrl-btn" aria-pressed="false" title="Cambiar sonidos y teclas de los pads"><i class="fa-solid fa-pencil" aria-hidden="true"></i> <span class="ctrl-btn-text">Editar</span></button>
           <div class="battery-preset-bar" id="battery-preset-bar">
@@ -190,6 +195,7 @@
         <div class="control-group control-group--tertiary">
           <button id="reset-settings-btn" class="ctrl-btn reset-btn" title="⚠️ Restablecer sonidos y teclas por defecto"><i class="fa-solid fa-rotate-left" aria-hidden="true"></i> <span class="ctrl-btn-text">Restablecer</span></button>
           <button id="help-btn" class="ctrl-btn" title="¿Cómo editar samplers?"><i class="fa-solid fa-question" aria-hidden="true"></i> <span class="ctrl-btn-text">Ayuda</span></button>
+        </div>
         </div>
       </div>
       <p class="edit-mode-hint" id="edit-mode-hint" hidden>
