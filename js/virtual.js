@@ -5,7 +5,12 @@ import { AUDIO_UI, MOBILE_PLAY_MQ } from './site-config.js';
 import { PAD_GRID_CONFIGS as gridConfigs, PAD_GRID_SIZE_ORDER } from './pad-grid-config.js';
 import { initModal, isModalOpen } from './modal-utils.js';
 import { DEFAULT_PAD_KEY_CHAR_ORDER, BATTERY_DEFAULT_PAD_CHARS, buildPadKeyIndexMap, resolvePadIndexFromKeyboard } from './pad-keyboard.js';
-import { initAudioBus, connectHitToOutput, getMasterGain, setMasterVolume } from './audio-bus.js';
+import { initAudioBus, connectHitToOutput, getMasterGain } from './audio-bus.js';
+// Local setter — do not named-import setMasterVolume: stale SW audio-bus.js lacks that export and kills the page
+function setMasterVolume(value) {
+  const gain = getMasterGain();
+  if (gain) gain.gain.value = Math.min(1, Math.max(0, value));
+}
 import { initAudioVisualizer, pulseAudioVisualizer } from './audio-visualizer.js';
 import { resolveSamplerPath, samplerUrl, samplerBasename } from './sampler-path.js';
 import { mountSamplerBrowser, loadSamplerCatalog } from './sampler-browser.js';
@@ -1096,6 +1101,12 @@ function initMoreControls() {
     const t = e.target;
     if (t instanceof Node && (panel.contains(t) || btn.contains(t))) return;
     setOpen(false);
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape' || !mq.matches || panel.hidden) return;
+    setOpen(false);
+    btn.focus();
   });
 
   mq.addEventListener('change', () => setOpen(false));
