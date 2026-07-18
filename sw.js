@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bateria-champeta-v189';
+const CACHE_NAME = 'bateria-champeta-v190';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
