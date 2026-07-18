@@ -1159,63 +1159,10 @@ function layoutResponsivePads() {
   view.style.setProperty('--pad-size', `${Math.floor(size * (isMobile ? 0.98 : 0.95))}px`);
 }
 
-/** Fit battery toms to phone size; always leave room for Volumen/Velocidad. */
-function layoutResponsiveBattery() {
-  const batteryView = document.getElementById('battery-view');
-  const battery = batteryView?.querySelector('.battery');
-  const stage = document.querySelector('.virtual-page .kit-play-stage');
-  if (!battery || !batteryView || !stage) return;
-
-  const clearTomVars = () => {
-    battery.style.removeProperty('--tom-s');
-    battery.style.removeProperty('--tom-m');
-    battery.style.removeProperty('--tom-l');
-  };
-
-  if (batteryView.classList.contains('hidden') || !MOBILE_PADS_MQ.matches) {
-    clearTomVars();
-    return;
-  }
-
-  const audio = stage.querySelector('.kit-audio-controls');
-  const stageRect = stage.getBoundingClientRect();
-  const audioH = Math.max(audio?.offsetHeight || 0, 88) + 16;
-  const availW = Math.max(80, stageRect.width - 16);
-  const availH = Math.max(100, stageRect.height - audioH);
-  if (availW < 80 || availH < 100) return;
-
-  const applyToms = (s, m, l) => {
-    battery.style.setProperty('--tom-s', `${s}px`);
-    battery.style.setProperty('--tom-m', `${m}px`);
-    battery.style.setProperty('--tom-l', `${l}px`);
-  };
-
-  // Seed mid sizes, measure real box, scale to fit this phone.
-  const seedS = 70;
-  const seedM = 92;
-  const seedL = 110;
-  applyToms(seedS, seedM, seedL);
-  void battery.offsetWidth;
-  const box = battery.getBoundingClientRect();
-  if (box.width < 40 || box.height < 40) return;
-
-  const scale = Math.min(availW / box.width, availH / box.height);
-  // ponytail: ceiling = one-shot measure; upgrade = binary search if overlap tokens change a lot
-  const clamped = Math.min(1.55, Math.max(0.72, scale * 0.98));
-  applyToms(
-    Math.round(seedS * clamped),
-    Math.round(seedM * clamped),
-    Math.round(seedL * clamped)
-  );
-}
-
 function scheduleResponsivePadsLayout() {
   cancelAnimationFrame(padsLayoutFrame);
   padsLayoutFrame = requestAnimationFrame(() => {
-    padsLayoutFrame = requestAnimationFrame(() => {
-      layoutResponsivePads();
-      layoutResponsiveBattery();
-    });
+    padsLayoutFrame = requestAnimationFrame(layoutResponsivePads);
   });
 }
 
