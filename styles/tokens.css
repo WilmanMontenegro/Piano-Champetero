@@ -45,6 +45,8 @@
   --bp-mobile-max: 767px;
   --bp-tablet-min: 768px;
   --bp-desktop-min: 1024px;
+  /* Sync with js/site-config.js MOBILE_LANDSCAPE_MAX_HEIGHT_PX (phones in landscape often width>767) */
+  --bp-mobile-landscape-max-height: 560px;
 
   --ticker-block-height: 2.15rem;
 

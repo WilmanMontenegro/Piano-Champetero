@@ -122,9 +122,10 @@ Same **edit** flow: **Editar** → cell → modal **Sonido** / **Tecla** → **G
 
 ## Quick commands
 
-- Local: `python -m http.server 8000` → `http://localhost:8000/virtual.html`  
-- Deploy: push `main` → GitHub Pages (wait 1–3 min)  
-- After CSS/JS changes: bump `CACHE_NAME` in `sw.js`  
+- Local: `python -m http.server 8000` → `http://localhost:8000/virtual.html` 
+- Deploy: push `main` → GitHub Pages (wait 1–3 min) 
+- After CSS/JS changes: bump `CACHE_NAME` in `sw.js` 
+- **PWA cache:** JS/CSS/HTML use network-first (avoid stale ES module graphs); samplers cache-on-success; never precache bare directories (`/samplers/` 404s on Pages) 
 - SEO / ads: GTM `GTM-N5MRWRKL`, AdSense, PropellerAds, JSON-LD, `sitemap.xml`
 
 ## Git

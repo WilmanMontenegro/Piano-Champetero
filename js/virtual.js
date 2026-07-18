@@ -744,7 +744,8 @@ async function loadSamplerBuffer(url) {
       const response = await fetch(url);
       if (!response.ok) throw new Error(`Sampler HTTP ${response.status}`);
       const arrayBuffer = await response.arrayBuffer();
-      const buffer = await audioCtx.decodeAudioData(arrayBuffer);
+      // slice: decodeAudioData may detach the buffer (Safari); keep original fetch reusable
+      const buffer = await audioCtx.decodeAudioData(arrayBuffer.slice(0));
       globalSamplerCache[url] = buffer;
       return buffer;
     } finally {

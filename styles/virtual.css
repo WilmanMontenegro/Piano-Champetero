@@ -2451,7 +2451,7 @@ ul.sampler-list {
   }
 }
 /*
- * Mobile landscape play — phones report width >767 when rotated, so use max-height.
+ * Mobile landscape play — sync with --bp-mobile-landscape-max-height / MOBILE_PLAY_MQ.
  * Same tom grid/margins — only size + chrome. No black bar, no reorder.
  */
 @media (orientation: landscape) and (max-height: 560px) and (pointer: coarse) {
@@ -2525,25 +2525,9 @@ ul.sampler-list {
     padding-right: env(safe-area-inset-right, 0px);
   }
 
+  /* Same grid + wing tokens + 16/20/24vw as portrait — do not rescale toms here */
   .virtual-page .battery {
     margin: 0.1rem auto;
-    max-width: min(96vw, 720px);
-  }
-
-  /* Larger touch targets; distribution/grid unchanged — vista Batería */
-  .virtual-page:has(#battery-view:not(.hidden)) .battery-tom--small {
-    width: clamp(52px, 18vmin, 108px);
-    height: clamp(52px, 18vmin, 108px);
-  }
-
-  .virtual-page:has(#battery-view:not(.hidden)) .battery-tom--medium {
-    width: clamp(68px, 23vmin, 128px);
-    height: clamp(68px, 23vmin, 128px);
-  }
-
-  .virtual-page:has(#battery-view:not(.hidden)) .battery-tom--large {
-    width: clamp(82px, 28vmin, 148px);
-    height: clamp(82px, 28vmin, 148px);
   }
 
   .virtual-page .battery-rate-container {
