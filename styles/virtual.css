@@ -2331,37 +2331,37 @@ ul.sampler-list {
     display: none;
   }
 
-  /* Nube flotante: Volumen/Velocidad fuera del flujo — pads/toms ganan altura */
+  /* Audio in normal flow — transparent (no white cloud). Battery sizes = distribution. */
   .virtual-page .kit-play-stage {
     order: 1;
     width: 100%;
-    padding-bottom: calc(4.75rem + env(safe-area-inset-bottom, 0px));
+    padding-bottom: calc(0.35rem + env(safe-area-inset-bottom, 0px));
     flex: 1 1 auto;
     min-height: 0;
   }
 
   .virtual-page .kit-audio-controls {
-    position: fixed;
-    left: 50%;
+    position: relative;
+    left: auto;
     right: auto;
-    bottom: max(0.4rem, env(safe-area-inset-bottom, 0px));
-    transform: translateX(-50%);
-    z-index: 45;
-    width: min(94vw, 22rem);
-    margin: 0;
-    padding: 0.35rem 0.65rem 0.4rem;
-    gap: 0.35rem 0.55rem;
+    bottom: auto;
+    transform: none;
+    z-index: 5;
+    width: 100%;
+    margin: 0.35rem 0 0;
+    padding: 0.25rem 0.5rem calc(0.35rem + env(safe-area-inset-bottom, 0px));
+    gap: 0.45rem 0.85rem;
     flex-direction: row;
     flex-wrap: wrap;
     justify-content: center;
     align-items: center;
     box-sizing: border-box;
-    border-radius: 1rem;
-    background: color-mix(in srgb, var(--color-footer) 90%, transparent);
-    border: 1px solid color-mix(in srgb, var(--color-marron) 28%, transparent);
-    box-shadow: 0 6px 22px color-mix(in srgb, var(--color-marron) 30%, transparent);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    border-radius: 0;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
   }
 
   .virtual-page .battery-rate-container {
@@ -2378,26 +2378,26 @@ ul.sampler-list {
   }
 
   .virtual-page .battery-rate {
-    width: min(34vw, 8rem);
+    width: min(38vw, 9rem);
     min-height: 44px;
   }
 
   .virtual-page .battery-volume {
-    width: min(34vw, 8rem);
+    width: min(38vw, 9rem);
   }
 
   .virtual-page .battery-volume-container,
   .virtual-page .battery-rate-container {
-    gap: 0.2em 0.35em;
+    gap: 0.25em 0.45em;
   }
 
   .virtual-page .kit-play-stage:has(#battery-view:not(.hidden)) .kit-audio-controls {
-    margin-top: 0;
+    margin-top: 0.45rem;
   }
 
   .virtual-page .kit-play {
     flex-direction: column;
-    gap: 0.25rem;
+    gap: 0.35rem;
     flex: 1 1 auto;
     min-height: 0;
   }
@@ -2520,7 +2520,7 @@ ul.sampler-list {
   }
 
   .virtual-page .kit-play-stage {
-    padding-bottom: calc(4.5rem + env(safe-area-inset-bottom, 0px));
+    padding-bottom: max(0.25rem, env(safe-area-inset-bottom, 0px));
     padding-left: env(safe-area-inset-left, 0px);
     padding-right: env(safe-area-inset-right, 0px);
   }
