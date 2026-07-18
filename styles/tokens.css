@@ -2,39 +2,51 @@
    Design tokens — editar aquí colores, espaciado y escalas
    ===================================================== */
 :root {
-  /* Colores caribeños / marca */
-  --color-principal: #FF9A56;
-  --color-secundario: #FF6B6B;
-  --color-amarillo: #FFE066;
-  --color-marron: #8B4513;
-  --color-footer: #FFF5E6;
-  --color-rosa-claro: #FFB7C5;
+  /* Brand identity — rasta + ink */
+  --color-brand-green: #00A859;
+  --color-brand-yellow: #FFCC00;
+  --color-brand-red: #ED1C24;
+  --color-brand-dark: #333333;
+
+  /* Alias legado UI → marca */
+  --color-principal: var(--color-brand-green);
+  --color-secundario: var(--color-brand-red);
+  --color-amarillo: var(--color-brand-yellow);
+  --color-marron: var(--color-brand-dark);
+  --color-footer: #FFF8E7;
+  --color-rosa-claro: color-mix(in srgb, var(--color-brand-red) 22%, white);
   --color-blanco: #ffffff;
   --color-gris-claro: #f8f9fa;
   --color-gris-medio: #e0e0e0;
   --color-gris-oscuro: #555555;
-  --color-negro: #000000;
-  --color-exito: #4CAF50;
-  --color-error: #FF6B6B;
+  --color-negro: var(--color-brand-dark);
+  --color-exito: var(--color-brand-green);
+  --color-error: var(--color-brand-red);
   --color-whatsapp: #25d366;
   --color-whatsapp-hover: #1ebe57;
-  /* Favicon / PWA icon — rasta brand (green → yellow → red) */
-  --color-rasta-green: #54A830;
-  --color-rasta-yellow: #FCCC0C;
-  --color-rasta-red: #E43024;
+  /* Pads / icon — same brand rasta */
+  --color-rasta-green: var(--color-brand-green);
+  --color-rasta-yellow: var(--color-brand-yellow);
+  --color-rasta-red: var(--color-brand-red);
 
   /* Gradientes reutilizables */
-  --gradient-body: linear-gradient(135deg, #FFE066 0%, #FF9A56 25%, #FF6B6B 50%, #FFB7C5 75%, #FFF5E6 100%);
-  --gradient-footer: linear-gradient(135deg, var(--color-marron) 0%, #A0522D 50%, #CD853F 100%);
-  --gradient-nav-dropdown: linear-gradient(135deg, var(--color-marron) 0%, #A0522D 50%, #CD853F 100%);
-  --gradient-ticker: linear-gradient(90deg, var(--color-principal), var(--color-secundario));
-  --overlay-header: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.2));
+  --gradient-body: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--color-brand-yellow) 55%, white) 0%,
+    color-mix(in srgb, var(--color-brand-green) 28%, white) 35%,
+    color-mix(in srgb, var(--color-brand-red) 22%, white) 70%,
+    #FFF8E7 100%
+  );
+  --gradient-footer: linear-gradient(135deg, var(--color-brand-dark) 0%, #1f1f1f 100%);
+  --gradient-nav-dropdown: linear-gradient(135deg, var(--color-brand-dark) 0%, #222 100%);
+  --gradient-ticker: linear-gradient(90deg, var(--color-brand-green), var(--color-brand-yellow), var(--color-brand-red));
+  --overlay-header: linear-gradient(rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.22));
 
   /* Layout */
   --layout-content-max: 900px;
   --layout-content-gutter: 2rem;
   --layout-inline-pad: clamp(0.75rem, 3vw, 1.5rem);
-  --header-border: 3px solid rgba(255, 224, 102, 0.6);
+  --header-border: 3px solid color-mix(in srgb, var(--color-brand-yellow) 70%, transparent);
   --header-padding-top: 1.15rem;
   --header-title-size: clamp(1.75rem, 5.5vw, 4.25rem);
   --header-title-margin-block: 0.3rem;
@@ -73,7 +85,7 @@
   /* Pads / toms — feedback al tocar (paleta caribeña) */
   --pad-glow-idle: color-mix(in srgb, var(--color-rasta-yellow) 35%, transparent);
   --pad-hit-ring: color-mix(in srgb, var(--color-rasta-yellow) 95%, transparent);
-  --tom-glow-idle: rgba(255, 224, 102, 0.35);
+  --tom-glow-idle: color-mix(in srgb, var(--color-brand-yellow) 40%, transparent);
   --hit-flash-duration: 0.16s;
 
   /*
@@ -104,18 +116,18 @@
   --pad-item-padding: clamp(2px, 0.45vw, 4px);
   --pad-item-radius: 10px;
   --pad-key-size: clamp(0.9em, 2.5vw, 1.5em);
-  --pad-key-color: #1a1a1a;
+  --pad-key-color: var(--color-brand-dark);
   --pad-sound-size: clamp(0.68em, 1.1vw, 0.9em);
   --pad-sound-weight: 500;
-  --pad-sound-color: rgba(26, 26, 26, 0.82);
+  --pad-sound-color: color-mix(in srgb, var(--color-brand-dark) 82%, transparent);
 
   /* Ticker */
   --ticker-duration: 18s;
   --ticker-font-size: 0.95em;
 
-  /* Tipografía */
-  --font-display: 'Seaweed Script', cursive;
-  --font-body: 'Roboto', Arial, sans-serif;
+  /* Tipografía — Permanent Marker = marca/títulos; Inter = UI */
+  --font-display: 'Permanent Marker', cursive;
+  --font-body: 'Inter', system-ui, -apple-system, sans-serif;
   --font-size-xs: 0.875rem;
   --font-size-sm: 1rem;
   --font-size-md: 1.125rem;

@@ -1063,8 +1063,8 @@ function initImmersionMode() {
 }
 
 /**
- * "Más" only when controls don't fit one row (overflow), any tier.
- * Not tied to mobile MQ — desktop with space never shows the button.
+ * "Más" only when options don't fit ONE row — all tiers (incl. desktop).
+ * Never wrap the bar to fake more space; wrap only when panel is open.
  */
 function initMoreControls() {
   const bar = document.querySelector('.virtual-page .controls-bar');
@@ -1074,20 +1074,25 @@ function initMoreControls() {
 
   let open = false;
   let syncing = false;
+  /** Hysteresis: enter overflow sooner than exit (px slack). */
+  let overflowOn = false;
 
   const applyExpanded = () => {
-    bar.classList.remove('controls-bar--overflow', 'controls-bar--more-open');
+    bar.classList.remove('controls-bar--overflow', 'controls-bar--more-open', 'controls-bar--roomy');
     btn.hidden = true;
     panel.hidden = false;
     btn.setAttribute('aria-expanded', 'false');
+    overflowOn = false;
   };
 
   const applyOverflow = (isOpen) => {
+    bar.classList.remove('controls-bar--roomy');
     bar.classList.add('controls-bar--overflow');
     bar.classList.toggle('controls-bar--more-open', isOpen);
     btn.hidden = false;
     panel.hidden = !isOpen;
     btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    overflowOn = true;
   };
 
   const setOpen = (next) => {
@@ -1100,13 +1105,42 @@ function initMoreControls() {
     applyOverflow(open);
   };
 
+  /** Sum flex pieces (unwrap display:contents panel). Ignore Más btn. */
+  const contentWidthPx = () => {
+    const gap = parseFloat(getComputedStyle(bar).columnGap || getComputedStyle(bar).gap) || 0;
+    const pieces = [];
+    for (const el of bar.children) {
+      if (el === btn) continue;
+      if (el === panel) {
+        for (const child of panel.children) pieces.push(child);
+        continue;
+      }
+      pieces.push(el);
+    }
+    let total = 0;
+    let counted = 0;
+    for (const el of pieces) {
+      const w = el.getBoundingClientRect().width;
+      if (w <= 0) continue;
+      total += w + (counted > 0 ? gap : 0);
+      counted += 1;
+    }
+    return total;
+  };
+
   const measureNeedsOverflow = () => {
-    // Expande + nowrap pa’ medir si caben todos en una fila
-    applyExpanded();
+    // Temporarily expand + nowrap to measure full chrome width
+    bar.classList.remove('controls-bar--overflow', 'controls-bar--more-open', 'controls-bar--roomy');
+    btn.hidden = true;
+    panel.hidden = false;
     bar.style.flexWrap = 'nowrap';
-    const needs = bar.scrollWidth > bar.clientWidth + 2;
+    void bar.offsetWidth;
+    const used = contentWidthPx();
+    const avail = bar.clientWidth;
     bar.style.flexWrap = '';
-    return needs;
+    // Hysteresis: stick on until clearly fits (avoids flicker)
+    if (overflowOn) return used > avail - 24;
+    return used > avail + 8;
   };
 
   const syncOverflow = () => {
@@ -1154,6 +1188,9 @@ function initMoreControls() {
     ro.observe(bar);
   }
   window.addEventListener('resize', scheduleSync);
+  if (document.fonts?.ready) {
+    document.fonts.ready.then(scheduleSync).catch(() => {});
+  }
   syncOverflow();
 }
 

@@ -5,7 +5,7 @@
   "start_url": "/virtual.html",
   "display": "standalone",
   "background_color": "#FFF5E6",
-  "theme_color": "#FF9A56",
+  "theme_color": "#00A859",
   "orientation": "any",
   "icons": [
     {
