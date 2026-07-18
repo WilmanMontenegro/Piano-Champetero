@@ -1703,10 +1703,10 @@ ul.sampler-list {
 .pad-sound {
   position: relative;
   z-index: 1;
-  /* Desktop: secondary to .pad-key — smaller + softer (no clumsy bold) */
-  font-size: clamp(0.68em, 1.1vw, 0.9em);
-  font-weight: 500;
-  color: rgba(255, 255, 255, 0.82);
+  /* Typography SSOT: --pad-sound-* in tokens.css (tier MQs retune same vars) */
+  font-size: var(--pad-sound-size);
+  font-weight: var(--pad-sound-weight);
+  color: var(--pad-sound-color);
   text-align: center;
   max-width: 100%;
   width: 100%;
@@ -1718,10 +1718,6 @@ ul.sampler-list {
   margin-top: 2px;
   line-height: 1.15;
   letter-spacing: 0.01em;
-}
-
-.pads-grid.grid-4x6 .pad-sound {
-  font-size: clamp(0.64em, 1vw, 0.85em);
 }
 
 /* Edit mode for pads view */
@@ -2052,13 +2048,6 @@ ul.sampler-list {
     gap: 7px;
     padding: 0.4rem;
   }
-
-  .pad-sound,
-  .pads-grid.grid-4x6 .pad-sound {
-    font-size: clamp(0.8em, 1.6vw, 1em);
-    font-weight: 500;
-    color: rgba(255, 255, 255, 0.88);
-  }
 }
 
 @media (max-width: 767px) {
@@ -2070,13 +2059,6 @@ ul.sampler-list {
   .virtual-page .pads-grid {
     gap: 6px;
     padding: 0.35rem;
-  }
-
-  .pad-sound,
-  .pads-grid.grid-4x6 .pad-sound {
-    font-size: clamp(0.88em, 3.4vw, 1.1em);
-    font-weight: 600;
-    color: rgba(255, 255, 255, 0.95);
   }
 }
 

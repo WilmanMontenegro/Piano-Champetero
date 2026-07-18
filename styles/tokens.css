@@ -73,6 +73,15 @@
   --tom-glow-idle: rgba(255, 224, 102, 0.35);
   --hit-flash-duration: 0.16s;
 
+  /*
+   * Pad sound label typography — SSOT for .pad-sound
+   * Tiers only retune these three vars (desktop default; see MQs below).
+   * .pad-key stays primary/larger separately.
+   */
+  --pad-sound-size: clamp(0.68em, 1.1vw, 0.9em);
+  --pad-sound-weight: 500;
+  --pad-sound-color: rgba(255, 255, 255, 0.82);
+
   /* Ticker */
   --ticker-duration: 18s;
   --ticker-font-size: 0.95em;
@@ -101,4 +110,21 @@
 
   /* virtual.html: espacio reservado sobre footer (sidebar fijo) */
   --virtual-footer-block: 2.85rem;
+}
+
+/* Pad sound tier retunes — same vars as :root (breakpoints = --bp-*) */
+@media (min-width: 768px) and (max-width: 1023px) {
+  :root {
+    --pad-sound-size: clamp(0.8em, 1.6vw, 1em);
+    --pad-sound-weight: 500;
+    --pad-sound-color: rgba(255, 255, 255, 0.88);
+  }
+}
+
+@media (max-width: 767px) {
+  :root {
+    --pad-sound-size: clamp(0.88em, 3.4vw, 1.1em);
+    --pad-sound-weight: 600;
+    --pad-sound-color: rgba(255, 255, 255, 0.95);
+  }
 }
