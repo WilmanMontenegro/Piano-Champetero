@@ -1162,15 +1162,16 @@ const PAD_LAYOUT_BY_TIER = {
     pickLayout: false,
   },
   desktop: {
-    gap: 8,
-    sideInset: 48,
-    topInset: 14,
-    gridPad: 12,
-    maxCap: 132,
+    // Fuller stage: bigger squares, modest margins (not edge-flush)
+    gap: 10,
+    sideInset: 32,
+    topInset: 10,
+    gridPad: 10,
+    maxCap: 176,
     minPad: 48,
     volFloor: 56,
-    volExtra: 22,
-    sizeScale: 0.96,
+    volExtra: 12,
+    sizeScale: 1,
     pickLayout: false,
   },
 };
@@ -1198,9 +1199,13 @@ function padSquareSize(cols, rows, availW, availH, gap, gridPad, maxCap) {
   return Math.min(sizeW, sizeH, maxCap);
 }
 
-/** Mobile only: pick cols/rows for largest square pads with balanced fill (not edge-flush). */
+/**
+ * Mobile only: pick cols×rows for square pads.
+ * Prefer near-max touch size; if that leaves tall dead space, prefer fewer cols / more rows
+ * (e.g. 4×6 or 3×8 over 6×4) so the grid uses availH. Soft fill ≤0.92 keeps modest margins.
+ */
 function pickResponsivePadLayout(total, availW, availH, gap, gridPad, maxCap, minPad, cfg) {
-  let best = null;
+  const candidates = [];
 
   for (const { cols, rows } of factorPadGridPairs(total)) {
     if (cols > 8 || rows > 8) continue;
@@ -1209,19 +1214,44 @@ function pickResponsivePadLayout(total, availW, availH, gap, gridPad, maxCap, mi
 
     const widthUsed = cols * size + (cols - 1) * gap + 2 * gridPad;
     const heightUsed = rows * size + (rows - 1) * gap + 2 * gridPad;
-    const fillW = widthUsed / Math.max(1, availW);
-    const fillH = heightUsed / Math.max(1, availH);
-    // Prefer touch size; soft fill capped so side margins stay
-    let score = size * 12 + Math.min(fillW, 0.9) * 120 + Math.min(fillH, 0.9) * 90;
-    if (cols >= 3 && cols <= 6) score += 40;
-
-    if (!best || score > best.score) {
-      best = { cols, rows, size, score };
-    }
+    candidates.push({
+      cols,
+      rows,
+      size,
+      fillW: widthUsed / Math.max(1, availW),
+      fillH: heightUsed / Math.max(1, availH),
+    });
   }
 
-  if (best) return { cols: best.cols, rows: best.rows };
-  return { cols: cfg.cols, rows: cfg.rows };
+  if (!candidates.length) return { cols: cfg.cols, rows: cfg.rows };
+
+  const soft = (n) => Math.min(n, 0.92);
+  const maxSize = Math.max(...candidates.map((c) => c.size));
+  const largest = candidates
+    .filter((c) => c.size >= maxSize * 0.98)
+    .sort((a, b) => soft(b.fillH) - soft(a.fillH))[0];
+
+  // Tall slack under widest near-max layout → open pool to taller shapes
+  const verticalSlack = soft(largest.fillH) < 0.85;
+  const sizeFloor = maxSize * (verticalSlack ? 0.78 : 0.92);
+  const pool = candidates.filter((c) => c.size >= sizeFloor);
+
+  pool.sort((a, b) => {
+    if (verticalSlack) {
+      const dH = soft(b.fillH) - soft(a.fillH);
+      if (Math.abs(dH) > 0.03) return dH;
+      const dS = b.size - a.size;
+      if (Math.abs(dS) > 1) return dS;
+      return b.rows - b.cols - (a.rows - a.cols);
+    }
+    const dS = b.size - a.size;
+    if (Math.abs(dS) > 0.5) return dS;
+    return soft(b.fillW) - soft(a.fillW);
+  });
+
+  const best = pool[0];
+  console.assert(best.cols * best.rows === total);
+  return { cols: best.cols, rows: best.rows };
 }
 
 function layoutResponsivePads() {

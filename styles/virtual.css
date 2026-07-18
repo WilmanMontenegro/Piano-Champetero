@@ -2030,13 +2030,21 @@ ul.sampler-list {
 /*
  * Pad layout gutters — exactly 3 breakpoints (tokens --bp-*):
  * desktop ≥1024 (default) | tablet 768–1023 | mobile ≤767
+ * Desktop uses more width (bigger square pads); tablet/mobile keep tighter gutters.
  */
 .virtual-page .pads-view {
-  padding: 0.5rem 1.5rem 0.35rem;
+  max-width: min(1420px, 96%);
+  padding: 0.35rem 1rem 0.2rem;
+}
+
+.virtual-page .pads-grid {
+  gap: 10px;
+  padding: 0.4rem;
 }
 
 @media (min-width: 768px) and (max-width: 1023px) {
   .virtual-page .pads-view {
+    max-width: min(1180px, 100%);
     padding: 0.4rem 1.15rem 0.3rem;
   }
 
@@ -2055,6 +2063,7 @@ ul.sampler-list {
 
 @media (max-width: 767px) {
   .virtual-page .pads-view {
+    max-width: 100%;
     padding: 0.35rem 0.85rem 0.25rem;
   }
 
