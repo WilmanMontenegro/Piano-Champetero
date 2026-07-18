@@ -189,9 +189,9 @@ const tomSamplerBuffers = {};
 const VOLUME_STORAGE_KEY = 'pianoChampeteroVolume';
 const DEFAULT_VOLUME = 0.5;
 const RATE_STORAGE_KEY = 'pianoChampeteroPlaybackRate';
-const DEFAULT_PLAYBACK_RATE = 1;
-const PLAYBACK_RATE_MIN = 0.5;
-const PLAYBACK_RATE_MAX = 2;
+const PLAYBACK_RATE_MIN = AUDIO_UI.playbackRate?.min ?? 0.5;
+const PLAYBACK_RATE_MAX = AUDIO_UI.playbackRate?.max ?? 2;
+const DEFAULT_PLAYBACK_RATE = AUDIO_UI.playbackRate?.default ?? 1;
 
 function readStoredVolume() {
   try {

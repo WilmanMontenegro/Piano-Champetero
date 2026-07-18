@@ -31,31 +31,65 @@ export const AUDIO_UI = {
     enabled: false,
     intervalMs: 125,
   },
+  /**
+   * Global sampler playback rate (Web Audio playbackRate).
+   * UI slider center = default (1); left = min, right = max.
+   */
+  playbackRate: {
+    min: 0.5,
+    max: 2,
+    default: 1,
+  },
 };
 
-/** @typedef {{ id: string, name: string, thanksFor: string, emoji?: string, pages?: string[] }} TickerContributor */
+/**
+ * Site collaborators — single source for ticker + Sobre nosotros.
+ * APPEND ONLY: never remove entries; only add new ones.
+ *
+ * @typedef {{
+ *   id: string,
+ *   name: string,
+ *   credit: string,
+ *   thanksFor: string,
+ *   emoji?: string,
+ *   pages?: string[],
+ * }} Contributor
+ */
 
-/** @type {TickerContributor[]} */
-export const TICKER_CONTRIBUTORS = [
+/** @type {Contributor[]} */
+export const CONTRIBUTORS = [
+  {
+    id: 'dominick-sonidos',
+    name: 'Dominick',
+    credit: 'sonidos de la batería',
+    thanksFor: 'por los sonidos de la batería',
+    emoji: '🥁',
+  },
   {
     id: 'alekey-grabacion',
     name: 'Alekey',
+    credit: 'idea de grabar lo que tocás en la batería',
     thanksFor: 'por la idea de grabar lo que tocás en la batería',
     emoji: '🎙️',
   },
   {
     id: 'cesar-mobile-iphone',
     name: 'Cesar Garay',
+    credit: 'sugerencia para mejorar la vista móvil en iPhone',
     thanksFor: 'por sugerir arreglar la vista móvil para usarla mejor en iPhone',
     emoji: '📱',
   },
   {
     id: 'marvin-barraz-mejoras',
     name: 'Marvin Barraz',
+    credit: 'gracias por estas mejoras',
     thanksFor: 'por estas mejoras',
     emoji: '⚡',
   },
 ];
+
+/** @deprecated Use CONTRIBUTORS — kept for older docs/imports. */
+export const TICKER_CONTRIBUTORS = CONTRIBUTORS;
 
 /**
  * Static ticker lines (HTML allowed for links).
@@ -97,7 +131,7 @@ export function getTickerSegments(pageFile = '') {
   const base = file === 'virtual.html' ? TICKER_STATIC_LINES_VIRTUAL : TICKER_STATIC_LINES;
   const staticLines = buildStaticTickerLines(base);
 
-  const thanks = TICKER_CONTRIBUTORS.filter(
+  const thanks = CONTRIBUTORS.filter(
     (c) => !c.pages || c.pages.includes(file)
   ).map((c) => ({
     html: `🎉 ¡Gracias <strong>${escapeHtml(c.name)}</strong> ${escapeHtml(c.thanksFor)}! ${c.emoji || ''}`.trim(),
@@ -105,6 +139,24 @@ export function getTickerSegments(pageFile = '') {
 
   const statics = staticLines.map((line) => ({ html: line.html }));
   return [...thanks, ...statics];
+}
+
+/**
+ * Fill Sobre nosotros `#contributors .contributors-list` from CONTRIBUTORS.
+ * @param {ParentNode} [root=document]
+ */
+export function renderContributorsList(root = document) {
+  const list = root.querySelector('#contributors .contributors-list');
+  if (!list) return;
+  list.replaceChildren(
+    ...CONTRIBUTORS.map((c) => {
+      const li = document.createElement('li');
+      const strong = document.createElement('strong');
+      strong.textContent = c.name;
+      li.append(strong, document.createTextNode(` — ${c.credit}${c.emoji ? ` ${c.emoji}` : ''}`));
+      return li;
+    })
+  );
 }
 
 /**

@@ -53,10 +53,11 @@ Do **not** use or add `.claude/` or `.vscode/` config (legacy / local IDE). **Cu
 | Colors, spacing, shadows | `styles/tokens.css` |
 | Header title size / padding | `styles/tokens.css` → `--header-title-size`, `--header-padding-top`, `--header-nav-margin-block` |
 | Nav layout, active link style | `styles/components/nav.css` |
-| Ticker credits / static lines | `js/site-config.js` → `TICKER_CONTRIBUTORS`, `TICKER_STATIC_LINES` |
+| Ticker / colaboradores | `js/site-config.js` → `CONTRIBUTORS` (append-only; cinta + Sobre nosotros), `TICKER_STATIC_LINES` |
 | Espacio bajo cinta fija | `styles/tokens.css` → `--ticker-block-height`; `body { padding-top }` en `common.css` |
 | WhatsApp community invite URL | `js/site-config.js` → `WHATSAPP_COMMUNITY_URL` (ticker, Contáctanos, botón flotante) |
 | Hit flash duration on pads/toms | `js/site-config.js` → `AUDIO_UI.hitFlashMs` |
+| Sampler playback rate (velocidad) | `js/site-config.js` → `AUDIO_UI.playbackRate` |
 | Nav hamburger (móvil) | `js/common.js` → `initHamburgerMenu()` (delegación en `document`, clase `html.nav-open`); panel fijo en `nav.css` ≤767px |
 | Desktop/tablet/mobile breakpoints | `styles/tokens.css` → `--bp-desktop-min` 1024, `--bp-tablet-min` 768, `--bp-mobile-max` 767; `responsive.css` |
 | Battery / pads behavior | `js/virtual.js`, `styles/virtual.css` |
@@ -70,7 +71,7 @@ Do **not** use or add `.claude/` or `.vscode/` config (legacy / local IDE). **Cu
 - **UI strings**: Spanish (es-419)  
 - **CSS load order**: `reset.css` → `common.css` → page CSS. `common.css` imports `tokens.css`, `components/nav.css`, `components/ticker.css`, `responsive.css`. Use `var(--token)` in page CSS; avoid duplicates and `!important` (except third-party).
 
-**JS shell:** Each page calls `initSiteChrome()` on `DOMContentLoaded` (loads `header.html`, `nav.html`, builds ticker from `site-config.js`). Contributor names in ticker: **first name + first surname** (e.g. `Jiliar Silgado`).
+**JS shell:** Each page calls `initSiteChrome()` on `DOMContentLoaded` (loads `header.html`, `nav.html`, builds ticker from `site-config.js`). Collaborators: edit only `CONTRIBUTORS` in `site-config.js` (**append-only** — never remove). Sobre nosotros renders the same list via `renderContributorsList()`. Names: **first name + first surname** (e.g. `Jiliar Silgado`).
 
 **JS style:** ES modules, async/await, event delegation; no globals.
 
@@ -89,6 +90,9 @@ Same **edit** flow: **Editar** → cell → modal **Sonido** / **Tecla** → **G
 | `pianoChampeteroViewMode` | `"bateria"` \| `"pads"` |
 | `pianoChampeteroImmersionMode` | `"1"` \| `"0"` — oculta cinta/header/footer en virtual.html |
 | `pianoChampeteroGridType` | `3x3`, `3x4`, `4x4`, `4x6` |
+| `pianoChampeteroVolume` | Master volume 0–1 |
+| `pianoChampeteroPlaybackRate` | Sampler speed (`AUDIO_UI.playbackRate`; 1 = normal) |
+| `pianoChampeteroNoteRepeat` | Redoble on/off |
 
 **Edit modal save** (`virtual.js`): applies sampler and key independently when set — not gated on visible tab.
 
