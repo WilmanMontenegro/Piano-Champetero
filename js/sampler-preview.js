@@ -22,6 +22,7 @@ export function stopSamplerPreview() {
  * @param {string} relativePath under samplers/
  * @param {{
  *   getVolume: () => number,
+ *   getPlaybackRate?: () => number,
  *   loadBuffer: (url: string) => Promise<AudioBuffer>,
  *   connectHit: (gain: GainNode) => void,
  *   pulseViz?: () => void,
@@ -37,6 +38,7 @@ export async function previewSamplerPath(audioCtx, relativePath, deps) {
     const gainNode = audioCtx.createGain();
     gainNode.gain.value = deps.getVolume();
     source.buffer = buffer;
+    source.playbackRate.value = deps.getPlaybackRate?.() ?? 1;
     source.connect(gainNode);
     deps.connectHit(gainNode);
     source.start(0);

@@ -58,6 +58,84 @@ function padVoiceKey(index) {
   return `pad:${index}`;
 }
 
+/** Mobile piano-glide: pointerId → last pad/tom under finger (null = gap). */
+const glidePointers = new Map();
+/** Declared early: hitPlayTarget reads it during glide. */
+let modoEdicion = false;
+
+function glideTargetsEqual(a, b) {
+  if (!a || !b) return a === b;
+  return a.kind === b.kind && String(a.id) === String(b.id);
+}
+
+// ponytail: ceiling = no DOM swipe test; upgrade = Playwright finger glide
+console.assert(glideTargetsEqual({ kind: 'pad', id: 0 }, { kind: 'pad', id: 0 }));
+console.assert(!glideTargetsEqual({ kind: 'pad', id: 0 }, { kind: 'pad', id: 1 }));
+
+function hitPlayTarget(clientX, clientY) {
+  if (modoEdicion) return null;
+  const el = document.elementFromPoint(clientX, clientY);
+  if (!(el instanceof Element)) return null;
+  const pad = el.closest('.pad-item[data-pad-index]');
+  if (pad) {
+    const id = Number(pad.dataset.padIndex);
+    if (Number.isFinite(id)) return { kind: 'pad', id };
+  }
+  const tom = el.closest('button.battery-tom[id^="tom-"]');
+  if (tom?.id) return { kind: 'tom', id: tom.id };
+  return null;
+}
+
+function glideEnter(target) {
+  if (!target) return;
+  if (target.kind === 'pad') {
+    activatePadSound(target.id);
+    beginPadNoteRepeat(target.id);
+  } else {
+    activateTomSampler(target.id);
+    beginTomNoteRepeat(target.id);
+  }
+}
+
+function glideLeave(target) {
+  if (!target) return;
+  if (target.kind === 'pad') endPadNoteRepeat(target.id);
+  else endTomNoteRepeat(target.id);
+}
+
+function beginPlayGlide(e, target) {
+  glidePointers.set(e.pointerId, target);
+  try {
+    e.currentTarget.setPointerCapture(e.pointerId);
+  } catch { /* ignore */ }
+}
+
+function onPlayGlideMove(e) {
+  if (!glidePointers.has(e.pointerId)) return;
+  const prev = glidePointers.get(e.pointerId);
+  const next = hitPlayTarget(e.clientX, e.clientY);
+  if (glideTargetsEqual(prev, next)) return;
+  glideLeave(prev);
+  if (next) glideEnter(next);
+  glidePointers.set(e.pointerId, next);
+}
+
+function endPlayGlide(e) {
+  if (!glidePointers.has(e.pointerId)) return;
+  glideLeave(glidePointers.get(e.pointerId));
+  glidePointers.delete(e.pointerId);
+}
+
+function initPlayGlide() {
+  document.addEventListener('pointermove', onPlayGlideMove, { capture: true, passive: true });
+  document.addEventListener('pointerup', endPlayGlide, { capture: true });
+  document.addEventListener('pointercancel', endPlayGlide, { capture: true });
+  window.addEventListener('blur', () => {
+    for (const target of glidePointers.values()) glideLeave(target);
+    glidePointers.clear();
+  });
+}
+
 const tomSamplersDefaults = {
   'tom-1': 'FABIAN LOOP EFECT/D (2).wav',
   'tom-2': 'piano creciente/F4.wav',
@@ -110,6 +188,10 @@ const keyToTomIdDefaults = Object.fromEntries(
 const tomSamplerBuffers = {};
 const VOLUME_STORAGE_KEY = 'pianoChampeteroVolume';
 const DEFAULT_VOLUME = 0.5;
+const RATE_STORAGE_KEY = 'pianoChampeteroPlaybackRate';
+const DEFAULT_PLAYBACK_RATE = 1;
+const PLAYBACK_RATE_MIN = 0.5;
+const PLAYBACK_RATE_MAX = 2;
 
 function readStoredVolume() {
   try {
@@ -126,7 +208,48 @@ function saveStoredVolume(v) {
   try { localStorage.setItem(VOLUME_STORAGE_KEY, String(v)); } catch { /* ignore */ }
 }
 
+/** Slider 0..100 (50 = normal). Left slower, right faster. */
+function playbackRateFromSlider(sliderValue) {
+  const t = Math.min(100, Math.max(0, Number(sliderValue) || 0));
+  if (t <= 50) return PLAYBACK_RATE_MIN + (t / 50) * (1 - PLAYBACK_RATE_MIN);
+  return 1 + ((t - 50) / 50) * (PLAYBACK_RATE_MAX - 1);
+}
+
+function sliderFromPlaybackRate(rate) {
+  const r = Math.min(PLAYBACK_RATE_MAX, Math.max(PLAYBACK_RATE_MIN, Number(rate) || 1));
+  if (r <= 1) return Math.round(((r - PLAYBACK_RATE_MIN) / (1 - PLAYBACK_RATE_MIN)) * 50);
+  return Math.round(50 + ((r - 1) / (PLAYBACK_RATE_MAX - 1)) * 50);
+}
+
+function formatPlaybackRate(rate) {
+  return `${Number(rate).toFixed(2)}×`;
+}
+
+// ponytail: ceiling = no audio output assert; upgrade = Web Audio rate probe
+console.assert(Math.abs(playbackRateFromSlider(50) - 1) < 1e-9);
+console.assert(Math.abs(playbackRateFromSlider(0) - PLAYBACK_RATE_MIN) < 1e-9);
+console.assert(Math.abs(playbackRateFromSlider(100) - PLAYBACK_RATE_MAX) < 1e-9);
+console.assert(sliderFromPlaybackRate(1) === 50);
+
+function readStoredPlaybackRate() {
+  try {
+    const raw = localStorage.getItem(RATE_STORAGE_KEY);
+    if (raw == null) return DEFAULT_PLAYBACK_RATE;
+    const v = parseFloat(raw);
+    return Number.isFinite(v)
+      ? Math.min(PLAYBACK_RATE_MAX, Math.max(PLAYBACK_RATE_MIN, v))
+      : DEFAULT_PLAYBACK_RATE;
+  } catch {
+    return DEFAULT_PLAYBACK_RATE;
+  }
+}
+
+function saveStoredPlaybackRate(v) {
+  try { localStorage.setItem(RATE_STORAGE_KEY, String(v)); } catch { /* ignore */ }
+}
+
 let currentVolume = readStoredVolume();
+let currentPlaybackRate = readStoredPlaybackRate();
 
 let keyToTomId = {};
 
@@ -613,6 +736,7 @@ function playSamplerVoice(buffer, voiceKey) {
   const gainNode = audioCtx.createGain();
   gainNode.gain.value = currentVolume;
   source.buffer = buffer;
+  source.playbackRate.value = currentPlaybackRate;
   source.connect(gainNode);
   connectHitToOutput(gainNode);
 
@@ -813,12 +937,11 @@ function generatePadsView() {
         return;
       }
       e.preventDefault();
+      const target = { kind: 'pad', id: i };
       activatePadSound(i);
       beginPadNoteRepeat(i);
-      try { pad.setPointerCapture(e.pointerId); } catch { /* ignore */ }
+      beginPlayGlide(e, target);
     });
-    pad.addEventListener('pointerup', () => endPadNoteRepeat(i));
-    pad.addEventListener('pointercancel', () => endPadNoteRepeat(i));
   }
 
   // Preload buffers en paralelo para pads view
@@ -830,7 +953,6 @@ function generatePadsView() {
   }
 }
 
-let modoEdicion = false;
 let refreshBatteryPresets = () => {};
 /** @type {{ refresh?: () => void, onEditEnter?: () => void, onEditExit?: () => void } | null} */
 let batteryPresetsCtl = null;
@@ -977,7 +1099,7 @@ function layoutResponsivePads() {
   const maxCap = isMobile ? 120 : 132;
   const minPad = isMobile ? 48 : 48;
 
-  const vol = kitPlay.querySelector('.battery-volume-container');
+  const vol = kitPlay.querySelector('.kit-audio-controls') || kitPlay.querySelector('.battery-volume-container');
   const playRect = kitPlay.getBoundingClientRect();
   const volH = (vol ? vol.offsetHeight : 48) + (isMobile ? 8 : 16);
   const availW = playRect.width - (isMobile ? 12 : 20);
@@ -1548,6 +1670,29 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
+  const sliderRate = document.getElementById('rate-slider');
+  const labelRate = document.getElementById('rate-percent');
+  if (sliderRate) {
+    const syncRateUi = (rate) => {
+      sliderRate.value = String(sliderFromPlaybackRate(rate));
+      if (labelRate) labelRate.textContent = formatPlaybackRate(rate);
+    };
+    syncRateUi(currentPlaybackRate);
+    sliderRate.addEventListener('input', e => {
+      currentPlaybackRate = playbackRateFromSlider(e.target.value);
+      saveStoredPlaybackRate(currentPlaybackRate);
+      if (labelRate) labelRate.textContent = formatPlaybackRate(currentPlaybackRate);
+    });
+    sliderRate.addEventListener('wheel', e => {
+      e.preventDefault();
+      const step = parseFloat(sliderRate.step) || 1;
+      let next = parseFloat(sliderRate.value) + (e.deltaY < 0 ? step : -step);
+      next = Math.max(parseFloat(sliderRate.min), Math.min(parseFloat(sliderRate.max), next));
+      sliderRate.value = String(next);
+      sliderRate.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+  }
+
   const editBtn = document.getElementById('edit-btn');
   const modal = document.getElementById('modal-edit');
   const samplerListEl = document.getElementById('sampler-list');
@@ -1561,6 +1706,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   const previewDeps = {
     getVolume: () => currentVolume,
+    getPlaybackRate: () => currentPlaybackRate,
     loadBuffer: loadSamplerBuffer,
     connectHit: connectHitToOutput,
     pulseViz: pulseAudioVisualizer,
@@ -1742,12 +1888,11 @@ document.addEventListener('DOMContentLoaded', async () => {
           return;
         }
         e.preventDefault();
+        const target = { kind: 'tom', id: tomId };
         activateTomSampler(tomId);
         beginTomNoteRepeat(tomId);
-        try { boton.setPointerCapture(e.pointerId); } catch { /* ignore */ }
+        beginPlayGlide(e, target);
       });
-      boton.addEventListener('pointerup', () => endTomNoteRepeat(tomId));
-      boton.addEventListener('pointercancel', () => endTomNoteRepeat(tomId));
     }
   });
 
@@ -1921,4 +2066,5 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   initImmersionMode();
+  initPlayGlide();
 });

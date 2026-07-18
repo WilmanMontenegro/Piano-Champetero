@@ -266,6 +266,7 @@
       <div class="pads-view hidden" id="pads-view">
         <div class="pads-grid" id="pads-grid"></div>
       </div>
+      <div class="kit-audio-controls">
       <div class="battery-volume-container">
         <div class="volume-label-row">
           <i class="fa-solid fa-volume-high volume-icon"></i>
@@ -275,6 +276,17 @@
         <div class="battery-volume-label">
           <span id="volume-percent">50%</span>
         </div>
+      </div>
+      <div class="battery-rate-container">
+        <div class="volume-label-row">
+          <i class="fa-solid fa-gauge-high volume-icon" aria-hidden="true"></i>
+          <span class="volume-text">Velocidad</span>
+        </div>
+        <input class="battery-volume battery-rate" type="range" id="rate-slider" min="0" max="100" step="1" value="50" aria-label="Velocidad del sampler">
+        <div class="battery-volume-label">
+          <span id="rate-percent">1.00×</span>
+        </div>
+      </div>
       </div>
         </div>
       </div>

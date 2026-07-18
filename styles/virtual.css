@@ -35,12 +35,22 @@ main {
   }
 }
 
-/* ===================== VOLUMEN ===================== */
-.battery-volume-container {
+/* ===================== VOLUMEN / VELOCIDAD ===================== */
+.kit-audio-controls {
   display: flex;
   flex-direction: column;
   align-items: center;
+  gap: 0.55rem;
   margin-top: 1.5em;
+  width: 100%;
+}
+
+.battery-volume-container,
+.battery-rate-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 0;
 }
 
 .battery-volume {
@@ -55,7 +65,8 @@ main {
   justify-content: center;
 }
 
-#volume-percent {
+#volume-percent,
+#rate-percent {
   font-size: var(--font-size-lg);
   color: var(--color-marron);
   font-weight: bold;
@@ -102,7 +113,7 @@ main {
   box-sizing: border-box;
   margin: 0;
   padding: 0.12em 0.18em;
-  touch-action: manipulation;
+  touch-action: none;
   -webkit-tap-highlight-color: transparent;
   display: flex;
   flex-direction: column;
@@ -1194,7 +1205,8 @@ ul.sampler-list {
   .battery-tom-key { font-size: clamp(0.8rem, 3vw, 1.1rem); }
 
   .battery-volume { width: 140px; }
-  #volume-percent { font-size: var(--font-size-sm); }
+  #volume-percent,
+  #rate-percent { font-size: var(--font-size-sm); }
 
   .edit-buttons-container { gap: 6px; }
   .edit-keys-btn { font-size: 0.8rem; padding: 0.4em 0.8em; }
@@ -1524,7 +1536,7 @@ ul.sampler-list {
   min-height: 0;
   min-width: 0;
   padding: clamp(3px, 0.8vw, 5px);
-  touch-action: manipulation;
+  touch-action: none;
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -1874,13 +1886,22 @@ ul.sampler-list {
   justify-content: flex-start;
 }
 
-.virtual-page .kit-play-stage .battery-volume-container {
+.virtual-page .kit-play-stage .kit-audio-controls {
   flex-shrink: 0;
   width: 100%;
 }
 
-.virtual-page .kit-play-stage:has(#battery-view:not(.hidden)) .battery-volume-container {
+.virtual-page .kit-play-stage:has(#battery-view:not(.hidden)) .kit-audio-controls {
   margin-top: clamp(1.5rem, 4vh, 2.5rem);
+}
+
+.virtual-page .kit-play-stage .battery-volume-container {
+  flex-shrink: 0;
+  width: auto;
+}
+
+.virtual-page .kit-play-stage:has(#battery-view:not(.hidden)) .battery-volume-container {
+  margin-top: 0;
 }
 
 .virtual-page .kit-play-stage:has(#pads-view:not(.hidden)) #pads-view {
@@ -2017,14 +2038,25 @@ ul.sampler-list {
   height: clamp(74px, 17.5vw, 142px);
 }
 
-.virtual-page .battery-volume-container {
+.virtual-page .kit-audio-controls {
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 0.55rem 1.25rem;
+  margin-top: 0.35rem;
+  margin-bottom: clamp(0.75rem, 2vh, 1.25rem);
+}
+
+.virtual-page .battery-volume-container,
+.virtual-page .battery-rate-container {
   flex-direction: row;
   flex-wrap: wrap;
   justify-content: center;
   align-items: center;
   gap: 0.35em 0.85em;
-  margin-top: 0.35rem;
-  margin-bottom: clamp(0.75rem, 2vh, 1.25rem);
+  margin-top: 0;
+  margin-bottom: 0;
 }
 
 .virtual-page .volume-label-row {
@@ -2170,13 +2202,18 @@ ul.sampler-list {
     padding-bottom: 0.25em;
   }
 
-  .virtual-page .battery-volume-container {
+  .virtual-page .kit-audio-controls {
     margin-top: 0.15rem;
     margin-bottom: 0.3rem;
+    gap: 0.35rem 0.85rem;
+  }
+
+  .virtual-page .battery-volume-container,
+  .virtual-page .battery-rate-container {
     gap: 0.25em 0.55em;
   }
 
-  .virtual-page .kit-play-stage:has(#battery-view:not(.hidden)) .battery-volume-container {
+  .virtual-page .kit-play-stage:has(#battery-view:not(.hidden)) .kit-audio-controls {
     margin-top: clamp(1rem, 3vh, 1.75rem);
   }
 
@@ -2205,7 +2242,7 @@ ul.sampler-list {
     margin: 0.5rem 0 0;
   }
 
-  .virtual-page .kit-play-stage .battery-volume-container {
+  .virtual-page .kit-play-stage .kit-audio-controls {
     justify-content: center;
   }
 
