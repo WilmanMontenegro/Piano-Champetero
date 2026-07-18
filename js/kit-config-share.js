@@ -81,7 +81,7 @@ export function collectKitSnapshot(displayName = '', opts = {}) {
   /** @type {Record<string, unknown>} */
   const snap = {
     v: KIT_CONFIG_VERSION,
-    n: displayName.trim().slice(0, 40) || undefined,
+    n: displayName.trim().slice(0, 32) || undefined,
     s: readJson(STORAGE.samplers),
     k: readJson(STORAGE.keyMap),
     p: Object.keys(pads).length ? pads : undefined,

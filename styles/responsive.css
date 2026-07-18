@@ -87,10 +87,10 @@
     background-image: var(--overlay-header), url('../images/bateria-champetera-atardecer-mobile.webp');
   }
 
-  /* Título + tema + hamburguesa en una fila — ahorra alto */
+  /* Título + nav (tema + hamburguesa) en una fila */
   #header-container {
     display: grid;
-    grid-template-columns: 1fr auto auto;
+    grid-template-columns: 1fr auto;
     align-items: center;
     gap: 0.35rem 0.5rem;
     width: 100%;
@@ -104,23 +104,6 @@
     text-align: left;
     font-size: clamp(1.15rem, 4.8vw, 1.55rem);
     line-height: 1.2;
-  }
-
-  #header-container .theme-toggle--header {
-    margin: 0;
-    padding: 0.35em 0.55em;
-  }
-
-  #header-container .theme-toggle--header [data-theme-label] {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    border: 0;
   }
 
   #nav-container {

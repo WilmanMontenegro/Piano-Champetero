@@ -32,7 +32,7 @@ import {
   copyTextToClipboard,
 } from './kit-config-share.js';
 import { initSessionRecorder, listSessionRecordings } from './session-recorder.js';
-import { getActiveKitId, getBatteryKit, initBatteryPresets, isActiveKitBlank, isDefaultKit, syncActiveKit, updateBatteryKit } from './battery-presets.js';
+import { getActiveKitId, getBatteryKit, initBatteryPresets, isActiveKitBlank, isDefaultKit, syncActiveKit, updateBatteryKit, createBatteryKit, listBatteryKits } from './battery-presets.js';
 import {
   initPatternLoops,
   notifyPatternHit,
@@ -820,7 +820,12 @@ function playTomSampler(tomId, { force = false } = {}) {
   const url = samplerUrl(fileName);
   const buffer = tomSamplerBuffers[fileName] || globalSamplerCache[url];
   if (!buffer) {
-    void preloadSamplerFile(fileName);
+    // iOS: first tap often lands before decode — play when buffer ready (ctx already unlocked)
+    void preloadSamplerFile(fileName).then((buf) => {
+      if (!buf) return;
+      tomSamplerBuffers[fileName] = buf;
+      playTomSampler(tomId, { force: true });
+    });
     return;
   }
   playSamplerVoice(buffer, `tom:${tomId}`, { force });
@@ -846,9 +851,15 @@ function flashTomButton(tomId) {
 }
 
 function activateTomSampler(tomId, { flash = true } = {}) {
-  // Audio first — flash/pattern after (ms matter on mobile)
-  if (audioCtx.state === 'running') playTomSampler(tomId);
-  else void audioCtx.resume().then(() => playTomSampler(tomId));
+  // iOS: play in the same turn as the gesture — don't wait only on resume().then()
+  const needsUnlock = audioCtx.state !== 'running';
+  if (needsUnlock) void audioCtx.resume();
+  playTomSampler(tomId);
+  if (needsUnlock) {
+    void audioCtx.resume().then(() => {
+      if (audioCtx.state === 'running') playTomSampler(tomId, { force: true });
+    });
+  }
   if (isPatternCapturing()) notifyPatternHit({ kind: 'tom', id: tomId });
   if (flash) flashTomButton(tomId);
 }
@@ -919,7 +930,13 @@ function playPadSound(index, { force = false } = {}) {
   const url = fileName ? samplerUrl(fileName) : '';
   const buffer = padsViewBuffers[index] || (url ? globalSamplerCache[url] : null);
   if (!buffer) {
-    if (fileName) void preloadPadsViewBuffer(index).then((buf) => { if (buf) padsViewBuffers[index] = buf; });
+    if (!fileName) return;
+    // iOS: flash ran but buffer still decoding → play as soon as ready
+    void preloadPadsViewBuffer(index).then((buf) => {
+      if (!buf) return;
+      padsViewBuffers[index] = buf;
+      playPadSound(index, { force: true });
+    });
     return;
   }
   playSamplerVoice(buffer, `pad:${index}`, { force });
@@ -930,8 +947,15 @@ function flashPadButton(index) {
 }
 
 function activatePadSound(index, { flash = true } = {}) {
-  if (audioCtx.state === 'running') playPadSound(index);
-  else void audioCtx.resume().then(() => playPadSound(index));
+  // iOS: resume().then(play) alone often loses the user-gesture → flash, no sound
+  const needsUnlock = audioCtx.state !== 'running';
+  if (needsUnlock) void audioCtx.resume();
+  playPadSound(index);
+  if (needsUnlock) {
+    void audioCtx.resume().then(() => {
+      if (audioCtx.state === 'running') playPadSound(index, { force: true });
+    });
+  }
   if (isPatternCapturing()) notifyPatternHit({ kind: 'pad', id: index });
   if (flash) flashPadButton(index);
 }
@@ -957,9 +981,15 @@ function generatePadsView() {
   rebuildPadKeyIndexMap();
   padsGrid.innerHTML = '';
   padsGrid.className = 'pads-grid grid-' + currentGridType;
+  // iOS: block callout/selection on pad labels (blue highlight under finger)
+  if (!padsGrid._iosSelectGuard) {
+    padsGrid._iosSelectGuard = true;
+    padsGrid.addEventListener('selectstart', (e) => e.preventDefault());
+  }
 
   for (let i = 0; i < config.total; i++) {
     const pad = document.createElement('button');
+    pad.type = 'button';
     pad.className = 'pad-item';
     pad.dataset.padIndex = String(i);
 
@@ -983,6 +1013,11 @@ function generatePadsView() {
         return;
       }
       e.preventDefault();
+      // Kill iOS text-selection callout on the pad label
+      if (typeof window.getSelection === 'function') {
+        const sel = window.getSelection();
+        if (sel && sel.rangeCount) sel.removeAllRanges();
+      }
       const target = { kind: 'pad', id: i };
       activatePadSound(i);
       beginPadNoteRepeat(i);
@@ -1800,6 +1835,15 @@ async function applyBatteryPreset(preset) {
 }
 
 async function applyImportedKit(snapshot) {
+  // Save current kit first — import must not overwrite it
+  syncActiveKitIfAny();
+
+  if (listBatteryKits().length >= 12) {
+    throw new Error('Máximo 12 kits. Borrá uno para importar otro.');
+  }
+
+  const kitName = String(snapshot.n || '').trim().slice(0, 32) || 'Kit importado';
+
   persistKitSnapshot(snapshot);
 
   if (snapshot.s && typeof snapshot.s === 'object') {
@@ -1825,7 +1869,6 @@ async function applyImportedKit(snapshot) {
   actualizarEtiquetasTeclas(keyToTomId);
   actualizarNombresPads();
 
-  const view = localStorage.getItem('pianoChampeteroViewMode') || 'bateria';
   switchView('pads');
 
   const noteRepeatBtn = document.getElementById('note-repeat-btn');
@@ -1836,6 +1879,12 @@ async function applyImportedKit(snapshot) {
     noteRepeatBtn.setAttribute('aria-pressed', nrOn ? 'true' : 'false');
   }
   if (noteRepeatLabel) noteRepeatLabel.textContent = nrOn ? 'Activo' : 'Apagado';
+
+  // New kit entry with shared name; previous active kit stays in the picker
+  createBatteryKit({
+    name: kitName,
+    ...captureBatteryState(),
+  });
 }
 
 function initKitConfigShare(noteRepeatApply) {
@@ -1882,6 +1931,11 @@ function initKitConfigShare(noteRepeatApply) {
     focusOnOpen: false,
     onOpen: () => {
       setStatus('');
+      // Always use active kit name so shared codes carry the right label
+      if (nameInput) {
+        const active = getActiveKitId() ? getBatteryKit(getActiveKitId()) : null;
+        nameInput.value = active?.name || '';
+      }
       refreshExportPayload();
     },
   });
@@ -1921,7 +1975,7 @@ function initKitConfigShare(noteRepeatApply) {
     await applyImportedKit(snapshot);
     if (noteRepeatApply) noteRepeatApply(isNoteRepeatEnabled());
     refreshBatteryPresets?.();
-    const label = snapshot.n ? `"${snapshot.n}"` : 'Kit importado';
+    const label = snapshot.n ? `"${String(snapshot.n).trim()}"` : '"Kit importado"';
     return label;
   };
 
@@ -1929,7 +1983,7 @@ function initKitConfigShare(noteRepeatApply) {
     setStatus('');
     try {
       const label = await runImport(importField.value);
-      setStatus(`${label} listo. ¡A tocar!`);
+      setStatus(`${label} creado. Tu kit anterior sigue en la lista.`);
       importField.value = '';
     } catch (err) {
       setStatus(err instanceof Error ? err.message : 'No se pudo importar.', true);
@@ -1963,7 +2017,7 @@ function initKitConfigShare(noteRepeatApply) {
       try {
         const label = await runImport(pendingUrlKit);
         importField.value = '';
-        setStatus(`${label} cargado desde el enlace. ¡A tocar!`);
+        setStatus(`${label} creado desde el enlace. Tu kit anterior sigue en la lista.`);
         return true;
       } catch (err) {
         setStatus(

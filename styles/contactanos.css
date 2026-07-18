@@ -93,23 +93,29 @@
   display: inline-flex;
   align-items: center;
   gap: 0.5em;
-  background: var(--color-principal);
-  color: var(--color-blanco);
+  background: var(--gradient-btn-primary);
+  color: var(--btn-primary-fg);
   text-decoration: none;
   padding: 0.6em 1.2em;
   border-radius: var(--borde-radius);
   font-weight: bold;
+  text-shadow: var(--btn-primary-shadow-text);
   transition: all 0.2s;
   box-shadow: var(--sombra-btn);
 }
 
 .contact-button:hover {
-  background: var(--color-principal-hover);
+  background: var(--gradient-btn-primary-hover);
   box-shadow: var(--sombra-btn-hover);
 }
 
 .contact-button--whatsapp {
-  background: #25d366;
+  background: var(--color-whatsapp);
+  text-shadow: none;
+}
+
+.contact-button--whatsapp:hover {
+  background: var(--color-whatsapp-hover);
 }
 
 .contact-button__icon {
@@ -222,8 +228,8 @@
   display: inline-flex;
   align-items: center;
   gap: 0.8em;
-  background: var(--color-principal);
-  color: var(--color-blanco);
+  background: var(--gradient-btn-primary);
+  color: var(--btn-primary-fg);
   border: none;
   border-radius: var(--borde-radius-grande);
   font-family: inherit;
@@ -232,13 +238,14 @@
   cursor: pointer;
   padding: 0.9em 1.8em;
   margin-top: 1.5em;
+  text-shadow: var(--btn-primary-shadow-text);
   transition: background 0.3s, box-shadow 0.3s, transform 0.3s;
   box-shadow: var(--sombra-btn-hover);
 }
 
 .send-button:hover {
-  background: var(--color-principal-hover);
-  box-shadow: 0 6px 20px color-mix(in srgb, var(--color-brand-green) 35%, transparent);
+  background: var(--gradient-btn-primary-hover);
+  box-shadow: 0 6px 20px color-mix(in srgb, var(--palette-green) 35%, transparent);
   transform: translateY(-2px);
 }
 

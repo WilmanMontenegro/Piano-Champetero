@@ -152,29 +152,7 @@ header {
   line-height: 1.15;
 }
 
-/* Tema claro/oscuro — header del sitio (casotal). No vive en la batería. */
-.theme-toggle--header {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35em;
-  margin: 0 0 0.55rem;
-  padding: 0.35em 0.75em;
-  border-radius: 999px;
-  border: 2px solid color-mix(in srgb, var(--color-blanco) 55%, transparent);
-  background: color-mix(in srgb, #000 35%, transparent);
-  color: var(--color-blanco);
-  font-family: var(--font-body);
-  font-size: 0.8rem;
-  font-weight: 700;
-  cursor: pointer;
-  text-shadow: none;
-  transition: background 0.2s, border-color 0.2s;
-}
-
-.theme-toggle--header:hover {
-  background: color-mix(in srgb, #000 50%, transparent);
-  border-color: var(--color-amarillo);
-}
+/* Tema claro/oscuro — vive en nav (.theme-toggle--nav en nav.css) */
 
 /* ===================== BOTONES ===================== */
 .btn-danger,
@@ -210,22 +188,27 @@ header {
   box-shadow: var(--sombra-btn-hover);
 }
 
-.cta-button {
+.cta-button,
+.btn-primary {
   display: inline-block;
-  background: var(--color-principal);
-  color: var(--color-blanco);
+  background: var(--gradient-btn-primary);
+  color: var(--btn-primary-fg);
   padding: 0.8em 2em;
+  border: none;
   border-radius: var(--borde-radius);
   text-decoration: none;
   font-weight: bold;
   font-size: var(--font-size-md);
+  text-shadow: var(--btn-primary-shadow-text);
   box-shadow: var(--sombra-btn);
   margin-top: 1em;
-  transition: background 0.3s, box-shadow 0.3s;
+  cursor: pointer;
+  transition: background 0.25s, box-shadow 0.25s, filter 0.2s;
 }
 
-.cta-button:hover {
-  background: var(--color-principal-hover);
+.cta-button:hover,
+.btn-primary:hover {
+  background: var(--gradient-btn-primary-hover);
   box-shadow: var(--sombra-btn-hover);
 }
 
