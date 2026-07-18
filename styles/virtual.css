@@ -2119,8 +2119,10 @@ ul.sampler-list {
   flex-wrap: wrap;
   justify-content: center;
   align-items: center;
-  gap: 0.55rem 1.25rem;
-  margin-top: 0.35rem;
+  align-content: flex-start;
+  /* Row gap tight (Volumen↔Velocidad); margin tops air under pads */
+  gap: 0.2rem 1.25rem;
+  margin-top: 0.75rem;
   margin-bottom: clamp(0.75rem, 2vh, 1.25rem);
 }
 
@@ -2383,13 +2385,14 @@ ul.sampler-list {
     transform: none;
     z-index: 5;
     width: 100%;
-    margin: 0.15rem 0 0;
-    padding: 0.2rem 0.4rem calc(0.25rem + env(safe-area-inset-bottom, 0px));
-    gap: 0.45rem 0.85rem;
+    margin: 0.65rem 0 0;
+    padding: 0.15rem 0.4rem calc(0.25rem + env(safe-area-inset-bottom, 0px));
+    gap: 0.15rem 0.85rem;
     flex-direction: row;
     flex-wrap: wrap;
     justify-content: center;
     align-items: center;
+    align-content: flex-start;
     box-sizing: border-box;
     border-radius: 0;
     background: transparent;

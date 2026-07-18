@@ -1199,8 +1199,8 @@ function layoutResponsivePads() {
 
   const vol = kitPlay.querySelector('.kit-audio-controls') || kitPlay.querySelector('.battery-volume-container');
   const playRect = kitPlay.getBoundingClientRect();
-  // Reserve audio controls height so pads never cover Volumen/Velocidad
-  const volH = Math.max(vol ? vol.offsetHeight : 0, isMobile ? 72 : 56) + (isMobile ? 4 : 16);
+  // Reserve controls + breathing room so pads don't sit on Volumen
+  const volH = Math.max(vol ? vol.offsetHeight : 0, isMobile ? 72 : 56) + (isMobile ? 16 : 22);
   const availW = playRect.width - (isMobile ? 2 : 20);
   const viewH = view.clientHeight;
   const stageBudget = Math.max(0, playRect.height - volH);
