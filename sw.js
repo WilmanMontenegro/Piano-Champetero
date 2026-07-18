@@ -136,6 +136,22 @@ self.addEventListener('fetch', (event) => {
   }
 
   if (url.origin === location.origin) {
+    // JS/CSS network-first — avoids stale module exports vs new importers (cache-first mismatch)
+    if (/\.(js|css)$/.test(url.pathname)) {
+      event.respondWith(
+        fetch(event.request)
+          .then((fetchResponse) => {
+            if (fetchResponse.ok) {
+              const clone = fetchResponse.clone();
+              caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+            }
+            return fetchResponse;
+          })
+          .catch(() => caches.match(event.request).then((r) => r || new Response('Offline', { status: 503 })))
+      );
+      return;
+    }
+
     event.respondWith(
       caches.match(event.request).then((response) => {
         return response || fetch(event.request).catch(() => {
