@@ -1,7 +1,12 @@
 // js/virtual.js — batería virtual.html
 // Hit path: buffer en RAM → start(0) sync; flash/DOM después; volumen en masterGain
 import { initSiteChrome, setYearFooter, resumeOnUserGesture } from './common.js';
-import { AUDIO_UI, MOBILE_PLAY_MQ } from './site-config.js';
+import {
+  AUDIO_UI,
+  MOBILE_PLAY_MQ,
+  NAV_MOBILE_MAX_PX,
+  BREAKPOINT_DESKTOP_MIN_PX,
+} from './site-config.js';
 import { PAD_GRID_CONFIGS as gridConfigs, PAD_GRID_SIZE_ORDER } from './pad-grid-config.js';
 import { initModal, isModalOpen } from './modal-utils.js';
 import { DEFAULT_PAD_KEY_CHAR_ORDER, BATTERY_DEFAULT_PAD_CHARS, buildPadKeyIndexMap, resolvePadIndexFromKeyboard } from './pad-keyboard.js';
@@ -1122,9 +1127,60 @@ function initPageScrollLock() {
   }, { passive: false });
 }
 
-/** Rejilla pads: columnas y tamaño según espacio (volumen siempre abajo). */
+/**
+ * Pad layout — exactly 3 tiers (tokens.css / site-config):
+ * mobile ≤767 | tablet 768–1023 | desktop ≥1024
+ * Pads always square (1:1). No rectangular --pad-size-w/h.
+ */
 let padsLayoutFrame = 0;
-const MOBILE_PADS_MQ = window.matchMedia(MOBILE_PLAY_MQ);
+
+/** @typedef {'mobile'|'tablet'|'desktop'} PadViewportTier */
+
+const PAD_LAYOUT_BY_TIER = {
+  mobile: {
+    gap: 6,
+    sideInset: 28,
+    topInset: 10,
+    gridPad: 8,
+    maxCap: 112,
+    minPad: 44,
+    volFloor: 72,
+    volExtra: 16,
+    sizeScale: 1,
+    pickLayout: true,
+  },
+  tablet: {
+    gap: 7,
+    sideInset: 40,
+    topInset: 12,
+    gridPad: 10,
+    maxCap: 120,
+    minPad: 48,
+    volFloor: 64,
+    volExtra: 18,
+    sizeScale: 1,
+    pickLayout: false,
+  },
+  desktop: {
+    gap: 8,
+    sideInset: 48,
+    topInset: 14,
+    gridPad: 12,
+    maxCap: 132,
+    minPad: 48,
+    volFloor: 56,
+    volExtra: 22,
+    sizeScale: 0.96,
+    pickLayout: false,
+  },
+};
+
+function getPadViewportTier() {
+  const w = window.innerWidth;
+  if (w <= NAV_MOBILE_MAX_PX) return 'mobile';
+  if (w < BREAKPOINT_DESKTOP_MIN_PX) return 'tablet';
+  return 'desktop';
+}
 
 function factorPadGridPairs(total) {
   const pairs = [];
@@ -1135,43 +1191,32 @@ function factorPadGridPairs(total) {
   return pairs;
 }
 
-function padSizeForGrid(cols, rows, availW, availH, gap, gridPad, maxCap) {
+/** Square pad size that fits cols×rows in avail box. */
+function padSquareSize(cols, rows, availW, availH, gap, gridPad, maxCap) {
   const sizeW = (availW - (cols - 1) * gap - 2 * gridPad) / cols;
   const sizeH = (availH - (rows - 1) * gap - 2 * gridPad) / rows;
   return Math.min(sizeW, sizeH, maxCap);
 }
 
-function padBoxForGrid(cols, rows, availW, availH, gap, gridPad, maxCap) {
-  const sizeW = Math.min(maxCap, (availW - (cols - 1) * gap - 2 * gridPad) / cols);
-  const sizeH = Math.min(maxCap, (availH - (rows - 1) * gap - 2 * gridPad) / rows);
-  return { sizeW, sizeH, size: Math.min(sizeW, sizeH) };
-}
-
-/** Móvil: maximiza tamaño táctil y aprovecha ancho (menos gutters laterales). */
-function pickResponsivePadLayout(total, availW, availH, gap, gridPad, cfg, isMobile) {
-  if (!isMobile) {
-    return { cols: cfg.cols, rows: cfg.rows };
-  }
-
-  const maxCap = 128;
-  const minPad = 50;
+/** Mobile only: pick cols/rows for largest square pads with balanced fill (not edge-flush). */
+function pickResponsivePadLayout(total, availW, availH, gap, gridPad, maxCap, minPad, cfg) {
   let best = null;
 
   for (const { cols, rows } of factorPadGridPairs(total)) {
     if (cols > 8 || rows > 8) continue;
-    const { sizeW, sizeH, size } = padBoxForGrid(cols, rows, availW, availH, gap, gridPad, maxCap);
-    if (sizeW < minPad || sizeH < minPad) continue;
+    const size = padSquareSize(cols, rows, availW, availH, gap, gridPad, maxCap);
+    if (size < minPad) continue;
 
-    const widthUsed = cols * sizeW + (cols - 1) * gap + 2 * gridPad;
-    const heightUsed = rows * sizeH + (rows - 1) * gap + 2 * gridPad;
+    const widthUsed = cols * size + (cols - 1) * gap + 2 * gridPad;
+    const heightUsed = rows * size + (rows - 1) * gap + 2 * gridPad;
     const fillW = widthUsed / Math.max(1, availW);
     const fillH = heightUsed / Math.max(1, availH);
-    // Area ≈ touch target; fillW/H kill side/bottom gutters
-    let score = sizeW * sizeH + fillW * 800 + fillH * 400;
-    if (cols >= 3 && cols <= 6) score += 50;
+    // Prefer touch size; soft fill capped so side margins stay
+    let score = size * 12 + Math.min(fillW, 0.9) * 120 + Math.min(fillH, 0.9) * 90;
+    if (cols >= 3 && cols <= 6) score += 40;
 
     if (!best || score > best.score) {
-      best = { cols, rows, sizeW, sizeH, size, score };
+      best = { cols, rows, size, score };
     }
   }
 
@@ -1191,19 +1236,17 @@ function layoutResponsivePads() {
   view.style.removeProperty('--pad-size-w');
   view.style.removeProperty('--pad-size-h');
 
-  const isMobile = MOBILE_PADS_MQ.matches;
-  const gap = isMobile ? 5 : 8;
-  const gridPad = isMobile ? 2 : 10;
-  const maxCap = isMobile ? 128 : 132;
-  const minPad = isMobile ? 48 : 48;
+  const tier = getPadViewportTier();
+  const L = PAD_LAYOUT_BY_TIER[tier];
+  const { gap, sideInset, topInset, gridPad, maxCap, minPad, volFloor, volExtra, sizeScale } = L;
 
   const vol = kitPlay.querySelector('.kit-audio-controls') || kitPlay.querySelector('.battery-volume-container');
   const playRect = kitPlay.getBoundingClientRect();
-  // Reserve controls + breathing room so pads don't sit on Volumen
-  const volH = Math.max(vol ? vol.offsetHeight : 0, isMobile ? 72 : 56) + (isMobile ? 16 : 22);
-  const availW = playRect.width - (isMobile ? 2 : 20);
+  const volH = Math.max(vol ? vol.offsetHeight : 0, volFloor) + volExtra;
+  // Prefer pads-view width (already has CSS gutters); sideInset = fallback only
+  const availW = Math.max(60, view.clientWidth > 40 ? view.clientWidth : playRect.width - sideInset);
   const viewH = view.clientHeight;
-  const stageBudget = Math.max(0, playRect.height - volH);
+  const stageBudget = Math.max(0, playRect.height - volH - topInset);
   const availH = viewH > 80
     ? Math.max(60, Math.min(viewH, stageBudget) - gridPad * 2)
     : Math.max(60, stageBudget - gridPad * 2);
@@ -1211,26 +1254,20 @@ function layoutResponsivePads() {
 
   if (cfg.cols * cfg.rows !== cfg.total) return;
 
-  const { cols: layoutCols, rows: layoutRows } = pickResponsivePadLayout(
-    cfg.total, availW, availH, gap, gridPad, cfg, isMobile
-  );
+  const { cols: layoutCols, rows: layoutRows } = L.pickLayout
+    ? pickResponsivePadLayout(cfg.total, availW, availH, gap, gridPad, maxCap, minPad, cfg)
+    : { cols: cfg.cols, rows: cfg.rows };
   if (layoutCols * layoutRows !== cfg.total) return;
 
-  const { sizeW, sizeH, size } = padBoxForGrid(
-    layoutCols, layoutRows, availW, availH, gap, gridPad, maxCap
-  );
-  if (sizeW < minPad || sizeH < minPad) return;
+  const size = padSquareSize(layoutCols, layoutRows, availW, availH, gap, gridPad, maxCap);
+  if (size < minPad) return;
+
+  // ponytail: square only — known ceiling if non-1:1 returns; never reintroduce -w/-h
+  console.assert(Number.isFinite(size) && size > 0);
 
   view.style.setProperty('--pad-cols', String(layoutCols));
   view.style.setProperty('--pad-rows', String(layoutRows));
-  if (isMobile) {
-    // Slightly rectangular OK — fills width + height toward volume
-    view.style.setProperty('--pad-size-w', `${Math.floor(sizeW)}px`);
-    view.style.setProperty('--pad-size-h', `${Math.floor(sizeH)}px`);
-    view.style.setProperty('--pad-size', `${Math.floor(size)}px`);
-  } else {
-    view.style.setProperty('--pad-size', `${Math.floor(size * 0.95)}px`);
-  }
+  view.style.setProperty('--pad-size', `${Math.floor(size * sizeScale)}px`);
 }
 
 function scheduleResponsivePadsLayout() {
