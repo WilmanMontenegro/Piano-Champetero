@@ -1053,9 +1053,11 @@ const SCROLL_ALLOW_SELECTOR = '.sampler-list, .nav-menu.active, .help-content, .
 
 function initPageScrollLock() {
   const allowScroll = (target) => target instanceof Element && target.closest(SCROLL_ALLOW_SELECTOR);
+  const allowRateDrag = (target) =>
+    target instanceof Element && target.closest('#rate-slider, .battery-rate-container');
 
   document.addEventListener('touchmove', (e) => {
-    if (allowScroll(e.target)) return;
+    if (allowScroll(e.target) || allowRateDrag(e.target)) return;
     e.preventDefault();
   }, { passive: false });
 
@@ -1705,7 +1707,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   const labelRate = document.getElementById('rate-percent');
   const rateFixedCheck = document.getElementById('rate-fixed');
   if (sliderRate) {
-    // Spring bend unless "Fijo" is checked.
+    // Hold + drag sideways until finger up; spring to center unless Fijo.
+    let ratePointerId = null;
+
     const syncRateUi = (rate) => {
       sliderRate.value = String(sliderFromPlaybackRate(rate));
       if (labelRate) labelRate.textContent = formatPlaybackRate(rate);
@@ -1714,6 +1718,18 @@ document.addEventListener('DOMContentLoaded', async () => {
       setPlaybackRate(DEFAULT_PLAYBACK_RATE, { persist: true });
       syncRateUi(DEFAULT_PLAYBACK_RATE);
     };
+    const rateFromClientX = (clientX) => {
+      const rect = sliderRate.getBoundingClientRect();
+      if (rect.width <= 0) return 50;
+      const t = Math.min(1, Math.max(0, (clientX - rect.left) / rect.width));
+      return Math.round(t * 100);
+    };
+    const applyRateSliderValue = (sliderVal) => {
+      setPlaybackRate(playbackRateFromSlider(sliderVal), { persist: playbackRateFixed });
+      sliderRate.value = String(sliderVal);
+      if (labelRate) labelRate.textContent = formatPlaybackRate(currentPlaybackRate);
+    };
+
     if (rateFixedCheck) rateFixedCheck.checked = playbackRateFixed;
     if (playbackRateFixed) {
       syncRateUi(currentPlaybackRate);
@@ -1723,18 +1739,37 @@ document.addEventListener('DOMContentLoaded', async () => {
       saveStoredPlaybackRate(DEFAULT_PLAYBACK_RATE);
     }
 
-    sliderRate.addEventListener('input', e => {
-      setPlaybackRate(playbackRateFromSlider(e.target.value), { persist: playbackRateFixed });
-      if (labelRate) labelRate.textContent = formatPlaybackRate(currentPlaybackRate);
+    sliderRate.addEventListener('pointerdown', (e) => {
+      if (e.button !== 0) return;
+      e.preventDefault();
+      ratePointerId = e.pointerId;
+      try { sliderRate.setPointerCapture(e.pointerId); } catch { /* ignore */ }
+      applyRateSliderValue(rateFromClientX(e.clientX));
     });
-    const endRateBend = () => {
-      if (playbackRateFixed) return;
-      snapRateToCenter();
+    sliderRate.addEventListener('pointermove', (e) => {
+      if (ratePointerId !== e.pointerId) return;
+      applyRateSliderValue(rateFromClientX(e.clientX));
+    });
+    const endRateDrag = (e) => {
+      if (ratePointerId == null) return;
+      if (e.pointerId != null && e.pointerId !== ratePointerId) return;
+      ratePointerId = null;
+      try { sliderRate.releasePointerCapture(e.pointerId); } catch { /* ignore */ }
+      if (!playbackRateFixed) snapRateToCenter();
     };
-    sliderRate.addEventListener('pointerup', endRateBend);
-    sliderRate.addEventListener('pointercancel', endRateBend);
-    sliderRate.addEventListener('change', endRateBend);
-    window.addEventListener('blur', endRateBend);
+    sliderRate.addEventListener('pointerup', endRateDrag);
+    sliderRate.addEventListener('pointercancel', endRateDrag);
+    window.addEventListener('blur', () => {
+      if (ratePointerId == null) return;
+      ratePointerId = null;
+      if (!playbackRateFixed) snapRateToCenter();
+    });
+
+    // Keyboard / a11y when not finger-dragging.
+    sliderRate.addEventListener('input', (e) => {
+      if (ratePointerId != null) return;
+      applyRateSliderValue(Number(e.target.value));
+    });
 
     rateFixedCheck?.addEventListener('change', () => {
       playbackRateFixed = !!rateFixedCheck.checked;
