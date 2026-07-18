@@ -2,6 +2,8 @@
  * Canvas visualizer — waveform + frequency bars (Web Audio AnalyserNode).
  */
 
+import { NAV_MOBILE_MAX_PX } from './site-config.js';
+
 const STORAGE_KEY = 'pianoChampeteroVisualizerEnabled';
 const BAR_COUNT = 48;
 const SILENT_FRAMES_MAX = 45;
@@ -9,6 +11,15 @@ const ACTIVITY_THRESHOLD = 16;
 
 /** @type {(() => void) | null} */
 let pulseFn = null;
+
+function readInitialVisualizerEnabled() {
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if (raw === null) {
+    // First visit: off on mobile to free vertical space for pads + audio.
+    return !window.matchMedia(`(max-width: ${NAV_MOBILE_MAX_PX}px)`).matches;
+  }
+  return raw !== 'false';
+}
 
 /**
  * @param {{ analyser: AnalyserNode }} options
@@ -19,7 +30,7 @@ export function initAudioVisualizer({ analyser }) {
   const toggle = document.getElementById('audio-viz-toggle');
   if (!panel || !canvas || !toggle || !analyser) return;
 
-  let enabled = localStorage.getItem(STORAGE_KEY) !== 'false';
+  let enabled = readInitialVisualizerEnabled();
   /** @type {number | null} */
   let rafId = null;
   let silentFrames = SILENT_FRAMES_MAX;

@@ -1134,10 +1134,14 @@ function layoutResponsivePads() {
 
   const vol = kitPlay.querySelector('.kit-audio-controls') || kitPlay.querySelector('.battery-volume-container');
   const playRect = kitPlay.getBoundingClientRect();
-  const volH = (vol ? vol.offsetHeight : 48) + (isMobile ? 8 : 16);
+  // Always reserve audio bar height so pads never eat Volumen/Velocidad (main is overflow:hidden).
+  const volH = Math.max(vol ? vol.offsetHeight : 0, isMobile ? 88 : 56) + (isMobile ? 12 : 16);
   const availW = playRect.width - (isMobile ? 12 : 20);
   const viewH = view.clientHeight;
-  const availH = viewH > 80 ? viewH - gridPad * 2 : playRect.height - volH;
+  const stageBudget = Math.max(0, playRect.height - volH);
+  const availH = viewH > 80
+    ? Math.max(60, Math.min(viewH, stageBudget) - gridPad * 2)
+    : Math.max(60, stageBudget - gridPad * 2);
   if (availW < 60 || availH < 60) return;
 
   if (cfg.cols * cfg.rows !== cfg.total) return;

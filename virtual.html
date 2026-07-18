@@ -140,8 +140,26 @@
   <main>
     <div class="drum-kit-container">
       <div class="controls-bar">
-        <div class="control-group control-group--kit">
-          <button id="edit-btn" type="button" class="ctrl-btn" aria-pressed="false" title="Cambiar sonidos y teclas de los pads"><i class="fa-solid fa-pencil" aria-hidden="true"></i> Editar</button>
+        <div class="control-group control-group--primary control-group--view">
+          <span class="group-label">Vista:</span>
+          <button id="view-bateria" class="ctrl-btn view-btn active" title="Vista Batería">
+            <i class="fa-solid fa-drum"></i> Batería
+          </button>
+          <button id="view-pads" class="ctrl-btn view-btn new-feature-btn" title="Vista Pads - más sonidos disponibles">
+            <i class="fa-solid fa-th-large"></i> Pads
+            <span class="new-badge">NUEVO</span>
+          </button>
+          <button id="immersion-btn" type="button" class="ctrl-btn immersion-btn" title="Ocultar menú y cinta para más espacio" aria-pressed="false">
+            <i class="fa-solid fa-expand" aria-hidden="true"></i>
+            <span class="immersion-btn-label">Inmersión</span>
+          </button>
+        </div>
+        <div id="grid-selector" class="grid-selector-inline control-group--primary" style="display:none;">
+          <span class="group-label">Pads:</span>
+          <div id="grid-options" class="grid-options"></div>
+        </div>
+        <div class="control-group control-group--secondary control-group--kit">
+          <button id="edit-btn" type="button" class="ctrl-btn" aria-pressed="false" title="Cambiar sonidos y teclas de los pads"><i class="fa-solid fa-pencil" aria-hidden="true"></i> <span class="ctrl-btn-text">Editar</span></button>
           <div class="battery-preset-bar" id="battery-preset-bar">
             <span class="group-label battery-preset-bar-label">Kit</span>
             <div class="battery-kit-picker" id="battery-kit-picker">
@@ -152,15 +170,9 @@
               <ul id="battery-kit-menu" class="battery-kit-menu" role="listbox" hidden></ul>
             </div>
           </div>
-          <button id="reset-settings-btn" class="ctrl-btn reset-btn" title="⚠️ Restablecer sonidos y teclas por defecto"><i class="fa-solid fa-rotate-left"></i> Restablecer</button>
-          <button id="help-btn" class="ctrl-btn" title="¿Cómo editar samplers?"><i class="fa-solid fa-question"></i> Ayuda</button>
-          <button id="share-kit-btn" type="button" class="ctrl-btn" title="Exporta tu configuración para que la compartas con amigos y conocidos."><i class="fa-solid fa-file-export" aria-hidden="true"></i> Exportar</button>
-          <button id="immersion-btn" type="button" class="ctrl-btn immersion-btn" title="Ocultar menú y cinta para más espacio" aria-pressed="false">
-            <i class="fa-solid fa-expand" aria-hidden="true"></i>
-            <span class="immersion-btn-label">Inmersión</span>
-          </button>
+          <button id="share-kit-btn" type="button" class="ctrl-btn" title="Exporta tu configuración para que la compartas con amigos y conocidos."><i class="fa-solid fa-file-export" aria-hidden="true"></i> <span class="ctrl-btn-text">Exportar</span></button>
         </div>
-        <div class="control-group control-group--record">
+        <div class="control-group control-group--secondary control-group--record">
           <span class="group-label note-repeat-label" id="note-repeat-label" title="Redoble: el sonido se repite en ráfaga mientras mantienes la tecla o el pad. Es lo mismo que el botón Note Repeat del MPC — para redobles en placas, timbales y batería. Apagado = un golpe por pulsación (one-shot).">Redoble:</span>
           <button id="note-repeat-btn" type="button" class="ctrl-btn" aria-pressed="false" aria-labelledby="note-repeat-label note-repeat-btn-label" title="Activa el redoble (Note Repeat del MPC). Apagado: un solo golpe al pulsar, estilo batería pro.">
             <i class="fa-solid fa-repeat" aria-hidden="true"></i>
@@ -175,20 +187,9 @@
             <span id="pattern-loop-label">Crear loop</span>
           </button>
         </div>
-        <div class="divider" aria-hidden="true"></div>
-        <div class="control-group control-group--view">
-          <span class="group-label">Vista:</span>
-          <button id="view-bateria" class="ctrl-btn view-btn active" title="Vista Batería">
-            <i class="fa-solid fa-drum"></i> Batería
-          </button>
-          <button id="view-pads" class="ctrl-btn view-btn new-feature-btn" title="Vista Pads - más sonidos disponibles">
-            <i class="fa-solid fa-th-large"></i> Pads
-            <span class="new-badge">NUEVO</span>
-          </button>
-        </div>
-        <div id="grid-selector" class="grid-selector-inline" style="display:none;">
-          <span class="group-label">Pads:</span>
-          <div id="grid-options" class="grid-options"></div>
+        <div class="control-group control-group--tertiary">
+          <button id="reset-settings-btn" class="ctrl-btn reset-btn" title="⚠️ Restablecer sonidos y teclas por defecto"><i class="fa-solid fa-rotate-left" aria-hidden="true"></i> <span class="ctrl-btn-text">Restablecer</span></button>
+          <button id="help-btn" class="ctrl-btn" title="¿Cómo editar samplers?"><i class="fa-solid fa-question" aria-hidden="true"></i> <span class="ctrl-btn-text">Ayuda</span></button>
         </div>
       </div>
       <p class="edit-mode-hint" id="edit-mode-hint" hidden>
