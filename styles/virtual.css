@@ -2361,29 +2361,29 @@ ul.sampler-list {
   }
 
   .virtual-page .battery {
-    margin: 0.25rem auto 0;
-    width: min(100%, 420px);
+    margin: 0.15rem auto 0;
+    width: 100%;
     max-width: 100%;
   }
 
-  /* Override low-height shrink: phone portrait needs big toms + room for audio bar. */
+  /* Sizes filled by layoutResponsiveBattery() → --tom-s/m/l (fit to each phone). */
   .virtual-page .battery-tom--small {
-    width: clamp(58px, 20vw, 100px);
-    height: clamp(58px, 20vw, 100px);
+    width: var(--tom-s, clamp(56px, 18vw, 96px));
+    height: var(--tom-s, clamp(56px, 18vw, 96px));
   }
 
   .virtual-page .battery-tom--medium {
-    width: clamp(76px, 26vw, 124px);
-    height: clamp(76px, 26vw, 124px);
+    width: var(--tom-m, clamp(72px, 24vw, 118px));
+    height: var(--tom-m, clamp(72px, 24vw, 118px));
   }
 
   .virtual-page .battery-tom--large {
-    width: clamp(92px, 31vw, 148px);
-    height: clamp(92px, 31vw, 148px);
+    width: var(--tom-l, clamp(88px, 28vw, 140px));
+    height: var(--tom-l, clamp(88px, 28vw, 140px));
   }
 
   .virtual-page .battery-tom-key {
-    font-size: clamp(0.85rem, 3.4vw, 1.2rem);
+    font-size: clamp(0.8rem, 3.2vw, 1.15rem);
   }
 
   .virtual-page .kit-play-stage:has(#battery-view:not(.hidden)) {
