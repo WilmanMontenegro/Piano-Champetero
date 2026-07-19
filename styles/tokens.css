@@ -346,22 +346,22 @@
   --sombra-card: 0 4px 28px color-mix(in srgb, var(--palette-black) 45%, transparent);
   --sombra-btn: 0 2px 8px color-mix(in srgb, var(--palette-black) 30%, transparent);
 
-  /* Idle ~48% night (stands out vs bg); hit ~15% night — balanced press. */
-  --pad-fill-start: color-mix(in srgb, var(--color-rasta-green) 52%, var(--palette-night-card));
-  --pad-fill-mid: color-mix(in srgb, var(--color-rasta-yellow) 48%, var(--palette-night-card));
-  --pad-fill-end: color-mix(in srgb, var(--color-rasta-red) 52%, var(--palette-night-card));
+  /* Idle ~28% night (joy + dark); hit near-full rasta so press reads vs idle. */
+  --pad-fill-start: color-mix(in srgb, var(--color-rasta-green) 72%, var(--palette-night-card));
+  --pad-fill-mid: color-mix(in srgb, var(--color-rasta-yellow) 68%, var(--palette-night-card));
+  --pad-fill-end: color-mix(in srgb, var(--color-rasta-red) 72%, var(--palette-night-card));
   --pad-fill-hit: linear-gradient(
     135deg,
-    color-mix(in srgb, var(--color-rasta-green) 85%, var(--palette-night-card)) 0%,
-    color-mix(in srgb, var(--color-rasta-yellow) 82%, var(--palette-night-card)) 48%,
-    color-mix(in srgb, var(--color-rasta-red) 85%, var(--palette-night-card)) 100%
+    color-mix(in srgb, var(--color-rasta-green) 98%, var(--palette-night-card)) 0%,
+    color-mix(in srgb, var(--color-rasta-yellow) 96%, var(--palette-night-card)) 48%,
+    color-mix(in srgb, var(--color-rasta-red) 98%, var(--palette-night-card)) 100%
   );
-  --pad-glow-idle: color-mix(in srgb, var(--color-rasta-yellow) 24%, transparent);
-  --pad-hit-ring: color-mix(in srgb, var(--color-rasta-yellow) 55%, transparent);
-  --pad-border: color-mix(in srgb, var(--palette-yellow) 28%, transparent);
+  --pad-glow-idle: color-mix(in srgb, var(--color-rasta-yellow) 38%, transparent);
+  --pad-hit-ring: color-mix(in srgb, var(--color-rasta-yellow) 82%, transparent);
+  --pad-border: color-mix(in srgb, var(--palette-yellow) 42%, transparent);
   --pad-key-color: color-mix(in srgb, #eaeaea 92%, var(--palette-yellow));
   --pad-sound-color: color-mix(in srgb, #e0e0e0 72%, transparent);
-  --tom-glow-idle: color-mix(in srgb, var(--palette-yellow) 22%, transparent);
+  --tom-glow-idle: color-mix(in srgb, var(--palette-yellow) 36%, transparent);
 }
 
 /* Pad tier retunes — same vars as :root (breakpoints = --bp-*) */
