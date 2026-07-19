@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bateria-champeta-v290';
+const CACHE_NAME = 'bateria-champeta-v291';
 
 /**
  * Precache only real files (GitHub Pages returns 404 for bare directories).
@@ -22,7 +22,6 @@ const STATIC_ASSETS = [
   '/styles/components/nav.css',
   '/styles/components/ticker.css',
   '/styles/components/whatsapp-fab.css',
-  '/styles/components/pwa-install.css',
   '/styles/responsive.css',
   '/styles/common.css',
   '/styles/index.css',
