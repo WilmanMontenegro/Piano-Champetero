@@ -1927,18 +1927,18 @@ function initKitConfigShare(noteRepeatApply) {
     resultModal?.open();
   };
 
-  const refreshExportPayload = () => {
-    // compact: one grid — WhatsApp truncates fat ?kit= links
+  const refreshExportPayload = async () => {
+    // compact + deflate: one grid — WhatsApp truncates fat ?kit= links
     const snapshot = collectKitSnapshot(nameInput?.value || '', {
       compact: true,
       gridType: currentGridType,
     });
-    const code = encodeKitSnapshot(snapshot);
+    const code = await encodeKitSnapshot(snapshot);
     exportField.value = code;
     exportField.dataset.shareUrl = buildKitShareUrl(code);
   };
 
-  if (nameInput) nameInput.addEventListener('input', refreshExportPayload);
+  if (nameInput) nameInput.addEventListener('input', () => { void refreshExportPayload(); });
 
   initModal('modal-kit-share', {
     openBtnId: 'share-kit-btn',
@@ -1951,12 +1951,12 @@ function initKitConfigShare(noteRepeatApply) {
         const active = getActiveKitId() ? getBatteryKit(getActiveKitId()) : null;
         nameInput.value = active?.name || '';
       }
-      refreshExportPayload();
+      void refreshExportPayload();
     },
   });
 
   copyBtn?.addEventListener('click', async () => {
-    refreshExportPayload();
+    await refreshExportPayload();
     const text = exportField.value;
     if (!text) {
       setStatus('No hay código para copiar.', true);
@@ -1974,19 +1974,23 @@ function initKitConfigShare(noteRepeatApply) {
     setStatus('No se pudo copiar solo. El código quedó seleccionado — pulsá Ctrl+C (o ⌘+C).', true);
   });
 
-  whatsappBtn?.addEventListener('click', () => {
-    refreshExportPayload();
+  whatsappBtn?.addEventListener('click', async () => {
+    await refreshExportPayload();
     const snapshot = collectKitSnapshot(nameInput?.value || '', {
       compact: true,
       gridType: currentGridType,
     });
     const code = exportField.value;
+    if (!code) {
+      setStatus('No hay enlace para compartir.', true);
+      return;
+    }
     const msg = buildShareMessage(snapshot, code);
     window.open(buildWhatsAppSendUrl(msg), '_blank', 'noopener,noreferrer');
   });
 
   const runImport = async (raw) => {
-    const snapshot = decodeKitToken(raw);
+    const snapshot = await decodeKitToken(raw);
     await applyImportedKit(snapshot);
     if (noteRepeatApply) noteRepeatApply(isNoteRepeatEnabled());
     refreshBatteryPresets?.();

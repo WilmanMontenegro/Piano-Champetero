@@ -109,28 +109,39 @@ export function collectKitSnapshot(displayName = '', opts = {}) {
   };
 }
 
-function toBase64Url(text) {
-  const bytes = new TextEncoder().encode(text);
+function bytesToBase64Url(bytes) {
   let bin = '';
   for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
   return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
 
-function fromBase64Url(b64url) {
+function base64UrlToBytes(b64url) {
   let s = compactBase64Url(b64url).replace(/-/g, '+').replace(/_/g, '/');
-  // Tolerate standard base64 if someone re-encoded
   const pad = '='.repeat((4 - (s.length % 4)) % 4);
   s += pad;
   const bin = atob(s);
   const bytes = new Uint8Array(bin.length);
   for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
-  return new TextDecoder().decode(bytes);
+  return bytes;
+}
+
+/** Deflate-raw — keeps ?kit= under WhatsApp URL limits with real sampler paths. */
+async function deflateRaw(bytes) {
+  const stream = new Blob([bytes]).stream().pipeThrough(new CompressionStream('deflate-raw'));
+  return new Uint8Array(await new Response(stream).arrayBuffer());
+}
+
+async function inflateRaw(bytes) {
+  const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream('deflate-raw'));
+  return new Uint8Array(await new Response(stream).arrayBuffer());
 }
 
 /** @param {ReturnType<typeof collectKitSnapshot>} snapshot */
-export function encodeKitSnapshot(snapshot) {
-  const json = JSON.stringify(snapshot);
-  return KIT_CONFIG_PREFIX + toBase64Url(json);
+export async function encodeKitSnapshot(snapshot) {
+  const jsonBytes = new TextEncoder().encode(JSON.stringify(snapshot));
+  // Compressed body — old readers fail; decodeKitToken inflates when JSON parse fails
+  const compressed = await deflateRaw(jsonBytes);
+  return KIT_CONFIG_PREFIX + bytesToBase64Url(compressed);
 }
 
 /**
@@ -192,8 +203,7 @@ export function extractKitToken(input) {
   return candidates[0] || '';
 }
 
-function parseKitJson(b64) {
-  const parsed = JSON.parse(fromBase64Url(b64));
+function validateKitObject(parsed) {
   if (!parsed || typeof parsed !== 'object') {
     throw new Error('Formato de kit no reconocido.');
   }
@@ -203,16 +213,26 @@ function parseKitJson(b64) {
   return parsed;
 }
 
+/** Legacy uncompressed JSON, or deflate-raw (current). */
+async function parseKitPayloadBytes(bytes) {
+  // Uncompressed JSON starts with '{'
+  if (bytes.length && bytes[0] === 0x7b) {
+    return validateKitObject(JSON.parse(new TextDecoder().decode(bytes)));
+  }
+  const inflated = await inflateRaw(bytes);
+  return validateKitObject(JSON.parse(new TextDecoder().decode(inflated)));
+}
+
 /**
  * Decode BC1 payload; trim trailing junk glued by chats (e.g. "salu2" after the code).
  * ponytail: O(n) suffix trim — ceiling ~400 chops; upgrade = checksum in BC2.
  */
-function parseKitJsonTolerant(b64) {
+async function parseKitJsonTolerant(b64) {
   let s = compactBase64Url(b64);
   const maxChops = 400;
   for (let chop = 0; chop <= maxChops && s.length >= 8; chop += 1) {
     try {
-      return parseKitJson(s);
+      return await parseKitPayloadBytes(base64UrlToBytes(s));
     } catch (err) {
       if (err instanceof Error && /Versión|Formato/.test(err.message)) throw err;
       s = s.slice(0, -1);
@@ -221,8 +241,8 @@ function parseKitJsonTolerant(b64) {
   throw new Error('corrupt');
 }
 
-/** @returns {ReturnType<typeof collectKitSnapshot>} */
-export function decodeKitToken(token) {
+/** @returns {Promise<ReturnType<typeof collectKitSnapshot>>} */
+export async function decodeKitToken(token) {
   const candidates = extractKitTokenCandidates(token);
   if (!candidates.length) {
     throw new Error('Código inválido: debe empezar con BC1. o ser un enlace con ?kit=');
@@ -231,7 +251,7 @@ export function decodeKitToken(token) {
   let sawCorrupt = false;
   for (const raw of candidates) {
     try {
-      return parseKitJsonTolerant(raw.slice(KIT_CONFIG_PREFIX.length));
+      return await parseKitJsonTolerant(raw.slice(KIT_CONFIG_PREFIX.length));
     } catch (err) {
       if (err instanceof Error && /Versión|Formato/.test(err.message)) throw err;
       sawCorrupt = true;
@@ -265,22 +285,21 @@ export function buildWhatsAppSendUrl(message) {
 export const KIT_SHARE_SAFE_URL_LEN = 1800;
 
 /**
- * WhatsApp share: link OR code — never both (chats truncate fat messages).
- * @param {ReturnType<typeof collectKitSnapshot>} snapshot
+ * WhatsApp share: short intro + link (one tap imports). Code only if link too long.
+ * @param {ReturnType<typeof collectKitSnapshot>} _snapshot
  * @param {string} code
  * @param {string} [baseHref]
  */
-export function buildShareMessage(snapshot, code, baseHref) {
-  const name = snapshot.n || 'Batería champetera';
+export function buildShareMessage(_snapshot, code, baseHref) {
+  const intro = 'Mira, te comparto la configuración de mi batería.';
   const link = buildKitShareUrl(code, baseHref);
 
-  // Link fits → just the link (one tap to import)
   if (link.length <= KIT_SHARE_SAFE_URL_LEN) {
-    return `🥁 ${name}\n${link}`;
+    return `${intro}\n${link}`;
   }
 
-  // Link too long → code only (paste in Imp/Exp → Importar)
-  return `🥁 ${name}\n${code}`;
+  // Rare: still too long after compress → code for Imp/Exp → Importar
+  return `${intro}\n${code}`;
 }
 
 /** Write snapshot fields to localStorage (caller refreshes runtime state). */
@@ -382,16 +401,18 @@ export async function copyTextToClipboard(text, field = null) {
   }
 }
 
-// ponytail: smoke — WhatsApp line-wrap + trailing chat junk must still decode
-{
+// ponytail: smoke — compressed encode + WhatsApp wrap/junk still decode
+(async () => {
+  if (typeof CompressionStream === 'undefined') return;
   const snap = { v: 1, n: 'test', vm: 'pads' };
-  const code = encodeKitSnapshot(snap);
+  const code = await encodeKitSnapshot(snap);
   const wrapped = `${code.slice(0, 40)}\n${code.slice(40)}\u200B`;
   const withJunk = `Mira hermano\n${wrapped}\nsalu2`;
-  console.assert(decodeKitToken(withJunk).n === 'test', 'kit decode survives WhatsApp wrap+junk');
+  console.assert((await decodeKitToken(withJunk)).n === 'test', 'kit decode survives WhatsApp wrap+junk');
   console.assert(extractKitToken(wrapped).startsWith('BC1.'), 'kit extract joins wrapped BC1');
   const wa = buildShareMessage(snap, code, 'https://bateriachampetera.com/virtual.html');
   const waLines = wa.trim().split('\n');
-  console.assert(waLines.length === 2, 'WA message is name + one payload');
+  console.assert(waLines.length === 2, 'WA message is intro + one payload');
+  console.assert(waLines[0].includes('configuración de mi batería'), 'WA intro is brief share line');
   console.assert(waLines[1].startsWith('http') || waLines[1].startsWith('BC1.'), 'WA payload is link XOR code');
-}
+})().catch((err) => console.warn('kit-config-share smoke failed', err));
