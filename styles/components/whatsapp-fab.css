@@ -10,7 +10,7 @@
   display: inline-flex;
   align-items: center;
   gap: 0.4em;
-  padding: 0.35em 0.65em 0.35em 0.4em;
+  padding: 0.55em 0.65em 0.55em 0.4em;
   background: var(--color-whatsapp);
   color: var(--color-blanco);
   text-decoration: none;
@@ -57,7 +57,7 @@
   .whatsapp-fab {
     bottom: 1rem;
     right: 1rem;
-    padding: 0.45em;
+    padding: 0.55em;
     border-radius: 50%;
   }
 

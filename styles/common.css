@@ -107,19 +107,16 @@ main > section:not(.policy-container) > ul:not(.contributors-list, .modal-instru
   padding: 0.8em 1em;
   margin-bottom: 0.5em;
   border-radius: var(--borde-radius);
-  border-left: 3px solid var(--accent-soft-green);
   background: var(--color-surface);
   font-size: var(--font-size-sm);
   color: var(--color-text-muted);
 }
 
 main > section:not(.policy-container) > ul:not(.contributors-list, .modal-instructions) > li:nth-child(3n + 2) {
-  border-left-color: var(--accent-soft-yellow);
   background: var(--color-surface-yellow);
 }
 
 main > section:not(.policy-container) > ul:not(.contributors-list, .modal-instructions) > li:nth-child(3n + 3) {
-  border-left-color: var(--accent-soft-red);
   background: var(--color-surface-red);
 }
 
@@ -342,7 +339,7 @@ footer {
   padding: 0.8rem 0;
   text-align: center;
   background: var(--gradient-footer);
-  border-top: 3px solid color-mix(in srgb, var(--color-brand-yellow) 55%, transparent);
+  border-top: 2px solid color-mix(in srgb, var(--color-brand-yellow) 40%, transparent);
   box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.3);
   color: var(--color-footer);
   font-size: var(--font-size-xs);

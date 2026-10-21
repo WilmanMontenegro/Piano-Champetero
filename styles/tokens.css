@@ -44,6 +44,8 @@
 
   --color-principal: var(--palette-green);
   --color-principal-hover: color-mix(in srgb, var(--palette-green) 78%, var(--palette-black));
+  /* Anillo de foco visible (Accesibilidad / WCAG 2.4.7) */
+  --focus-ring: color-mix(in srgb, var(--palette-ink) 82%, var(--color-brand-yellow));
   --color-secundario: var(--palette-red);
   --color-amarillo: var(--palette-yellow);
   --color-footer: var(--palette-cream);
@@ -197,10 +199,11 @@
   --layout-content-gutter: 2rem;
   --layout-inline-pad: clamp(0.75rem, 3vw, 1.5rem);
   --header-border: 3px solid color-mix(in srgb, var(--palette-yellow) 70%, transparent);
-  --header-padding-top: 1.15rem;
-  --header-title-size: clamp(1.75rem, 5.5vw, 4.25rem);
-  --header-title-margin-block: 0.3rem;
-  --header-nav-margin-block: 0.65rem;
+  /* Header compacto (petición usuario): título pequeño, navegador apretado */
+  --header-padding-top: 0.5rem;
+  --header-title-size: clamp(1.35rem, 3vw, 2.35rem);
+  --header-title-margin-block: 0.1rem;
+  --header-nav-margin-block: 0.3rem;
 
   /*
    * Breakpoints viewport — 3 niveles (usar estos valores en CSS)
@@ -212,13 +215,14 @@
   --bp-tablet-min: 768px;
   --bp-desktop-min: 1024px;
 
-  --ticker-block-height: 2.15rem;
+  /* Cinta retirada (petición usuario) — la var queda en 0 para cálculos del nav */
+  --ticker-block-height: 0;
 
   --nav-container-name: site-nav;
   --nav-mobile-max: 767px;
   --nav-dropdown-max-width: 320px;
   --nav-link-gap: 0.5em;
-  --nav-link-size: clamp(0.95rem, 1.2vw, 1.1rem);
+  --nav-link-size: clamp(0.85rem, 1vw, 0.98rem);
   /* Same cap as content cards — don't stretch links edge-to-edge */
   --nav-menu-max-width: min(96vw, var(--layout-content-max));
 
@@ -255,14 +259,17 @@
   );
   --pad-fill-hit: var(--pad-fill);
   --pad-gap: 10px;
-  --pad-grid-pad: 10px;
+  --pad-grid-pad: 8px;
   --pad-view-max-width: min(1420px, 96%);
   --pad-view-padding: 0.35rem 1rem 0.2rem;
   --pad-item-padding: clamp(2px, 0.45vw, 4px);
   --pad-item-radius: 10px;
-  --pad-key-size: clamp(0.9em, 2.5vw, 1.5em);
+  /* Letra + nombre SIEMPRE: escala con el tamaño real del pad (--pad-size, la fija JS).
+     .pad-item font-size = pad*0.5 → letra 0.72em (≈36% del pad), nombre 0.34em (≈17%).
+     Jerarquía: letra SIEMPRE mayor que el nombre (≈2:1). */
+  --pad-key-size: 0.72em;
   --pad-key-color: var(--palette-ink);
-  --pad-sound-size: clamp(0.68em, 1.1vw, 0.9em);
+  --pad-sound-size: 0.34em;
   --pad-sound-weight: 500;
   --pad-sound-color: color-mix(in srgb, var(--palette-ink) 82%, transparent);
 
@@ -337,6 +344,8 @@
   --chrome-btn-border-hover: color-mix(in srgb, var(--palette-green) 40%, transparent);
   --chrome-label: color-mix(in srgb, #ddd 80%, var(--palette-yellow));
   --chrome-btn-shadow: 0 1px 4px color-mix(in srgb, var(--palette-black) 30%, transparent);
+  /* Anillo de foco en tema oscuro */
+  --focus-ring: var(--palette-yellow);
   --chrome-bar-bg: color-mix(in srgb, var(--palette-yellow) 8%, var(--palette-night-elevated));
   --chrome-bar-border: color-mix(in srgb, var(--palette-yellow) 22%, transparent);
   --chrome-audio-bg: color-mix(in srgb, #262620 92%, var(--palette-yellow));
@@ -368,23 +377,20 @@
 @media (min-width: 768px) and (max-width: 1023px) {
   :root {
     --pad-gap: 7px;
-    --pad-grid-pad: 10px;
+    --pad-grid-pad: 7px;
     --pad-view-max-width: min(1180px, 100%);
     --pad-view-padding: 0.4rem 1.15rem 0.3rem;
     --pad-item-padding: clamp(3px, 0.8vw, 5px);
-    --pad-sound-size: clamp(0.8em, 1.6vw, 1em);
   }
 }
 
 @media (max-width: 767px) {
   :root {
     --pad-gap: 6px;
-    --pad-grid-pad: 8px;
+    --pad-grid-pad: 6px;
     --pad-view-max-width: 100%;
     /* ~0.55–0.65rem side inset — pads fill width without edge-stick */
     --pad-view-padding: 0.3rem 0.6rem 0.2rem;
     --pad-item-padding: clamp(3px, 0.8vw, 5px);
-    --pad-key-size: clamp(1em, 4vw, 1.5em);
-    --pad-sound-size: clamp(0.88em, 3.4vw, 1.1em);
   }
 }

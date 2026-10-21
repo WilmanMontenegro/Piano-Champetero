@@ -1,8 +1,11 @@
 /* =====================================================
    Componente: cinta de agradecimientos (contributor-ticker)
+   RETIRADA (peticiÃ³n usuario): display none en todo el sitio;
+   --ticker-block-height = 0 (tokens.css). WhatsApp queda con el FAB.
    ===================================================== */
 
 .contributor-ticker {
+  display: none !important;
   background: var(--gradient-ticker);
   color: var(--color-blanco);
   padding: 0.6em 0;
@@ -16,7 +19,6 @@
   margin: 0;
   width: 100%;
   contain: layout paint;
-  will-change: transform;
   transform: translateZ(0);
 }
 
@@ -24,7 +26,6 @@
   display: inline-block;
   animation: ticker-scroll var(--ticker-duration, 18s) linear infinite;
   transform: translate3d(0, 0, 0);
-  will-change: transform;
   backface-visibility: hidden;
 }
 

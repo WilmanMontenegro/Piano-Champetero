@@ -55,6 +55,8 @@ main {
 
 .battery-volume {
   width: 180px;
+  /* Target táctil de dedo (WCAG 2.5.8): el pulgar nativo queda centrado */
+  min-height: 44px;
   accent-color: var(--accent-volume);
 }
 
@@ -76,6 +78,10 @@ main {
   display: inline-flex;
   align-items: center;
   gap: 0.35em;
+  /* Pill con área de golpe ≥44px (label[for] entero es el target) */
+  padding: 0.4em 0.65em;
+  min-height: 44px;
+  border-radius: 999px;
   margin: 0;
   margin-left: 0.25em;
   flex-shrink: 0;
@@ -541,7 +547,6 @@ main {
 .battery-kit-menu-item:hover,
 .battery-kit-menu-item:focus-visible {
   background: color-mix(in srgb, var(--color-brand-yellow) 22%, transparent);
-  outline: none;
 }
 
 .battery-kit-menu-item--active {
@@ -711,6 +716,11 @@ main {
   gap: 0.35rem;
 }
 
+.session-record-status[hidden],
+.pattern-loop-status[hidden] {
+  display: none;
+}
+
 .session-record-status-text {
   line-height: 1.35;
 }
@@ -787,8 +797,8 @@ main {
 
 .session-recordings-hint {
   margin: 0.4rem 0 0;
-  font-size: 0.68rem;
-  color: rgba(255, 255, 255, 0.62);
+  font-size: 0.78rem;
+  color: color-mix(in srgb, var(--palette-white) 82%, transparent);
   text-align: center;
 }
 
@@ -869,8 +879,8 @@ main {
 
 .pattern-loops-hint {
   margin: 0.4rem 0 0;
-  font-size: 0.68rem;
-  color: rgba(255, 255, 255, 0.62);
+  font-size: 0.78rem;
+  color: color-mix(in srgb, var(--palette-white) 82%, transparent);
   text-align: center;
 }
 
@@ -988,7 +998,6 @@ ul.sampler-list {
 .sampler-folder:hover,
 .sampler-folder:focus-visible {
   background: var(--color-tint-green);
-  outline: none;
 }
 
 .sampler-folder-icon {
@@ -1229,7 +1238,6 @@ ul.sampler-list {
   padding: 1em 1.2em;
   background: var(--color-surface-yellow);
   border-radius: var(--borde-radius);
-  border-left: 4px solid var(--color-principal);
   margin-bottom: 1.5em;
 }
 
@@ -1321,37 +1329,103 @@ ul.sampler-list {
   .btn-help { font-size: 0.8rem; padding: 0.4em 0.8em; }
 }
 
-/* ===================== CONTROLS BAR (single line) ===================== */
+/* ===================== CONTROLS BAR (barra profesional, secciones agrupadas) ===================== */
 .controls-bar {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   justify-content: center;
-  flex-wrap: nowrap;
-  padding: 0.5rem 0.8rem;
+  flex-wrap: wrap;
+  padding: 0.6rem 1rem;
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;
 }
 
-.control-group {
+/* Cada sección es una zona lógica sin fondo ni borde propio */
+.control-section {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 8px;
   flex-shrink: 0;
+  padding: 0.1rem 0.3rem;
 }
 
-.control-group--record {
+.control-section-title {
+  display: none;
+}
+
+/* Separador vertical entre secciones (línea fina, no crea "caja dentro de caja") */
+.section-divider {
+  width: 1px;
+  height: 20px;
+  background: color-mix(in srgb, var(--palette-yellow) 25%, transparent);
+  margin: 0 10px;
+  flex-shrink: 0;
+  opacity: 0.5;
+}
+
+/* Botones principales de la barra */
+.controls-bar .ctrl-btn {
+  font-size: 0.78rem;
+  padding: 0.35em 0.75em;
+  gap: 0.25em;
+  border-radius: 8px;
+}
+
+.controls-bar .ctrl-btn .fa-solid {
+  font-size: 0.85em;
+}
+
+/* Botón Grabar audio — color de acción (rojo) */
+.controls-bar .session-record-btn {
+  background: var(--color-brand-red);
+  border-color: var(--color-brand-red);
+  color: var(--color-blanco);
+}
+.controls-bar .session-record-btn:hover {
+  background: color-mix(in srgb, var(--color-brand-red) 85%, var(--color-black));
+}
+
+/* Botón Crear loop — color de acción (amarillo) */
+.controls-bar .pattern-loop-btn {
+  background: var(--color-amarillo);
+  border-color: var(--color-amarillo);
+  color: var(--color-brand-dark);
+}
+
+/* Botón Editar — color de marca (verde) */
+.controls-bar #edit-btn {
+  background: var(--color-principal);
+  border-color: var(--color-principal);
+  color: var(--color-blanco);
+}
+
+/* Botones secundarios (Restablecer, Ayuda) */
+.controls-bar .reset-btn,
+.controls-bar .ctrl-btn.reset-btn {
+  background: transparent;
+  color: var(--chrome-btn-fg);
+}
+.controls-bar .reset-btn:hover,
+.controls-bar .ctrl-btn.reset-btn:hover {
+  background: color-mix(in srgb, var(--color-brand-red) 15%, transparent);
+}
+
+/* Fila de redoble: label + toggle + slider en línea */
+.note-repeat-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   flex-wrap: wrap;
-  row-gap: 4px;
 }
 
 .note-repeat-rate {
-  display: none;
+  display: inline-flex;
   align-items: center;
-  gap: 0.3em;
+  gap: 0.35em;
   margin: 0;
-  padding: 0.15em 0.45em;
+  padding: 0.15em 0.5em;
   border-radius: 8px;
   color: var(--chrome-btn-fg);
   background: var(--chrome-btn-bg);
@@ -1361,6 +1435,7 @@ ul.sampler-list {
   cursor: pointer;
   user-select: none;
   box-shadow: var(--chrome-btn-shadow);
+  white-space: nowrap;
 }
 
 .note-repeat-rate--on {
@@ -1382,22 +1457,20 @@ ul.sampler-list {
   font-variant-numeric: tabular-nums;
 }
 
-/* Expanded (default): Más hidden; panel children flow in the bar.
-   Compound selector beats `.ctrl-btn { display:flex }` so Más never leaks. */
+/* Botón "Más" solo aparece cuando hay overflow (JS agrega .controls-bar--overflow) */
 .ctrl-btn.more-controls-btn {
   display: none;
   flex: 0 0 auto;
   min-width: 2.6rem;
-  order: 2;
 }
 
 .more-controls-panel {
   display: contents;
 }
 
-/* Overflow: JS adds .controls-bar--overflow when one row doesn't fit */
+/* Overflow state */
 .controls-bar--overflow {
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
 }
 
 .controls-bar--overflow .ctrl-btn.more-controls-btn {
@@ -1411,13 +1484,13 @@ ul.sampler-list {
   flex-wrap: wrap;
   justify-content: center;
   align-items: center;
-  gap: 6px;
-  padding: 0.35rem 0;
-  margin: 0;
+  gap: 8px;
+  padding: 0.4rem 0;
+  margin: 0.4rem 0 0 0;
   box-sizing: border-box;
-  border-radius: 0;
-  background: transparent;
-  border: none;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--chrome-bar-bg) 60%, transparent);
+  border: 1px solid color-mix(in srgb, var(--palette-yellow) 18%, transparent);
 }
 
 .controls-bar--overflow.controls-bar--more-open {
@@ -1428,10 +1501,210 @@ ul.sampler-list {
   display: flex;
 }
 
-.controls-bar--overflow .more-controls-panel .control-group--secondary,
-.controls-bar--overflow .more-controls-panel .control-group--tertiary {
-  order: unset;
-  justify-content: center;
+/* Icon colors → tokens.css (--icon-*). Static; no decorative motion. */
+.ctrl-btn .fa-solid {
+  transition: color 0.15s ease;
+}
+
+#immersion-btn i { color: var(--icon-immersion); }
+#edit-btn i { color: var(--icon-edit); }
+#edit-btn.edit-mode-active i { color: var(--icon-on-active); }
+#share-kit-btn i { color: var(--icon-export); }
+#note-repeat-btn i { color: var(--icon-note-repeat); }
+#note-repeat-btn[aria-pressed="true"] i { color: var(--icon-note-repeat-on); }
+.note-repeat-rate > .fa-gauge-high { color: var(--icon-note-repeat-gauge); }
+#session-record-btn .session-record-icon,
+#session-record-btn i { color: var(--icon-record); }
+#pattern-loop-btn i { color: var(--icon-loop); }
+#pattern-loop-btn[aria-pressed="true"] i { color: var(--icon-loop-on); }
+.ctrl-btn.reset-btn i { color: var(--icon-reset); }
+.ctrl-btn.reset-btn:hover i { color: var(--icon-reset); filter: none; }
+#help-btn i { color: var(--icon-help); }
+#more-controls-btn i { color: var(--icon-more); }
+.battery-kit-chevron { color: var(--icon-kit-chevron); }
+.battery-volume-container .volume-icon { color: var(--icon-volume); }
+.battery-rate-container .volume-icon { color: var(--icon-rate); }
+.audio-viz-title .fa-wave-square { color: var(--icon-viz); }
+.session-recordings-title .fa-compact-disc { color: var(--icon-recordings); }
+.pattern-loops-title .fa-infinity { color: var(--icon-loops-panel); }
+
+.divider {
+  width: 1px;
+  height: 24px;
+  background: color-mix(in srgb, var(--color-brand-dark) 22%, transparent);
+  margin: 0 2px;
+}
+
+.grid-selector-inline {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  margin-left: 4px;
+}
+
+.grid-opt {
+  background: var(--chrome-btn-bg);
+  color: var(--chrome-btn-fg);
+  border: 2px solid var(--chrome-btn-border);
+  border-radius: 6px;
+  font-family: inherit;
+  font-weight: bold;
+  font-size: 0.75rem;
+  padding: 0.3em 0.6em;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  min-width: 32px;
+  text-align: center;
+  box-shadow: var(--chrome-btn-shadow);
+}
+
+.grid-opt:hover {
+  background: var(--chrome-btn-bg-hover);
+  border-color: var(--color-principal);
+}
+
+.grid-opt.active {
+  background: var(--color-amarillo);
+  border-color: color-mix(in srgb, var(--color-brand-dark) 35%, transparent);
+  color: var(--color-brand-dark);
+}
+
+.group-label {
+  color: var(--chrome-label);
+  font-size: 0.75rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-right: 2px;
+}
+
+.ctrl-btn {
+  background: var(--chrome-btn-bg);
+  color: var(--chrome-btn-fg);
+  border: 2px solid var(--chrome-btn-border);
+  border-radius: 8px;
+  font-family: inherit;
+  font-weight: bold;
+  font-size: 0.8rem;
+  padding: 0.4em 0.8em;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, color 0.2s, box-shadow 0.2s;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 0.3em;
+  box-shadow: var(--chrome-btn-shadow);
+}
+
+.ctrl-btn.reset-btn {
+  color: var(--chrome-btn-fg);
+}
+
+.ctrl-btn:hover {
+  background: var(--chrome-btn-bg-hover);
+  border-color: var(--chrome-btn-border-hover);
+}
+
+.ctrl-btn.reset-btn:hover {
+  background: color-mix(in srgb, var(--color-brand-red) 18%, var(--chrome-btn-bg));
+  border-color: color-mix(in srgb, var(--color-brand-red) 55%, transparent);
+}
+
+.ctrl-btn.active {
+  background: var(--color-principal);
+  border-color: var(--color-amarillo);
+  color: var(--color-blanco);
+}
+
+/* Modo edición: mismo tamaño; contorno + color */
+#edit-btn.edit-mode-active {
+  background: var(--color-principal);
+  border-color: var(--color-amarillo);
+  color: var(--color-blanco);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-brand-yellow) 55%, transparent), 0 2px 8px color-mix(in srgb, var(--color-brand-green) 35%, transparent);
+  animation: edit-done-pulse 2s ease-in-out infinite;
+}
+
+#edit-btn.edit-mode-active:hover {
+  background: var(--color-principal-hover);
+  border-color: var(--color-amarillo);
+}
+
+@keyframes edit-done-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-brand-yellow) 45%, transparent), 0 2px 6px color-mix(in srgb, var(--color-brand-green) 28%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-brand-yellow) 65%, transparent), 0 2px 10px color-mix(in srgb, var(--color-brand-green) 40%, transparent);
+  }
+}
+
+/* Icon colors → tokens.css (--icon-*). Static; no decorative motion. */
+.ctrl-btn .fa-solid {
+  transition: color 0.15s ease;
+}
+
+#immersion-btn i { color: var(--icon-immersion); }
+#edit-btn i { color: var(--icon-edit); }
+#edit-btn.edit-mode-active i { color: var(--icon-on-active); }
+#share-kit-btn i { color: var(--icon-export); }
+#note-repeat-btn i { color: var(--icon-note-repeat); }
+#note-repeat-btn[aria-pressed="true"] i { color: var(--icon-note-repeat-on); }
+.note-repeat-rate > .fa-gauge-high { color: var(--icon-note-repeat-gauge); }
+#session-record-btn .session-record-icon,
+#session-record-btn i { color: var(--icon-record); }
+#pattern-loop-btn i { color: var(--icon-loop); }
+#pattern-loop-btn[aria-pressed="true"] i { color: var(--icon-loop-on); }
+.ctrl-btn.reset-btn i { color: var(--icon-reset); }
+.ctrl-btn.reset-btn:hover i { color: var(--icon-reset); filter: none; }
+#help-btn i { color: var(--icon-help); }
+#more-controls-btn i { color: var(--icon-more); }
+.battery-kit-chevron { color: var(--icon-kit-chevron); }
+.battery-volume-container .volume-icon { color: var(--icon-volume); }
+.battery-rate-container .volume-icon { color: var(--icon-rate); }
+.audio-viz-title .fa-wave-square { color: var(--icon-viz); }
+.session-recordings-title .fa-compact-disc { color: var(--icon-recordings); }
+.pattern-loops-title .fa-infinity { color: var(--icon-loops-panel); }
+
+.divider {
+  width: 1px;
+  height: 24px;
+  background: color-mix(in srgb, var(--color-brand-dark) 22%, transparent);
+  margin: 0 2px;
+}
+
+.grid-selector-inline {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  margin-left: 4px;
+}
+
+.grid-opt {
+  background: var(--chrome-btn-bg);
+  color: var(--chrome-btn-fg);
+  border: 2px solid var(--chrome-btn-border);
+  border-radius: 6px;
+  font-family: inherit;
+  font-weight: bold;
+  font-size: 0.75rem;
+  padding: 0.3em 0.6em;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  min-width: 32px;
+  text-align: center;
+  box-shadow: var(--chrome-btn-shadow);
+}
+
+.grid-opt:hover {
+  background: var(--chrome-btn-bg-hover);
+  border-color: var(--color-principal);
+}
+
+.grid-opt.active {
+  background: var(--color-amarillo);
+  border-color: color-mix(in srgb, var(--color-brand-dark) 35%, transparent);
+  color: var(--color-brand-dark);
 }
 
 .group-label {
@@ -1733,6 +2006,9 @@ ul.sampler-list {
   width: 100%;
   height: 100%;
   padding: var(--pad-item-padding);
+  /* Tipografía atada al tamaño REAL del pad (--pad-size la setea layoutResponsivePads):
+     letra 0.9em → ~45% del pad; nombre 0.48em → ~24%. Ambos SIEMPRE caben. */
+  font-size: calc(var(--pad-size, 72px) * 0.5);
   touch-action: none;
   -webkit-tap-highlight-color: transparent;
   -webkit-touch-callout: none;
@@ -1858,6 +2134,7 @@ ul.sampler-list {
 .pad-key {
   position: relative;
   z-index: 1;
+  flex: 0 0 auto;
   font-size: var(--pad-key-size);
   font-weight: bold;
   color: var(--pad-key-color);
@@ -1877,6 +2154,7 @@ ul.sampler-list {
 .pad-sound {
   position: relative;
   z-index: 1;
+  flex: 0 0 auto;
   font-size: var(--pad-sound-size);
   font-weight: var(--pad-sound-weight);
   color: var(--pad-sound-color);
@@ -2151,6 +2429,11 @@ ul.sampler-list {
   overflow: hidden;
 }
 
+.virtual-page .kit-play-sidebar .session-recordings-header,
+.virtual-page .kit-play-sidebar .pattern-loops-header {
+  margin: 0;
+}
+
 .virtual-page .kit-play-sidebar .session-recordings-list,
 .virtual-page .kit-play-sidebar .pattern-loops-list {
   overflow: hidden;
@@ -2193,7 +2476,7 @@ ul.sampler-list {
   display: flex !important;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: center;
   padding-top: 0;
 }
 
@@ -2256,16 +2539,16 @@ ul.sampler-list {
   .virtual-page .ctrl-btn {
     padding: 0.26em 0.52em;
     font-size: 0.72rem;
+    min-height: 32px;
   }
 
   .virtual-page .group-label {
-    font-size: 0.68rem;
     margin-right: 0;
   }
 
   .virtual-page .grid-opt {
     padding: 0.22em 0.42em;
-    font-size: 0.7rem;
+    font-size: 0.72rem;
     min-width: 26px;
   }
 
@@ -2277,7 +2560,7 @@ ul.sampler-list {
 
   .virtual-page .new-badge {
     padding: 0.1em 0.35em;
-    font-size: 0.6em;
+    font-size: 0.68rem;
   }
 }
 
@@ -2318,10 +2601,8 @@ ul.sampler-list {
   justify-content: center;
   align-items: center;
   align-content: flex-start;
-  /* Row gap tight (Volumen↔Velocidad); margin tops air under pads */
-  gap: 0.2rem 1.25rem;
-  margin-top: 0.75rem;
-  margin-bottom: clamp(0.75rem, 2vh, 1.25rem);
+  gap: 0.2rem 0.75rem;
+  margin: 0;
 }
 
 .virtual-page #volume-percent {
@@ -2338,7 +2619,7 @@ ul.sampler-list {
   flex-wrap: nowrap;
   justify-content: center;
   align-items: center;
-  gap: 0.35em 0.85em;
+  gap: 0.35em 0.5em;
   margin-top: 0;
   margin-bottom: 0;
 }
@@ -2347,14 +2628,26 @@ ul.sampler-list {
   margin: 0;
 }
 
+.virtual-page .kit-audio-controls .volume-text {
+  font-size: 0.86rem;
+  font-weight: 600;
+}
+
 .virtual-page .battery-volume {
-  width: min(160px, 42vw);
+  width: clamp(88px, 7vw, 112px);
 }
 
 .virtual-page .battery-volume-label {
   margin-top: 0;
   width: auto;
   min-width: 2.5em;
+  font-size: 0.9rem;
+}
+
+.virtual-page #volume-percent,
+.virtual-page #rate-percent {
+  font-size: var(--font-size-sm);
+  letter-spacing: 0;
 }
 
 .virtual-page footer {
@@ -2370,6 +2663,26 @@ ul.sampler-list {
 
   .virtual-page .battery {
     width: min(100%, 70vh);
+  }
+}
+
+/* Landscape / ventanas bajas: auto-inmersión para que pads y sliders no se superpongan */
+@media (max-height: 560px) {
+  .virtual-page .contributor-ticker,
+  .virtual-page header,
+  .virtual-page footer,
+  .virtual-page .audio-viz-panel,
+  .virtual-page .whatsapp-fab {
+    display: none;
+  }
+
+  .virtual-page main {
+    padding: 0.15rem 0 0.2rem;
+  }
+
+  .virtual-page .kit-audio-controls {
+    margin-top: 0;
+    margin-bottom: 0;
   }
 }
 
@@ -2497,10 +2810,11 @@ ul.sampler-list {
   .virtual-page .ctrl-btn {
     padding: 0.25em 0.5em;
     font-size: 0.72rem;
+    min-height: 32px;
   }
 
   .virtual-page .group-label {
-    font-size: 0.65rem;
+    font-size: 0.72rem;
   }
 
   .virtual-page .audio-viz-panel {
@@ -2539,6 +2853,8 @@ ul.sampler-list {
   }
 
   .virtual-page .kit-audio-controls {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     position: relative;
     left: auto;
     right: auto;
@@ -2546,14 +2862,14 @@ ul.sampler-list {
     transform: none;
     z-index: 5;
     width: 100%;
-    margin: 0.65rem 0 0;
+    margin: 0;
     padding: 0.15rem 0.4rem calc(0.25rem + env(safe-area-inset-bottom, 0px));
-    gap: 0.15rem 0.85rem;
-    flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: center;
-    align-items: center;
-    align-content: flex-start;
+    gap: 0.1rem 0.5rem;
+    flex-direction: initial;
+    flex-wrap: initial;
+    justify-content: stretch;
+    align-items: end;
+    align-content: initial;
     box-sizing: border-box;
     border-radius: 0;
     background: transparent;
@@ -2564,34 +2880,75 @@ ul.sampler-list {
   }
 
   .virtual-page .battery-rate-container {
-    width: auto;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-rows: auto 44px;
+    width: 100%;
     max-width: none;
     padding: 0.1rem 0;
-    gap: 0.35em 0.5em;
-    flex-wrap: nowrap;
+    gap: 0 0.25rem;
+    align-items: center;
   }
 
   .virtual-page .battery-rate-container .rate-fixed-label {
     flex-shrink: 0;
-    margin-left: 0.15em;
+    grid-column: 2;
+    grid-row: 2;
+    min-height: 44px;
+    margin: 0;
+    padding: 0 0.15rem;
   }
 
   .virtual-page .battery-rate {
-    width: min(38vw, 9rem);
+    grid-column: 1;
+    grid-row: 2;
+    width: 100%;
+    min-width: 0;
     min-height: 44px;
   }
 
   .virtual-page .battery-volume {
-    width: min(38vw, 9rem);
+    grid-column: 1 / -1;
+    grid-row: 2;
+    width: 100%;
   }
 
   .virtual-page .battery-volume-container,
   .virtual-page .battery-rate-container {
-    gap: 0.25em 0.45em;
+    gap: 0 0.25rem;
+  }
+
+  .virtual-page .battery-volume-container {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-rows: auto 44px;
+    align-items: center;
+  }
+
+  .virtual-page .battery-volume-container .volume-label-row,
+  .virtual-page .battery-rate-container .volume-label-row {
+    grid-column: 1;
+    grid-row: 1;
+    justify-self: start;
+    font-size: 0.78rem;
+  }
+
+  .virtual-page .battery-volume-container .battery-volume-label,
+  .virtual-page .battery-rate-container .battery-volume-label {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: end;
+    min-width: 0;
+    font-size: 0.8rem;
+  }
+
+  .virtual-page .battery-volume-container .volume-text,
+  .virtual-page .battery-rate-container .volume-text {
+    font-size: 0.78rem;
   }
 
   .virtual-page .kit-play-stage:has(#battery-view:not(.hidden)) .kit-audio-controls {
-    margin-top: 0.45rem;
+    margin-top: 0;
   }
 
   .virtual-page .kit-play {
@@ -2628,5 +2985,309 @@ ul.sampler-list {
 
   .virtual-page .audio-viz-panel {
     margin: 0.05em 0 0.1em;
+  }
+}
+
+/* ===================== INMERSIÓN (pantallas bajas) — al final para ganar el cascade ===================== */
+/* Pads dominan: sin reseva del ticker oculto ni aire extra en slider/nav */
+@media (max-height: 560px) {
+  .virtual-page {
+    padding-top: 0;
+    --virtual-footer-block: 0.3rem;
+  }
+
+  .virtual-page main {
+    padding: 0;
+  }
+
+  .virtual-page .controls-bar {
+    padding: 0.1rem 0.35rem;
+  }
+
+  .virtual-page #pads-view {
+    padding-bottom: 0;
+  }
+
+  .virtual-page .kit-audio-controls {
+    margin-top: 0;
+    margin-bottom: 0;
+  }
+}
+
+/* ===================== DISTRIBUCIÓN PC ≥1180 — escenario simétrico =====================
+   Rail izquierda (config "Más" + Audio/Loops, ancho) | pads al centro | Visualizador dcha.
+   Ambas columnas laterales usan LA MISMA var (--kit-rail-width) → pads centrados.
+   El panel "Más" lo muda JS (placeKitRail en virtual.js); la barra queda solo
+   con Inmersión + Pads. <1180px: layout lineal normal (sin grid).
+   Parametrizable: cambia --kit-rail-width y todo se acomoda. */
+:root {
+  --kit-rail-width: 260px;
+  --kit-rail-gap: 0.55rem;
+  --viz-canvas-h: clamp(220px, 28vh, 280px);
+}
+
+@media (min-width: 1180px) {
+  .virtual-page .drum-kit-container {
+    display: grid;
+    /* Columnas laterales fijas e IGUALES → escenario centrado y simétrico */
+    grid-template-columns: var(--kit-rail-width) minmax(0, 1fr) var(--kit-rail-width);
+    grid-template-areas:
+      "rail top   viz"
+      "rail hint  viz"
+      "rail stage viz";
+    grid-template-rows: auto auto minmax(0, 1fr);
+    gap: var(--kit-rail-gap);
+    /* Vence al align-items:center de la era flex: los items LLENAN sus pistas
+       (el stage estira y el JS de pads rellena la altura real disponible) */
+    align-items: stretch;
+  }
+
+  /* kit-play deja de ser caja: sidebar y stage se reparten por áreas del grid */
+  .virtual-page .kit-play {
+    display: contents;
+  }
+
+  .virtual-page .kit-play-sidebar {
+    grid-area: rail;
+    /* Rail SIEMPRE visible (trae el panel "Más"); vence al :has() base y al fixed ≥768 */
+    display: flex;
+    position: static;
+    width: 100%;
+    min-height: 0;
+    max-height: 100%;
+    overflow: hidden;
+    align-self: stretch;
+    gap: 0.4rem;
+  }
+
+  .virtual-page .controls-bar {
+    grid-area: top;
+    width: 100%;
+    max-width: none;
+  }
+
+  .virtual-page .edit-mode-hint {
+    grid-area: hint;
+    width: 100%;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .virtual-page .kit-play-stage {
+    grid-area: stage;
+    min-height: 0;
+  }
+
+  .virtual-page .audio-viz-panel {
+    grid-area: viz;
+    /* Centrada frente al kit para equilibrar las columnas laterales. */
+    align-self: center;
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+    padding: 0.5rem 0.6rem;
+  }
+
+  /* Canvas con altura fija por token (NUNCA llena la columna) */
+  .virtual-page .audio-viz-canvas {
+    flex: 0 0 auto;
+    height: var(--viz-canvas-h);
+    max-height: var(--viz-canvas-h);
+  }
+
+  /* El panel "Más" ya vive en el rail: columna de grupos, sin dropdown */
+  .virtual-page .more-controls-panel {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+    padding: 0.35rem 0;
+    gap: 0.35rem;
+  }
+
+  /* Grupo Kit en el rail: fila 1 Editar+Imp/Exp, fila 2 Nombre+Selector (sin varar botones) */
+  .virtual-page .more-controls-panel .battery-preset-bar {
+    order: 3;
+    flex: 1 1 100%;
+  }
+
+  /* Grupo Redoble/Grabación en el rail:
+     fila 1 = Redoble(+1/16 si está activo), fila 2 = Grabar + Crear loop a mitades */
+  .virtual-page .more-controls-panel .session-record-btn,
+  .virtual-page .more-controls-panel .pattern-loop-btn {
+    order: 98;
+    flex: 1 1 calc(50% - 4px);
+  }
+
+  /* El gauge 1/16 no crece: cabe en la fila 1 junto a Redoble */
+  .virtual-page .more-controls-panel .note-repeat-rate {
+    flex: 0 0 auto;
+  }
+
+  .virtual-page .more-controls-panel .note-repeat-rate input {
+    width: 56px;
+  }
+
+  .virtual-page .more-controls-panel .control-group {
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    width: 100%;
+  }
+
+  /* El rail organiza configuración por tareas; la fila superior queda para vista y pads. */
+  .virtual-page .more-controls-panel .control-section {
+    width: 100%;
+    min-width: 0;
+    flex: 0 0 auto;
+    align-items: stretch;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    padding: 0.15rem 0.1rem;
+  }
+
+  .virtual-page .more-controls-panel .control-section-title {
+    display: block;
+    flex: 0 0 100%;
+    margin: 0 0 0.1rem;
+    color: var(--chrome-btn-fg);
+    font-size: 0.76rem;
+    font-weight: 800;
+    letter-spacing: 0.025em;
+    line-height: 1.2;
+  }
+
+  .virtual-page .more-controls-panel .section-divider {
+    width: 100%;
+    height: 1px;
+    margin: 0.15rem 0;
+    background: color-mix(in srgb, var(--chrome-btn-fg) 22%, transparent);
+  }
+
+  .virtual-page .more-controls-panel .control-section--kit {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: center;
+  }
+
+  .virtual-page .more-controls-panel .control-section--kit .control-section-title,
+  .virtual-page .more-controls-panel .control-section--kit .battery-preset-bar {
+    grid-column: 1 / -1;
+  }
+
+  .virtual-page .more-controls-panel .control-section--kit #edit-btn {
+    grid-column: 1;
+    grid-row: 2;
+    justify-content: center;
+  }
+
+  .virtual-page .more-controls-panel .control-section--kit #share-kit-btn {
+    grid-column: 2;
+    grid-row: 2;
+    justify-content: center;
+  }
+
+  .virtual-page .more-controls-panel .control-section--kit .battery-preset-bar {
+    grid-row: 3;
+    display: flex;
+    min-width: 0;
+    width: 100%;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+
+  .virtual-page .more-controls-panel .battery-kit-picker {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .virtual-page .more-controls-panel .battery-kit-toggle {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .virtual-page .more-controls-panel .control-section--record {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: center;
+  }
+
+  .virtual-page .more-controls-panel .control-section--record .control-section-title,
+  .virtual-page .more-controls-panel .control-section--record .note-repeat-row {
+    grid-column: 1 / -1;
+  }
+
+  .virtual-page .more-controls-panel .note-repeat-row {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: 0.35rem;
+  }
+
+  .virtual-page .more-controls-panel .note-repeat-rate {
+    grid-column: 1 / -1;
+    width: 100%;
+    box-sizing: border-box;
+    justify-content: space-between;
+  }
+
+  .virtual-page .more-controls-panel .control-section--record #session-record-btn,
+  .virtual-page .more-controls-panel .control-section--record #pattern-loop-btn {
+    width: 100%;
+    min-width: 0;
+    justify-content: center;
+  }
+
+  .virtual-page .more-controls-panel .control-section--utils {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: center;
+  }
+
+  .virtual-page .more-controls-panel .control-section--utils .control-section-title {
+    grid-column: 1 / -1;
+  }
+
+  .virtual-page .more-controls-panel .control-section--utils .ctrl-btn {
+    min-width: 0;
+    justify-content: center;
+  }
+}
+
+@media (min-width: 1180px) and (max-height: 680px) {
+  /* En ventanas bajas, los títulos bastan: quitamos las ayudas redundantes para que quepan las dos tarjetas. */
+  .virtual-page .kit-play-sidebar .session-recordings-hint,
+  .virtual-page .kit-play-sidebar .pattern-loops-hint {
+    display: none;
+  }
+}
+
+/* =====================================================
+   ACCESIBILIDAD — anillo de foco global (WCAG 2.4.7)
+   Cada elemento enfocado por teclado muestra un anillo
+   de 3px con offset; varía claro/oscuro por tokens.css.
+   ===================================================== */
+.virtual-page :is(button, a, input, select, textarea, [tabindex]):focus-visible {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+/* El control Fijo ocupa su propia columna y el gráfico reserva el espacio del acceso flotante. */
+@media (max-width: 767px) {
+  .virtual-page .battery-rate-container .battery-rate {
+    grid-column: 1;
+  }
+
+  .virtual-page .audio-viz-header {
+    box-sizing: border-box;
+    padding-right: 3.5rem;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1179px) {
+  .virtual-page .audio-viz-header {
+    box-sizing: border-box;
+    padding-right: 9.5rem;
   }
 }

@@ -147,59 +147,66 @@
   <main>
     <div class="drum-kit-container">
       <div class="controls-bar">
-        <div class="control-group control-group--primary control-group--view">
+        <div class="control-section control-group control-group--primary control-group--view control-section--view">
           <button id="immersion-btn" type="button" class="ctrl-btn immersion-btn" title="Ocultar menú y cinta para más espacio" aria-pressed="false">
             <i class="fa-solid fa-expand" aria-hidden="true"></i>
             <span class="immersion-btn-label">Inmersión</span>
           </button>
         </div>
-        <div id="grid-selector" class="grid-selector-inline control-group--primary">
+        <div id="grid-selector" class="control-section control-group control-group--primary grid-selector-inline control-section--grid">
           <span class="group-label">Pads:</span>
           <div id="grid-options" class="grid-options"></div>
         </div>
-        <button id="more-controls-btn" type="button" class="ctrl-btn more-controls-btn" aria-expanded="false" aria-controls="more-controls-panel" aria-haspopup="true" title="Más opciones" hidden>
+        <button id="more-controls-btn" type="button" class="ctrl-btn more-controls-btn" aria-expanded="false" aria-controls="more-controls-panel" aria-haspopup="true" title="Más controles" hidden>
           <i class="fa-solid fa-ellipsis" aria-hidden="true"></i>
           <span class="ctrl-btn-text">Más</span>
         </button>
-        <div id="more-controls-panel" class="more-controls-panel" role="region" aria-label="Más opciones">
-        <div class="control-group control-group--secondary control-group--kit">
-          <button id="edit-btn" type="button" class="ctrl-btn" aria-pressed="false" title="Cambiar sonidos y teclas de los pads"><i class="fa-solid fa-pencil" aria-hidden="true"></i> <span class="ctrl-btn-text">Editar</span></button>
-          <div class="battery-preset-bar" id="battery-preset-bar">
-            <span class="group-label battery-preset-bar-label">Kit</span>
-            <div class="battery-kit-picker" id="battery-kit-picker">
-              <button type="button" id="battery-kit-toggle" class="ctrl-btn battery-kit-toggle" aria-haspopup="listbox" aria-expanded="false" aria-controls="battery-kit-menu" title="Elegir kit guardado">
-                <span id="battery-kit-label" class="battery-kit-label">Kit 1</span>
-                <i class="fa-solid fa-chevron-down battery-kit-chevron" aria-hidden="true"></i>
-              </button>
-              <ul id="battery-kit-menu" class="battery-kit-menu" role="listbox" hidden></ul>
+        <div id="more-controls-panel" class="more-controls-panel" role="region" aria-label="Controles de la batería">
+          <div class="control-section control-group control-group--secondary control-group--kit control-section--kit">
+            <h2 class="control-section-title">Kit</h2>
+            <button id="edit-btn" type="button" class="ctrl-btn" aria-pressed="false" title="Cambiar sonidos y teclas de los pads"><i class="fa-solid fa-pencil" aria-hidden="true"></i> <span class="ctrl-btn-text">Editar</span></button>
+            <div class="battery-preset-bar" id="battery-preset-bar">
+              <span class="group-label battery-preset-bar-label">Kit</span>
+              <div class="battery-kit-picker" id="battery-kit-picker">
+                <button type="button" id="battery-kit-toggle" class="ctrl-btn battery-kit-toggle" aria-haspopup="listbox" aria-expanded="false" aria-controls="battery-kit-menu" title="Elegir kit guardado">
+                  <span id="battery-kit-label" class="battery-kit-label">Kit 1</span>
+                  <i class="fa-solid fa-chevron-down battery-kit-chevron" aria-hidden="true"></i>
+                </button>
+                <ul id="battery-kit-menu" class="battery-kit-menu" role="listbox" hidden></ul>
+              </div>
             </div>
+            <button id="share-kit-btn" type="button" class="ctrl-btn" title="Importar o exportar tu kit (código o WhatsApp)"><i class="fa-solid fa-right-left" aria-hidden="true"></i> <span class="ctrl-btn-text">Imp/Exp</span></button>
           </div>
-          <button id="share-kit-btn" type="button" class="ctrl-btn" title="Importar o exportar tu kit (código o WhatsApp)"><i class="fa-solid fa-right-left" aria-hidden="true"></i> <span class="ctrl-btn-text">Imp/Exp</span></button>
-        </div>
-        <div class="control-group control-group--secondary control-group--record">
-          <span class="group-label note-repeat-label" id="note-repeat-label" title="Redoble: el sonido se repite en ráfaga mientras mantienes la tecla o el pad. Es lo mismo que el botón Note Repeat del MPC — para redobles en placas, timbales y batería. Apagado = un golpe por pulsación (one-shot).">Redoble:</span>
-          <button id="note-repeat-btn" type="button" class="ctrl-btn" aria-pressed="false" aria-labelledby="note-repeat-label note-repeat-btn-label" title="Activa el redoble (Note Repeat del MPC). Apagado: un solo golpe al pulsar, estilo batería pro.">
-            <i class="fa-solid fa-repeat" aria-hidden="true"></i>
-            <span id="note-repeat-btn-label">Apagado</span>
-          </button>
-          <label class="note-repeat-rate" for="note-repeat-rate" title="Velocidad del redoble: lento (1/8) ↔ rápido (1/32)">
-            <i class="fa-solid fa-gauge-high" aria-hidden="true"></i>
-            <input type="range" id="note-repeat-rate" min="0" max="100" step="1" value="50" aria-valuetext="1/16">
-            <span id="note-repeat-rate-label" class="note-repeat-rate-label">1/16</span>
-          </label>
-          <button id="session-record-btn" type="button" class="ctrl-btn session-record-btn" aria-pressed="false" title="Graba la batería y el audio del PC (Spotify, YouTube, etc.). Un clic para empezar, otro para parar.">
-            <i class="fa-solid fa-circle session-record-icon" aria-hidden="true"></i>
-            <span id="session-record-label">Grabar audio</span>
-          </button>
-          <button id="pattern-loop-btn" type="button" class="ctrl-btn pattern-loop-btn" aria-pressed="false" title="Crea la secuencia de golpes y repítela en loop">
-            <i class="fa-solid fa-infinity" aria-hidden="true"></i>
-            <span id="pattern-loop-label">Crear loop</span>
-          </button>
-        </div>
-        <div class="control-group control-group--tertiary">
-          <button id="reset-settings-btn" class="ctrl-btn reset-btn" title="⚠️ Restablecer sonidos y teclas por defecto"><i class="fa-solid fa-rotate-left" aria-hidden="true"></i> <span class="ctrl-btn-text">Restablecer</span></button>
-          <button id="help-btn" class="ctrl-btn" title="¿Cómo editar samplers?"><i class="fa-solid fa-question" aria-hidden="true"></i> <span class="ctrl-btn-text">Ayuda</span></button>
-        </div>
+          <div class="section-divider divider" aria-hidden="true"></div>
+          <div class="control-section control-group control-group--secondary control-group--record control-section--record">
+            <h2 class="control-section-title">Ritmo y grabación</h2>
+            <div class="note-repeat-row">
+              <span class="group-label note-repeat-label" id="note-repeat-label" title="Redoble: el sonido se repite en ráfaga mientras mantienes la tecla o el pad. Es lo mismo que el botón Note Repeat del MPC — para redobles en placas, timbales y batería. Apagado = un golpe por pulsación (one-shot).">Redoble:</span>
+              <button id="note-repeat-btn" type="button" class="ctrl-btn" aria-pressed="false" aria-labelledby="note-repeat-label note-repeat-btn-label" title="Activa el redoble (Note Repeat del MPC). Apagado: un solo golpe al pulsar, estilo batería pro.">
+                <i class="fa-solid fa-repeat" aria-hidden="true"></i>
+                <span id="note-repeat-btn-label">Apagado</span>
+              </button>
+              <label class="note-repeat-rate" for="note-repeat-rate" title="Velocidad del redoble: lento (1/8) ↔ rápido (1/32)">
+                <i class="fa-solid fa-gauge-high" aria-hidden="true"></i>
+                <input type="range" id="note-repeat-rate" min="0" max="100" step="1" value="50" aria-valuetext="1/16">
+                <span id="note-repeat-rate-label" class="note-repeat-rate-label">1/16</span>
+              </label>
+            </div>
+            <button id="session-record-btn" type="button" class="ctrl-btn session-record-btn" aria-pressed="false" title="Graba la batería y el audio del PC (Spotify, YouTube, etc.). Un clic para empezar, otro para parar.">
+              <i class="fa-solid fa-circle session-record-icon" aria-hidden="true"></i>
+              <span id="session-record-label">Grabar audio</span>
+            </button>
+            <button id="pattern-loop-btn" type="button" class="ctrl-btn pattern-loop-btn" aria-pressed="false" title="Crea la secuencia de golpes y repítela en loop">
+              <i class="fa-solid fa-infinity" aria-hidden="true"></i>
+              <span id="pattern-loop-label">Crear loop</span>
+            </button>
+          </div>
+          <div class="section-divider divider" aria-hidden="true"></div>
+          <div class="control-section control-group control-group--tertiary control-section--utils">
+            <h2 class="control-section-title">Utilidades</h2>
+            <button id="reset-settings-btn" class="ctrl-btn reset-btn" title="⚠️ Restablecer sonidos y teclas por defecto"><i class="fa-solid fa-rotate-left" aria-hidden="true"></i> <span class="ctrl-btn-text">Restablecer</span></button>
+            <button id="help-btn" class="ctrl-btn" title="¿Cómo editar samplers?"><i class="fa-solid fa-question" aria-hidden="true"></i> <span class="ctrl-btn-text">Ayuda</span></button>
+          </div>
         </div>
       </div>
       <p class="edit-mode-hint" id="edit-mode-hint" hidden>
@@ -207,15 +214,8 @@
         Tocá un pad para cambiarlo. Los cambios se guardan solos en el kit activo.
         <strong>Listo</strong> arriba para volver a tocar.
       </p>
-      <section class="audio-viz-panel" id="audio-viz-panel" aria-label="Visualizador de audio">
-        <div class="audio-viz-header">
-          <span class="audio-viz-title"><i class="fa-solid fa-wave-square" aria-hidden="true"></i> Visualizador</span>
-          <button type="button" id="audio-viz-toggle" class="ctrl-btn audio-viz-toggle" aria-pressed="true">Activo</button>
-        </div>
-        <canvas id="audio-viz-canvas" class="audio-viz-canvas" aria-hidden="true"></canvas>
-      </section>
       <div class="kit-play">
-        <aside class="kit-play-sidebar" id="kit-play-sidebar" aria-label="Panel de grabaciones">
+        <aside class="kit-play-sidebar" id="kit-play-sidebar" aria-label="Controles y grabaciones">
       <section class="session-recordings-panel" id="session-recordings-panel" hidden aria-label="Grabaciones de audio guardadas">
         <div class="session-recordings-header">
           <span class="session-recordings-title"><i class="fa-solid fa-compact-disc" aria-hidden="true"></i> Audio</span>
@@ -265,6 +265,13 @@
       </div>
         </div>
       </div>
+      <section class="audio-viz-panel" id="audio-viz-panel" aria-label="Visualizador de audio">
+        <div class="audio-viz-header">
+          <span class="audio-viz-title"><i class="fa-solid fa-wave-square" aria-hidden="true"></i> Visualizador</span>
+          <button type="button" id="audio-viz-toggle" class="ctrl-btn audio-viz-toggle" aria-pressed="true">Activo</button>
+        </div>
+        <canvas id="audio-viz-canvas" class="audio-viz-canvas" aria-hidden="true"></canvas>
+      </section>
     </div>
 
     <!-- Modal unificado de edición -->

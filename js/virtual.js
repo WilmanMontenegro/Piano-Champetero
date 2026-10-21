@@ -1263,6 +1263,7 @@ function initMoreControls() {
   const syncOverflow = () => {
     if (syncing) return;
     syncing = true;
+    placeKitRail(); // rail ↔ barra: reubica el panel "Más" según el ancho (idempotente)
     const wasOpen = open;
     const needs = measureNeedsOverflow();
     if (needs) {
@@ -1320,8 +1321,36 @@ function initMoreControls() {
   if (document.fonts?.ready) {
     document.fonts.ready.then(scheduleSync).catch(() => {});
   }
+  // Al volver a la pestaña: el rAF quedó pausado en segundo plano → re-medir todo
+  document.addEventListener('visibilitychange', scheduleSync);
 
   syncOverflow();
+}
+
+/* ===================== RAIL PC ≥1180 =====================
+   Simetría: configuración a la IZQUIERDA, visualizador a la DERECHA (CSS en
+   virtual.css, var --kit-rail-width). El panel "Más" se muda al rail izquierdo
+   por DOM (appendChild conserva listeners); <1180px vuelve a la barra. */
+const KIT_RAIL_MQ = window.matchMedia('(min-width: 1180px)');
+
+function placeKitRail() {
+  const panel = document.getElementById('more-controls-panel');
+  const rail = document.getElementById('kit-play-sidebar');
+  if (!panel || !rail) return false;
+  if (!panel._kitRailHome) panel._kitRailHome = panel.parentElement;
+  if (KIT_RAIL_MQ.matches) {
+    if (panel.parentElement === rail) return false;
+    rail.prepend(panel);
+    return true;
+  }
+  if (panel.parentElement === panel._kitRailHome) return false;
+  panel._kitRailHome.appendChild(panel);
+  return true;
+}
+
+function initKitRail() {
+  placeKitRail();
+  window.addEventListener('resize', placeKitRail);
 }
 
 /** Sin scroll en virtual.html; excepción listas en modales/nav. */
@@ -1350,6 +1379,8 @@ function initPageScrollLock() {
  * Pads always square (1:1). Gutters from CSS vars (--pad-gap / --pad-grid-pad).
  */
 let padsLayoutFrame = 0;
+let padsLayoutTimer = 0;
+let padsLayoutSettle = 0;
 
 /** @typedef {'mobile'|'tablet'|'desktop'} PadViewportTier */
 
@@ -1357,35 +1388,35 @@ let padsLayoutFrame = 0;
 const PAD_LAYOUT_BY_TIER = {
   mobile: {
     sideInset: 16,
-    topInset: 10,
+    topInset: 6,
     // No low artificial cap — padSquareSize already fits avail box (keeps ~safe margins).
     maxCap: 168,
     minPad: 44,
     volFloor: 72,
-    volExtra: 16,
+    volExtra: 12,
     sizeScale: 1,
     pickLayout: true,
   },
   tablet: {
     sideInset: 40,
-    topInset: 12,
+    topInset: 8,
     maxCap: 120,
     minPad: 48,
-    volFloor: 64,
-    volExtra: 18,
+    volFloor: 48,
+    volExtra: 12,
     sizeScale: 1,
-    pickLayout: false,
+    pickLayout: true,
   },
   desktop: {
     // Fuller stage: bigger squares, modest margins (not edge-flush)
     sideInset: 32,
-    topInset: 10,
+    topInset: 8,
     maxCap: 176,
     minPad: 48,
-    volFloor: 56,
-    volExtra: 12,
+    volFloor: 48,
+    volExtra: 10,
     sizeScale: 1,
-    pickLayout: false,
+    pickLayout: true,
   },
 };
 
@@ -1421,50 +1452,72 @@ function padSquareSize(cols, rows, availW, availH, gap, gridPad, maxCap) {
 }
 
 /**
- * Mobile only: pick cols×rows for square pads.
- * 1) Max touch size  2) Fill width (kill side gutters)  3) Mild tall bias in portrait ties.
- * Soft width rescue: if winner leaves big side gutters, prefer a near-max layout that fills width.
+ * Pick cols×rows for square pads at any viewport size.
+ * Llena el hueco real (ancho Y alto). No depende de una altura fija:
+ * más alto → más filas, más ancho → más columnas, sin quedar plano si sobra alto.
  */
 function pickResponsivePadLayout(total, availW, availH, gap, gridPad, maxCap, minPad, cfg) {
   const candidates = [];
+  const maxCols = availH < 180 ? 12 : 8;
 
   for (const { cols, rows } of factorPadGridPairs(total)) {
-    if (cols > 8 || rows > 8) continue;
+    if (cols > maxCols || rows > 8) continue;
     const size = padSquareSize(cols, rows, availW, availH, gap, gridPad, maxCap);
-    if (size < minPad) continue;
+    if (!(size > 0)) continue;
 
     const widthUsed = cols * size + (cols - 1) * gap + 2 * gridPad;
+    const heightUsed = rows * size + (rows - 1) * gap + 2 * gridPad;
+    const fillW = widthUsed / Math.max(1, availW);
+    const fillH = heightUsed / Math.max(1, availH);
     candidates.push({
       cols,
       rows,
       size,
-      fillW: widthUsed / Math.max(1, availW),
+      fillW,
+      fillH,
+      // Área usada del hueco. Un 8×2 grande pero con hueco abajo pierde contra un 4×4 que lo llena.
+      score: size * Math.min(fillW, 1) * Math.min(fillH, 1),
     });
   }
 
   if (!candidates.length) return { cols: cfg.cols, rows: cfg.rows };
 
-  const preferTall = window.innerHeight > window.innerWidth;
-  candidates.sort((a, b) => {
-    const dS = b.size - a.size;
-    if (Math.abs(dS) > 0.5) return dS;
-    const dW = b.fillW - a.fillW;
-    if (Math.abs(dW) > 0.02) return dW;
-    if (preferTall) return (b.rows - b.cols) - (a.rows - a.cols);
-    return 0;
+  // Si la pantalla es tan baja que ningún pad llega al mínimo ideal, conserva
+  // el mayor tamaño posible en vez de caer al reparto base y encogerlos más.
+  const viable = candidates.filter((candidate) => candidate.size >= minPad);
+  const pool = viable.length ? viable : candidates;
+
+  // La forma del hueco manda, en cualquier alto: no una altura fija ni el pad 2px más grande.
+  // Entre los que no se achican de más, elige el reparto más parecido al espacio (ancho/alto).
+  const box = availW / Math.max(1, availH);
+  const maxSize = Math.max(...pool.map((c) => c.size));
+  const near = pool.filter((c) => c.size >= maxSize * 0.7);
+  const shaped = near.length ? near : pool;
+  const shapeDist = (c) => Math.abs(c.cols / c.rows - box);
+  shaped.sort((a, b) => {
+    const dShape = shapeDist(a) - shapeDist(b);
+    if (Math.abs(dShape) > 0.12) return dShape;
+    return b.size - a.size;
   });
 
-  let best = candidates[0];
-  // ponytail: avoid skinny 2-col when a ≥3-col layout is within ~12% size and fills width
-  if (best.fillW < 0.85) {
-    const maxSize = best.size;
-    const wide = candidates
-      .filter((c) => c.fillW >= 0.9 && c.size >= maxSize * 0.88)
+  let best = shaped[0];
+  // Si el ganador deja canaletas a los lados, usa uno más ancho que siga pareciéndose al hueco.
+  if (best.fillW < 0.75) {
+    const wide = shaped
+      .filter((c) => c.fillW >= 0.85 && c.size >= maxSize * 0.7 && shapeDist(c) <= shapeDist(best) + 0.45)
       .sort((a, b) => b.size - a.size)[0];
     if (wide) best = wide;
   }
+  // Al final: un 6×2 / 8×2 solo si no cabe algo más cuadrado. Vale en cualquier alto.
+  if (best.cols > best.rows * 1.6) {
+    const squarer = pool
+      .filter((c) => c.cols <= c.rows * 1.5 && c.size >= 56)
+      .sort((a, b) => b.size - a.size)[0];
+    if (squarer) best = squarer;
+  }
 
   console.assert(best.cols * best.rows === total);
+  const preferTall = window.innerHeight > window.innerWidth;
   if (total === 12 && preferTall && availW >= 300) {
     console.assert(best.cols >= 3, 'mobile 12-pad layout should use ≥3 columns');
   }
@@ -1489,30 +1542,57 @@ function layoutResponsivePads() {
   const { gap, gridPad } = readPadGutterVars();
 
   const vol = kitPlay.querySelector('.kit-audio-controls') || kitPlay.querySelector('.battery-volume-container');
-  const playRect = kitPlay.getBoundingClientRect();
+  // Mide el stage y busca su grid real: .kit-play puede ser display:contents en PC.
+  const stageEl = view.closest('.kit-play-stage') || kitPlay;
+  let stageH = stageEl.getBoundingClientRect().height;
+  let stageHost = stageEl.parentElement;
+  while (stageHost && getComputedStyle(stageHost).display === 'contents') {
+    stageHost = stageHost.parentElement;
+  }
+  let hostIsGridTrack = false;
+  if (stageHost && getComputedStyle(stageHost).display === 'grid') {
+    const rows = (getComputedStyle(stageHost).gridTemplateRows || '')
+      .split(' ')
+      .map((v) => parseFloat(v))
+      .filter(Number.isFinite);
+    if (rows.length) { stageH = rows[rows.length - 1]; hostIsGridTrack = true; }
+  }
+  const playRect = { width: stageEl.getBoundingClientRect().width, height: stageH };
   const volH = Math.max(vol ? vol.offsetHeight : 0, volFloor) + volExtra;
   // Prefer pads-view width (already has CSS gutters); sideInset = fallback only
   const availW = Math.max(60, view.clientWidth > 40 ? view.clientWidth : playRect.width - sideInset);
   const viewH = view.clientHeight;
   const stageBudget = Math.max(0, playRect.height - volH - topInset);
-  const availH = viewH > 80
-    ? Math.max(60, Math.min(viewH, stageBudget) - gridPad * 2)
-    : Math.max(60, stageBudget - gridPad * 2);
+  // PC ≥1180: la caja del stage es un track del grid (no depende del contenido) → presupuesto
+  // real; capar contra la altura del contenido actual congelaría el reparto tras la 1.ª carga.
+  // <1180: el stage crece con el contenido → capar con la altura actual (sin bucle infinito).
+  const availH = hostIsGridTrack
+    ? Math.max(60, stageBudget - gridPad * 2)
+    : viewH > 80
+      ? Math.max(60, Math.min(viewH, stageBudget) - gridPad * 2)
+      : Math.max(60, stageBudget - gridPad * 2);
   if (availW < 60 || availH < 60) return;
 
   if (cfg.cols * cfg.rows !== cfg.total) return;
 
-  const { cols: layoutCols, rows: layoutRows } = L.pickLayout
-    ? pickResponsivePadLayout(cfg.total, availW, availH, gap, gridPad, maxCap, minPad, cfg)
-    : { cols: cfg.cols, rows: cfg.rows };
+  let layoutCols = cfg.cols;
+  let layoutRows = cfg.rows;
+  if (L.pickLayout) {
+    ({ cols: layoutCols, rows: layoutRows } = pickResponsivePadLayout(cfg.total, availW, availH, gap, gridPad, maxCap, minPad, cfg));
+  } else {
+    const fixedSize = padSquareSize(layoutCols, layoutRows, availW, availH, gap, gridPad, maxCap);
+    // Preserve the configured grid structure; only re-flow when pads get unusably tiny
+    if (fixedSize < 40) {
+      ({ cols: layoutCols, rows: layoutRows } = pickResponsivePadLayout(cfg.total, availW, availH, gap, gridPad, maxCap, minPad, cfg));
+    }
+  }
   if (layoutCols * layoutRows !== cfg.total) return;
 
   const size = padSquareSize(layoutCols, layoutRows, availW, availH, gap, gridPad, maxCap);
-  if (size < minPad) return;
+  if (!(size > 0)) return;
 
   // ponytail: square only — known ceiling if non-1:1 returns; never reintroduce -w/-h
   console.assert(Number.isFinite(size) && size > 0);
-
   view.style.setProperty('--pad-cols', String(layoutCols));
   view.style.setProperty('--pad-rows', String(layoutRows));
   view.style.setProperty('--pad-size', `${Math.floor(size * sizeScale)}px`);
@@ -1520,9 +1600,15 @@ function layoutResponsivePads() {
 
 function scheduleResponsivePadsLayout() {
   cancelAnimationFrame(padsLayoutFrame);
+  clearTimeout(padsLayoutTimer);
+  clearTimeout(padsLayoutSettle);
   padsLayoutFrame = requestAnimationFrame(() => {
     padsLayoutFrame = requestAnimationFrame(layoutResponsivePads);
   });
+  // rAF se pausa en pestañas de fondo; los timers garantizan layout al volver a primer plano.
+  // El de asentamiento re-mide cuando el grid del stage termina de recolocar sus tracks.
+  padsLayoutTimer = setTimeout(layoutResponsivePads, 300);
+  padsLayoutSettle = setTimeout(layoutResponsivePads, 700);
 }
 
 function initResponsivePadsLayout() {
@@ -1533,6 +1619,10 @@ function initResponsivePadsLayout() {
     ro.observe(kitPlay);
   }
   window.addEventListener('resize', scheduleResponsivePadsLayout);
+  // La barra del navegador (o la de depuración) cambia el alto visible sin un resize clásico.
+  window.visualViewport?.addEventListener('resize', scheduleResponsivePadsLayout);
+  // rAF pausado en pestañas ocultas: al volver, recalcular el layout de pads
+  document.addEventListener('visibilitychange', scheduleResponsivePadsLayout);
 }
 
 function initNoteRepeatToggle() {
@@ -2623,6 +2713,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   initImmersionMode();
+  initKitRail();        // mueve el panel "Más" al rail ANTES de medir la barra
   initMoreControls();
   initPlayGlide();
 });

@@ -6,13 +6,13 @@
 /* ===================== DESKTOP ≥1024 ===================== */
 @media (min-width: 1024px) {
   header {
-    --header-padding-top: 1.35rem;
-    --header-nav-margin-block: 0.75rem;
+    --header-padding-top: 0.55rem;
+    --header-nav-margin-block: 0.35rem;
     padding: var(--header-padding-top) 0 0;
   }
 
   #nav-container {
-    margin: var(--header-nav-margin-block) 0 0.9rem;
+    margin: var(--header-nav-margin-block) 0 0.55rem;
     padding-inline: var(--layout-inline-pad);
     width: 100%;
   }
@@ -42,12 +42,12 @@
 /* ===================== TABLET 768–1023 ===================== */
 @media (min-width: 768px) and (max-width: 1023px) {
   header {
-    --header-padding-top: 0.95rem;
+    --header-padding-top: 0.5rem;
     padding: var(--header-padding-top) 0 0;
   }
 
   #nav-container {
-    margin: 0.55rem 0 0.7rem;
+    margin: 0.3rem 0 0.45rem;
   }
 
   .content-card,

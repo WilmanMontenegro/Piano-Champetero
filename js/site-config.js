@@ -15,7 +15,7 @@ export const NAV_MOBILE_MAX_PX = 767;
  * WhatsApp Community invite link (Comunidades → enlace de invitación).
  * Leave empty to hide ticker line and contact CTA until the community is live.
  */
-export const WHATSAPP_COMMUNITY_URL = 'https://chat.whatsapp.com/JDQqXwQoJ8V3YcD52zjZfR';
+export const WHATSAPP_COMMUNITY_URL = 'https://chat.whatsapp.com/FdIeGLgoxfJDERn8ISQS1j';
 
 /** Label for floating WhatsApp button (es-419). */
 export const WHATSAPP_COMMUNITY_LABEL = 'Únete al grupo';
@@ -60,6 +60,7 @@ export const AUDIO_UI = {
  *   thanksFor: string,
  *   emoji?: string,
  *   pages?: string[],
+ *   noTicker?: boolean,
  * }} Contributor
  */
 
@@ -89,9 +90,10 @@ export const CONTRIBUTORS = [
   {
     id: 'marvin-barraz-mejoras',
     name: 'Marvin Barraz',
-    credit: 'gracias por estas mejoras',
-    thanksFor: 'por estas mejoras',
+    credit: 'sugirió el deslizar táctil para encadenar golpes y la barra de velocidad',
+    thanksFor: 'por sugerir el deslizar táctil entre pads y la barra de velocidad',
     emoji: '⚡',
+    noTicker: true,
   },
 ];
 
@@ -138,19 +140,8 @@ export function getTickerSegments(pageFile = '') {
   const base = file === 'virtual.html' ? TICKER_STATIC_LINES_VIRTUAL : TICKER_STATIC_LINES;
   const staticLines = buildStaticTickerLines(base);
 
-  // ponytail: ticker shows only newest thanks; full list stays on Sobre nosotros
-  const eligible = CONTRIBUTORS.filter((c) => !c.pages || c.pages.includes(file));
-  const latest = eligible[eligible.length - 1];
-  const thanks = latest
-    ? [
-        {
-          html: `🎉 ¡Gracias <strong>${escapeHtml(latest.name)}</strong> ${escapeHtml(latest.thanksFor)}! ${latest.emoji || ''}`.trim(),
-        },
-      ]
-    : [];
-
-  const statics = staticLines.map((line) => ({ html: line.html }));
-  return [...thanks, ...statics];
+  // ponytail: la cinta solo lleva anuncios útiles; los agradecimientos viven en Sobre nosotros
+  return staticLines.map((line) => ({ html: line.html }));
 }
 
 /**
