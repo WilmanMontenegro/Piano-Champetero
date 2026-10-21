@@ -128,7 +128,12 @@ Same **edit** flow: **Editar** → cell → modal **Sonido** / **Tecla** → **G
 - Deploy: push `main` → GitHub Pages (wait 1–3 min) 
 - After CSS/JS changes: bump `CACHE_NAME` in `sw.js` 
 - **PWA cache:** JS/CSS/HTML use network-first (avoid stale ES module graphs); samplers cache-on-success; never precache bare directories (`/samplers/` 404s on Pages) 
-- SEO / ads: GTM `GTM-N5MRWRKL`, AdSense, PropellerAds, JSON-LD, `sitemap.xml`
+- Analytics / ads: GA4 `G-YJZ8CP6J3L`, AdSense, PropellerAds, JSON-LD, `sitemap.xml`
+
+## Analytics (preserve)
+
+- Keep only the direct GA4 Google tag `G-YJZ8CP6J3L`, exactly once on each public HTML page. Do not remove, replace, or duplicate it unless the user explicitly asks.
+- Do not restore the removed Google Tag Manager container `GTM-N5MRWRKL` or add the alternate tag ID `GT-M3S2GR47`; GA4 is installed directly with `gtag.js` to avoid duplicate page views.
 
 ## Git
 
