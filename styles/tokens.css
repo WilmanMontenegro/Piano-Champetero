@@ -240,7 +240,7 @@
   --pad-hit-ring: color-mix(in srgb, var(--color-rasta-yellow) 95%, transparent);
   --pad-border: rgba(255, 255, 255, 0.5);
   --tom-glow-idle: color-mix(in srgb, var(--palette-yellow) 40%, transparent);
-  --hit-flash-duration: 0.16s;
+  --hit-flash-duration: 0.18s;
   --pad-edit-pulse: var(--palette-coral);
 
   /*

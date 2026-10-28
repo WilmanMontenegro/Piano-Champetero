@@ -24,7 +24,7 @@ export const WHATSAPP_COMMUNITY_LABEL = 'Únete al grupo';
 export const THEME_STORAGE_KEY = 'pianoChampeteroTheme';
 
 export const AUDIO_UI = {
-  hitFlashMs: 140,
+  hitFlashMs: 180,
   /** Same pad: min ms between hits (ghost-tap shield). Lower = tighter rolls on mobile. */
   retriggerMaskMs: 28,
   /**

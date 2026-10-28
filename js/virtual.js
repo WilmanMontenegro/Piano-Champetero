@@ -2465,6 +2465,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     if (!modoEdicion) cerrarModal();
     refreshBatteryPresets();
+    scheduleResponsivePadsLayout();
   });
 
   // Pads-only — no battery/pads view toggle
@@ -2554,7 +2555,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     return true;
   }
 
-  const PLAY_KEYBOARD_BLOCK_MODALS = ['modal-edit', 'modal-kit-share', 'modal-kit-import-result', 'modal-help', 'modal-confirm-reset', 'modal-pc-audio-guide'];
+  const PLAY_KEYBOARD_BLOCK_MODALS = ['modal-edit', 'modal-kit-share', 'modal-kit-import-result', 'modal-help', 'modal-confirm-reset', 'modal-pc-audio-guide', 'modal-new-sounds'];
 
   function shouldBlockPlayKeyboard(e) {
     if (modoEdicion) return true;
@@ -2711,6 +2712,35 @@ document.addEventListener('DOMContentLoaded', async () => {
     openBtnId: 'help-btn',
     closeBtnId: 'close-help-btn'
   });
+
+  const newSoundsNoticeKey = 'pianoChampeteroNewSoundsNotice';
+  const newSoundsNoticeVersion = 'guarapo-makias-2026-10';
+  const newSoundsModal = document.getElementById('modal-new-sounds');
+  const newSoundsNotice = initModal('modal-new-sounds', {
+    closeBtnId: 'new-sounds-later-btn',
+    onOpen: () => {
+      newSoundsModal?.classList.add('is-open');
+      newSoundsModal?.setAttribute('aria-hidden', 'false');
+      try { localStorage.setItem(newSoundsNoticeKey, newSoundsNoticeVersion); } catch {}
+    },
+    onClose: () => {
+      newSoundsModal?.classList.remove('is-open');
+      newSoundsModal?.setAttribute('aria-hidden', 'true');
+    },
+  });
+  document.getElementById('new-sounds-try-btn')?.addEventListener('click', () => newSoundsNotice?.close());
+
+  let hasSeenNewSoundsNotice = false;
+  try { hasSeenNewSoundsNotice = localStorage.getItem(newSoundsNoticeKey) === newSoundsNoticeVersion; } catch {}
+  const hasAnotherModalOpen = [...document.querySelectorAll('.modal-edit')]
+    .some(modalElement => modalElement.id !== 'modal-new-sounds' && isModalOpen(modalElement));
+  if (!hasSeenNewSoundsNotice && !hasAnotherModalOpen && newSoundsNotice) {
+    requestAnimationFrame(() => {
+      const modalStillOpen = [...document.querySelectorAll('.modal-edit')]
+        .some(modalElement => modalElement.id !== 'modal-new-sounds' && isModalOpen(modalElement));
+      if (!modalStillOpen) newSoundsNotice.open();
+    });
+  }
 
   initImmersionMode();
   initKitRail();        // mueve el panel "Más" al rail ANTES de medir la barra
