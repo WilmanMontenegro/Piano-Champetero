@@ -2152,18 +2152,6 @@ ul.sampler-list {
   background: radial-gradient(circle at 50% 38%, rgba(255, 255, 255, 0.82) 0%, var(--pad-hit-ring) 32%, transparent 72%);
 }
 
-@media (hover: hover) and (pointer: fine) {
-  .pad-item:hover:not(.active) {
-    /* Scale centered — no translateY (keeps grid symmetry) */
-    transform: scale(1.04);
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.22), 0 0 18px var(--pad-glow);
-  }
-}
-
-.pad-item:active:not(.active) {
-  transform: scale(0.96);
-}
-
 .pad-item.active {
   transform: scale(0.94);
   background: var(--pad-fill-hit);
